@@ -1,0 +1,15 @@
+services:
+  meta-bi:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NUXT_HOST: 0.0.0.0
+      NUXT_PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-troque-esta-chave-em-producao}
+      DATA_FILE: /app/data/orders.json
+    volumes:
+      - meta-bi-data:/app/data
+    restart: unless-stopped
+volumes:
+  meta-bi-data:
