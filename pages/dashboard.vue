@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DashboardData } from '~/types/order'
+const config = useRuntimeConfig()
 const router = useRouter()
 const filters = reactive({ region: '', uf: '', manager: '', segment: '', search: '' })
 const { data, pending, error, refresh } = await useFetch<DashboardData>('/api/dashboard', { query: filters, watch: [filters] })
@@ -26,7 +27,7 @@ async function importFile() {
 </script>
 <template>
   <div class="app-shell">
-    <header class="topbar"><div class="brand"><div class="brand-mark small">〽</div><div><strong>META HOSPITALAR</strong><span>BI Executivo</span></div></div><div class="topbar-actions"><span class="updated"><i></i> Dados atualizados</span><button class="ghost-button" @click="logout">Sair</button></div></header>
+    <header class="topbar"><div class="brand"><img class="company-logo small" :src="config.public.logoUrl" alt="Meta Hospitalar"><div><strong>META HOSPITALAR</strong><span>BI Executivo</span></div></div><div class="topbar-actions"><span class="updated"><i></i> Dados atualizados</span><button class="ghost-button" @click="logout">Sair</button></div></header>
     <main class="dashboard">
       <div class="heading"><div><p class="eyebrow">PAINEL EXECUTIVO</p><h1>Visão geral</h1></div><label class="import-button">＋ Importar Excel<input type="file" accept=".xls,.xlsx" @change="file = ($event.target as HTMLInputElement).files?.[0] || null"></label><button v-if="file" class="primary-button compact" @click="importFile">{{ importing ? 'Importando...' : 'Confirmar importação' }}</button></div>
       <p v-if="message" class="notice">{{ message }}</p>

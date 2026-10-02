@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const config = useRuntimeConfig()
 const email = ref('admin@metahospitalar.com.br')
 const password = ref('admin123')
 const loading = ref(false)
@@ -14,7 +15,7 @@ async function login() {
 <template>
   <main class="login-page">
     <section class="login-card">
-      <div class="brand-mark">〽</div>
+      <img class="company-logo" :src="config.public.logoUrl" alt="Meta Hospitalar">
       <p class="eyebrow">META HOSPITALAR</p>
       <h1>BI Executivo</h1>
       <p class="muted">Acompanhe vendas, pedidos e performance em um só lugar.</p>
