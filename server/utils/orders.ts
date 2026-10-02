@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import XLSX from 'xlsx'
+import * as XLSX from 'xlsx/xlsx.mjs'
 import type { Order } from '~/types/order'
 
 const regions: Record<string, string> = {
