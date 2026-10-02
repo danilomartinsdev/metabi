@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Acesse `http://localhost:3000`.
+Acesse `http://localhost:3789`.
 
 **Acesso inicial:** `admin@metahospitalar.com.br` / `admin123`.
 
