@@ -69,3 +69,11 @@ export interface HistoricoMes {
   /** Mês já tem pedidos importados: o valor manual é ignorado nos números. */
   temPedidos: boolean;
 }
+/** Faturamento manual de um mês (mesmo corpo de gravação: historicoSalvarSchema). */
+export interface HistoricoFaturamentoMes {
+  mes: number;
+  /** Valor digitado ("1234.56") ou null. */
+  valor: string | null;
+  /** Mês já tem faturamento importado do Focco: o valor manual é ignorado. */
+  temImportado: boolean;
+}

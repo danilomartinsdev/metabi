@@ -309,6 +309,19 @@ model FaturamentoHistorico {
   @@unique([ano, mes])
 }
 
+// Faturamento manual da empresa por mês (Administração › Histórico › Faturamento). Usado como Fatura DRE
+// só em meses sem faturamento importado (FaturamentoDia).
+model FaturamentoManual {
+  id        String   @id @default(uuid()) @db.Uuid
+  ano       Int
+  mes       Int
+  valor     Decimal  @db.Decimal(14, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([ano, mes])
+}
+
 // ─── Faturamento (relatório diário do Focco; domínio separado dos pedidos) ──────────────────────
 
 // Um dia de faturamento da empresa. Reimportar um ano substitui todos os dias daquele ano.

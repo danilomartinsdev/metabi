@@ -83,3 +83,9 @@ soma das metas dos representantes quando filtrado por gestor **[PENDENTE: confir
 ## Teste de aceite (Fase 3)
 Cálculo manual de **agosto/2026** com a planilha real, documentado em teste
 (`apps/api/src/modules/dashboard/__tests__/agosto-2026.spec.ts`) com os valores escritos à mão.
+
+## Faturamento manual (tela Faturamento)
+
+Em meses sem nenhum dia importado do relatório de faturamento, o valor digitado em
+Administração › Histórico › Faturamento entra como Fatura DRE do mês (demais colunas = 0).
+Havendo dias importados, vale só a importação. Testes em `apps/api/test/faturamento.spec.ts`.

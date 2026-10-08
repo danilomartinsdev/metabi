@@ -23,7 +23,7 @@ function multipart(arquivo: Buffer, nome = 'faturamento.xls') {
   };
 }
 
-const req = (method: 'GET' | 'POST', url: string, token: string, extra: object = {}) =>
+const req = (method: 'GET' | 'POST' | 'PUT', url: string, token: string, extra: object = {}) =>
   ctx.app.inject({ method, url, headers: { authorization: `Bearer ${token}` }, ...extra });
 
 async function importar(token: string, arquivo = fs.readFileSync(AMOSTRA), meses?: unknown) {
@@ -300,5 +300,81 @@ describe('faturamento — anos, mês a mês e comparativo', () => {
     expect(
       (await req('GET', '/api/faturamento/comparativo?anoA=abc&anoB=2026', tokenGestor)).statusCode,
     ).toBe(400);
+  });
+});
+
+describe('faturamento — manual (Administração › Histórico)', () => {
+  const salvar = (ano: number, meses: { mes: number; valor: string | null }[], token = tokenGestor) =>
+    req('PUT', '/api/historico/faturamento', token, { payload: { ano, meses } });
+
+  it('grava, lista e marca os meses que já têm faturamento importado', async () => {
+    const r = await salvar(2026, [
+      { mes: 2, valor: '9.999,99' },
+      { mes: 3, valor: '1.000,00' },
+    ]);
+    expect(r.statusCode).toBe(200);
+    const meses = (await req('GET', '/api/historico/faturamento?ano=2026', tokenGestor)).json();
+    expect(meses.slice(0, 4)).toEqual([
+      { mes: 1, valor: null, temImportado: true },
+      { mes: 2, valor: '9999.99', temImportado: true },
+      { mes: 3, valor: '1000.00', temImportado: false },
+      { mes: 4, valor: null, temImportado: false },
+    ]);
+  });
+
+  it('entra como DRE só nos meses sem faturamento importado (resumo)', async () => {
+    const b = (await req('GET', '/api/faturamento/resumo?de=2026-01&ate=2026-03', tokenGestor)).json();
+    // 7.800,25 importados (jan + fev; o manual de fev é ignorado) + 1.000,00 manual de março.
+    expect(b.kpis.dre.valor).toBe('8800.25');
+    expect(b.kpis.bruto.valor).toBe('8000.60');
+    expect(b.mensal.meses.map((m: { mes: number; dre: string }) => [m.mes, m.dre])).toEqual([
+      [1, '4400.25'],
+      [2, '3400.00'],
+      [3, '1000.00'],
+    ]);
+    expect(b.mensal.total.dre).toBe('8800.25');
+    // Sem período: vai até o último mês com faturamento, importado ou manual.
+    expect((await req('GET', '/api/faturamento/resumo', tokenGestor)).json().periodo).toEqual({
+      de: '2026-01',
+      ate: '2026-03',
+    });
+  });
+
+  it('ano só com valores manuais aparece em anos, mês a mês e comparativo', async () => {
+    await salvar(2024, [{ mes: 1, valor: '500,00' }]);
+    expect((await req('GET', '/api/faturamento/anos', tokenGestor)).json()).toEqual([2026, 2025, 2024]);
+    const m = (await req('GET', '/api/faturamento/mensal?ano=2024', tokenGestor)).json();
+    expect(m.meses).toEqual([
+      {
+        mes: 1,
+        dias: 0,
+        bruto: '0.00',
+        antecipado: '0.00',
+        remessa: '0.00',
+        devolucao: '0.00',
+        dre: '500.00',
+      },
+    ]);
+    const c = (await req('GET', '/api/faturamento/comparativo?anoA=2024&anoB=2025', tokenGestor)).json();
+    expect(c.total.diferenca.dre).toBe('3900.25');
+  });
+
+  it('valor null apaga o mês', async () => {
+    await salvar(2024, [{ mes: 1, valor: null }]);
+    expect((await req('GET', '/api/faturamento/anos', tokenGestor)).json()).toEqual([2026, 2025]);
+  });
+
+  it('valor inválido: 400', async () => {
+    expect((await salvar(2026, [{ mes: 3, valor: 'abc' }])).statusCode).toBe(400);
+    expect((await salvar(2026, [{ mes: 13, valor: '1,00' }])).statusCode).toBe(400);
+  });
+
+  it('sem a permissão ou com escopo parcial: 403', async () => {
+    const rep = (await login(ctx.app, 'rep@meta.com')).body.accessToken;
+    const parcial = (await login(ctx.app, 'gestor-parcial@meta.com')).body.accessToken;
+    for (const t of [rep, parcial]) {
+      expect((await req('GET', '/api/historico/faturamento?ano=2026', t)).statusCode).toBe(403);
+      expect((await salvar(2026, [{ mes: 3, valor: '1,00' }], t)).statusCode).toBe(403);
+    }
   });
 });

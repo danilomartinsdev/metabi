@@ -1,4 +1,5 @@
 import type {
+  HistoricoFaturamentoMes,
   HistoricoMes,
   PreviaImportacao,
   RepresentanteUpdate,
@@ -153,6 +154,39 @@ export function useSalvarHistorico() {
       void qc.invalidateQueries({ queryKey: ['historico', v.ano] });
       // Os dashboards passam a usar os novos totais.
       void qc.invalidateQueries({ queryKey: ['visao-geral'] });
+    },
+  });
+}
+
+/** Faturamento manual por mês (aba Faturamento do Histórico). */
+export function useHistoricoFaturamentoQuery(
+  ano: MaybeRefOrGetter<number>,
+  habilitado: MaybeRefOrGetter<boolean>,
+) {
+  const { request } = useApi();
+  return useQuery({
+    queryKey: ['historico-faturamento', ano],
+    queryFn: () => request<HistoricoFaturamentoMes[]>(`/historico/faturamento?ano=${toValue(ano)}`),
+    enabled: () => toValue(habilitado),
+  });
+}
+
+export function useSalvarHistoricoFaturamento() {
+  const { request } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (p: { ano: number; meses: { mes: number; valor: string | null }[] }) =>
+      request<HistoricoFaturamentoMes[]>('/historico/faturamento', { method: 'PUT', body: p }),
+    onSuccess: (_d, v) => {
+      void qc.invalidateQueries({ queryKey: ['historico-faturamento', v.ano] });
+      // A tela de Faturamento passa a usar os novos valores.
+      for (const k of [
+        'faturamento-resumo',
+        'faturamento-anos',
+        'faturamento-mensal',
+        'faturamento-comparativo',
+      ])
+        void qc.invalidateQueries({ queryKey: [k] });
     },
   });
 }

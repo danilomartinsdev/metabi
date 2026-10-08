@@ -47,6 +47,7 @@ const mesDe = (d: Date) => d.toISOString().slice(0, 7);
 const dataMes = (m: string) => new Date(`${m}-01T00:00:00Z`);
 /** Último dia do mês "AAAA-MM" (UTC). */
 const fimMes = (m: string) => new Date(Date.UTC(Number(m.slice(0, 4)), Number(m.slice(5, 7)), 0));
+const chaveMes = (ano: number, mes: number) => `${ano}-${String(mes).padStart(2, '0')}`;
 
 interface Analise {
   previa: PreviaFaturamento;
@@ -266,11 +267,18 @@ export class FaturamentoService {
 
   /** Página de Faturamento: cards, evolução mensal, tabela mês a mês e séries diária/semanal. */
   async resumo(q: FaturamentoQuery): Promise<FaturamentoResumo> {
-    const ultimo = await this.prisma.faturamentoDia.findFirst({
-      orderBy: { data: 'desc' },
-      select: { data: true },
-    });
-    const ate = q.ate ?? (ultimo ? mesDe(ultimo.data) : new Date().toISOString().slice(0, 7));
+    const [ultimo, ultimoManual] = await Promise.all([
+      this.prisma.faturamentoDia.findFirst({ orderBy: { data: 'desc' }, select: { data: true } }),
+      this.prisma.faturamentoManual.findFirst({ orderBy: [{ ano: 'desc' }, { mes: 'desc' }] }),
+    ]);
+    const ultimoMes = [
+      ultimo && mesDe(ultimo.data),
+      ultimoManual && chaveMes(ultimoManual.ano, ultimoManual.mes),
+    ]
+      .filter((m): m is string => !!m)
+      .sort()
+      .at(-1);
+    const ate = q.ate ?? ultimoMes ?? new Date().toISOString().slice(0, 7);
     const de0 = q.de ?? `${ate.slice(0, 4)}-01`;
     const de = de0 > ate ? ate : de0;
     const ano = Number(ate.slice(0, 4));
@@ -282,10 +290,19 @@ export class FaturamentoService {
       orderBy: { data: 'asc' },
     });
     const noPeriodo = (a: string, b: string) => dias.filter((d) => mesDe(d.data) >= a && mesDe(d.data) <= b);
-    const somaDe = (ls: typeof dias) => ls.reduce((s, l) => somar(s, l), zeros());
+    const manuais = await this.manuaisSemImportado(
+      { ano: { gte: Number(inicio.slice(0, 4)), lte: ano } },
+      new Set(dias.map((d) => mesDe(d.data))),
+    );
+    /** Soma dos dias importados + faturamento manual (como DRE) dos meses sem dias importados. */
+    const somaDe = (a: string, b: string) => {
+      const s = noPeriodo(a, b).reduce((t, l) => somar(t, l), zeros());
+      for (const [k, v] of manuais) if (k >= a && k <= b) s.dre = s.dre.plus(v);
+      return s;
+    };
 
-    const atual = somaDe(noPeriodo(de, ate));
-    const anterior = somaDe(noPeriodo(deslocarMes(de, -12), deslocarMes(ate, -12)));
+    const atual = somaDe(de, ate);
+    const anterior = somaDe(deslocarMes(de, -12), deslocarMes(ate, -12));
     const kpis = Object.fromEntries(
       CAMPOS.map((c) => [
         c,
@@ -299,8 +316,8 @@ export class FaturamentoService {
 
     const mesesAno = mesesEntre(`${ano}-01`, ate);
     const meses = mesesAno.map((m) => {
-      const s = somaDe(noPeriodo(m, m));
-      const ant = somaDe(noPeriodo(deslocarMes(m, -12), deslocarMes(m, -12)));
+      const s = somaDe(m, m);
+      const ant = somaDe(deslocarMes(m, -12), deslocarMes(m, -12));
       return { mes: Number(m.slice(5, 7)), ...texto(s), dreAnoAnterior: ant.dre.toFixed(2) };
     });
 
@@ -315,9 +332,9 @@ export class FaturamentoService {
 
     return {
       periodo: { de, ate },
-      temDados: !!ultimo,
+      temDados: !!ultimoMes,
       kpis,
-      mensal: { ano, meses, total: texto(somaDe(noPeriodo(`${ano}-01`, ate))) },
+      mensal: { ano, meses, total: texto(somaDe(`${ano}-01`, ate)) },
       diario: doPeriodo.map((d) => ({
         data: isoDia(d.data),
         ano: d.ano,
@@ -328,13 +345,30 @@ export class FaturamentoService {
     };
   }
 
-  /** Anos com faturamento importado (mais recente primeiro). */
+  /** Anos com faturamento importado ou manual (mais recente primeiro). */
   async anos(): Promise<number[]> {
-    const rs = await this.prisma.faturamentoDia.groupBy({ by: ['ano'], orderBy: { ano: 'desc' } });
-    return rs.map((r) => r.ano);
+    const [rs, ms] = await Promise.all([
+      this.prisma.faturamentoDia.groupBy({ by: ['ano'] }),
+      this.prisma.faturamentoManual.groupBy({ by: ['ano'] }),
+    ]);
+    return [...new Set([...rs, ...ms].map((r) => r.ano))].sort((a, b) => b - a);
   }
 
-  /** Somas por mês de cada ano pedido (só meses com faturamento). */
+  /**
+   * Faturamento manual (Administração › Histórico) por mês "AAAA-MM", só dos meses que não estão em
+   * `comImportado` — havendo dias importados, valem os dias.
+   */
+  private async manuaisSemImportado(
+    where: Prisma.FaturamentoManualWhereInput,
+    comImportado: Set<string>,
+  ): Promise<Map<string, Decimal>> {
+    const ls = await this.prisma.faturamentoManual.findMany({ where });
+    return new Map(
+      ls.map((l) => [chaveMes(l.ano, l.mes), l.valor] as const).filter(([k]) => !comImportado.has(k)),
+    );
+  }
+
+  /** Somas por mês de cada ano pedido (só meses com faturamento; manual entra como DRE, com 0 dias). */
   private async somasPorMes(anos: number[]): Promise<Map<number, Map<number, Somas & { dias: number }>>> {
     const rs = await this.prisma.faturamentoDia.groupBy({
       by: ['ano', 'mes'],
@@ -347,6 +381,10 @@ export class FaturamentoService {
       const somas = zeros();
       for (const c of CAMPOS) somas[c] = r._sum[c] ?? new D(0);
       porAno.get(r.ano)!.set(r.mes, { ...somas, dias: r._count._all });
+    }
+    const importados = new Set(rs.map((r) => chaveMes(r.ano, r.mes)));
+    for (const [k, valor] of await this.manuaisSemImportado({ ano: { in: anos } }, importados)) {
+      porAno.get(Number(k.slice(0, 4)))!.set(Number(k.slice(5, 7)), { ...zeros(), dre: valor, dias: 0 });
     }
     return porAno;
   }
