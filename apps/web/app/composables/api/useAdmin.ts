@@ -6,6 +6,7 @@ import type {
   UsuarioAdmin,
   UsuarioAtualizar,
   UsuarioCriar,
+  UsuariosOnline,
 } from '@meta-bi/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import type { MaybeRefOrGetter } from 'vue';
@@ -89,6 +90,17 @@ export function useAuditoriaQuery(qs: MaybeRefOrGetter<string>) {
         `/auditoria?${toValue(qs)}`,
       ),
     placeholderData: keepPreviousData,
+  });
+}
+
+/** Usuários online (aba da auditoria); atualiza sozinho a cada 30 s enquanto a aba está aberta. */
+export function useUsuariosOnlineQuery(habilitado: MaybeRefOrGetter<boolean>) {
+  const { request } = useApi();
+  return useQuery({
+    queryKey: ['auditoria-online'],
+    queryFn: () => request<UsuariosOnline>('/auditoria/online'),
+    enabled: () => toValue(habilitado),
+    refetchInterval: 30_000,
   });
 }
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute();
 const titulo = computed(() => route.meta.titulo as string | undefined);
+usePresenca();
 </script>
 
 <template>

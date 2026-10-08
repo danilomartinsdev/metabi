@@ -1,9 +1,18 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { type AuditoriaLinha, type AuditoriaQuery, auditoriaQuerySchema } from '@meta-bi/shared';
+import {
+  type AuditoriaLinha,
+  type AuditoriaQuery,
+  auditoriaQuerySchema,
+  type UsuariosOnline,
+} from '@meta-bi/shared';
 import { RequirePermission } from '../../common/auth/decorators.js';
 import { ZodPipe } from '../../common/zod-validation.pipe.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { resumirDispositivo } from './dispositivo.js';
+
+/** Conta como online quem teve atividade nestes últimos minutos (a tela manda sinal a cada minuto). */
+const JANELA_ONLINE_MINUTOS = 5;
 
 @Controller('auditoria')
 export class AuditController {
@@ -56,5 +65,35 @@ export class AuditController {
       orderBy: { acao: 'asc' },
     });
     return r.map((x) => x.acao);
+  }
+
+  /** Usuários ativos, com sessão válida e atividade recente. */
+  @RequirePermission('audit.view')
+  @Get('online')
+  async online(): Promise<UsuariosOnline> {
+    const agora = new Date();
+    const desde = new Date(agora.getTime() - JANELA_ONLINE_MINUTOS * 60_000);
+    const rows = await this.prisma.presenca.findMany({
+      where: {
+        ultimaAtividadeEm: { gte: desde },
+        usuario: { ativo: true, sessoes: { some: { revogadaEm: null, expiraEm: { gt: agora } } } },
+      },
+      orderBy: { ultimaAtividadeEm: 'desc' },
+      include: {
+        usuario: { select: { id: true, nome: true, email: true, role: { select: { nome: true } } } },
+      },
+    });
+    return {
+      janelaMinutos: JANELA_ONLINE_MINUTOS,
+      usuarios: rows.map((r) => ({
+        id: r.usuario.id,
+        nome: r.usuario.nome,
+        email: r.usuario.email,
+        papel: r.usuario.role.nome,
+        ultimaAtividadeEm: r.ultimaAtividadeEm.toISOString(),
+        dispositivo: resumirDispositivo(r.userAgent),
+        ip: r.ip,
+      })),
+    };
   }
 }

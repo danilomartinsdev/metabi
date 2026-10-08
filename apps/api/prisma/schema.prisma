@@ -67,6 +67,7 @@ model Usuario {
   tokensImpressao  TokenImpressao[]
   auditoria        AuditLog[]
   lotesFaturamento FaturamentoLote[]
+  presenca         Presenca?
   // Paleta de cores dos gráficos escolhida pelo usuário (null = padrão). Valores: PALETAS_GRAFICO.
   paletaGraficos   String?
   lotes            ImportLote[]            @relation("LoteUsuario")
@@ -106,6 +107,17 @@ model UsuarioRepresentante {
 
   @@id([usuarioId, representanteId])
   @@index([representanteId])
+}
+
+/// Última atividade do usuário (aba "Online" da auditoria). Atualizada pelo guard, no máximo 1x por minuto.
+model Presenca {
+  usuarioId         String   @id @db.Uuid
+  ultimaAtividadeEm DateTime
+  ip                String?
+  userAgent         String?
+  usuario           Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([ultimaAtividadeEm])
 }
 
 /// Refresh tokens (rotativos). Só o hash é guardado.

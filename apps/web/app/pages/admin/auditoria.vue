@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TabsItem } from '@nuxt/ui';
 import type { AuditoriaLinha } from '@meta-bi/shared';
 import { useAcoesAuditoriaQuery, useAuditoriaQuery, useUsuariosQuery } from '~/composables/api/useAdmin';
 
@@ -14,6 +15,14 @@ const qs = computed(() => {
   const p = new URLSearchParams({ page: String(page.value), pageSize: String(pageSize.value) });
   for (const k of ['acao', 'usuarioId', 'de', 'ate']) if (filtro(k)) p.set(k, filtro(k));
   return p.toString();
+});
+const ABAS: TabsItem[] = [
+  { label: 'Registros', value: 'registros', icon: 'i-lucide-scroll-text' },
+  { label: 'Online', value: 'online', icon: 'i-lucide-radio' },
+];
+const aba = computed({
+  get: () => (filtro('aba') === 'online' ? 'online' : 'registros'),
+  set: (v: string) => void router.replace({ query: { aba: v === 'online' ? v : undefined } }),
 });
 const q = useAuditoriaQuery(qs);
 const acoes = useAcoesAuditoriaQuery();
@@ -74,116 +83,122 @@ const resumo = (d: unknown) => (d && typeof d === 'object' ? JSON.stringify(d).s
       descricao="Registro das ações sensíveis: acessos, importações, exportações e mudanças de permissão."
     />
 
-    <div class="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-3">
-      <label class="space-y-1 text-xs text-muted-foreground">
-        Ação
-        <USelect
-          :model-value="filtro('acao') || TODAS"
-          :items="itensAcao"
-          size="sm"
-          class="block w-56"
-          @update:model-value="(v) => definir('acao', v === TODAS ? '' : String(v))"
-        />
-      </label>
-      <label v-if="podeListarUsuarios" class="space-y-1 text-xs text-muted-foreground">
-        Usuário
-        <USelect
-          :model-value="filtro('usuarioId') || TODAS"
-          :items="itensUsuario"
-          size="sm"
-          class="block w-56"
-          :loading="usuarios.isPending.value"
-          @update:model-value="(v) => definir('usuarioId', v === TODAS ? '' : String(v))"
-        />
-      </label>
-      <label class="space-y-1 text-xs text-muted-foreground">
-        De
-        <UInput
-          type="date"
-          size="sm"
-          class="block"
-          :model-value="filtro('de')"
-          @change="(e: Event) => definir('de', (e.target as HTMLInputElement).value)"
-        />
-      </label>
-      <label class="space-y-1 text-xs text-muted-foreground">
-        Até
-        <UInput
-          type="date"
-          size="sm"
-          class="block"
-          :model-value="filtro('ate')"
-          @change="(e: Event) => definir('ate', (e.target as HTMLInputElement).value)"
-        />
-      </label>
-    </div>
+    <UTabs v-model="aba" :items="ABAS" :content="false" aria-label="Visão da auditoria" />
 
-    <section class="rounded-xl border bg-card">
-      <UiExtraEstadoBloco
-        :carregando="q.isPending.value"
-        :erro="q.error.value"
-        :vazio="!q.data.value?.data.length"
-        texto-vazio="Nenhum registro para os filtros."
-        :linhas="8"
-        @tentar-de-novo="q.refetch()"
-      >
-        <div
-          class="overflow-x-auto transition-opacity"
-          :class="q.isFetching.value && 'opacity-60'"
-          :aria-busy="q.isFetching.value"
+    <AdminUsuariosOnline v-if="aba === 'online'" />
+
+    <template v-else>
+      <div class="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-3">
+        <label class="space-y-1 text-xs text-muted-foreground">
+          Ação
+          <USelect
+            :model-value="filtro('acao') || TODAS"
+            :items="itensAcao"
+            size="sm"
+            class="block w-56"
+            @update:model-value="(v) => definir('acao', v === TODAS ? '' : String(v))"
+          />
+        </label>
+        <label v-if="podeListarUsuarios" class="space-y-1 text-xs text-muted-foreground">
+          Usuário
+          <USelect
+            :model-value="filtro('usuarioId') || TODAS"
+            :items="itensUsuario"
+            size="sm"
+            class="block w-56"
+            :loading="usuarios.isPending.value"
+            @update:model-value="(v) => definir('usuarioId', v === TODAS ? '' : String(v))"
+          />
+        </label>
+        <label class="space-y-1 text-xs text-muted-foreground">
+          De
+          <UInput
+            type="date"
+            size="sm"
+            class="block"
+            :model-value="filtro('de')"
+            @change="(e: Event) => definir('de', (e.target as HTMLInputElement).value)"
+          />
+        </label>
+        <label class="space-y-1 text-xs text-muted-foreground">
+          Até
+          <UInput
+            type="date"
+            size="sm"
+            class="block"
+            :model-value="filtro('ate')"
+            @change="(e: Event) => definir('ate', (e.target as HTMLInputElement).value)"
+          />
+        </label>
+      </div>
+
+      <section class="rounded-xl border bg-card">
+        <UiExtraEstadoBloco
+          :carregando="q.isPending.value"
+          :erro="q.error.value"
+          :vazio="!q.data.value?.data.length"
+          texto-vazio="Nenhum registro para os filtros."
+          :linhas="8"
+          @tentar-de-novo="q.refetch()"
         >
-          <table class="w-full text-sm">
-            <thead class="bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th class="px-5 py-3 font-medium">Quando</th>
-                <th class="px-3 py-3 font-medium">Ação</th>
-                <th class="px-3 py-3 font-medium">Usuário</th>
-                <th class="px-3 py-3 font-medium">Detalhes</th>
-                <th class="px-3 py-3 font-medium">IP</th>
-                <th class="px-5 py-3"><span class="sr-only">Ações</span></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y">
-              <tr v-for="l in q.data.value?.data" :key="l.id">
-                <td class="num whitespace-nowrap px-5 py-2.5">{{ formatDateTime(l.createdAt) }}</td>
-                <td
-                  class="whitespace-nowrap px-3 py-2.5"
-                  :class="/falha|bloqueio|reuso/.test(l.acao) && 'text-danger'"
-                >
-                  {{ ROTULOS[l.acao] ?? l.acao }}
-                </td>
-                <td class="px-3 py-2.5">{{ l.usuario?.nome ?? '—' }}</td>
-                <td
-                  class="max-w-md truncate px-3 py-2.5 font-mono text-xs text-muted-foreground"
-                  :title="resumo(l.detalhes)"
-                >
-                  {{ [l.entidade, resumo(l.detalhes)].filter(Boolean).join(' · ') || '—' }}
-                </td>
-                <td class="num px-3 py-2.5 text-muted-foreground">{{ l.ip ?? '—' }}</td>
-                <td class="px-5 py-1.5 text-right">
-                  <UButton
-                    v-if="temDetalhes(l.detalhes)"
-                    color="neutral"
-                    variant="ghost"
-                    size="xs"
-                    label="Ver detalhes"
-                    @click="detalhe = l"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <UiExtraPaginacaoBar
-          :pagina="page"
-          :por-pagina="pageSize"
-          :total="q.data.value?.meta.total ?? 0"
-          rotulo="registros"
-          @update:pagina="(p) => definir('page', p)"
-          @update:por-pagina="(n) => definir('pageSize', n)"
-        />
-      </UiExtraEstadoBloco>
-    </section>
+          <div
+            class="overflow-x-auto transition-opacity"
+            :class="q.isFetching.value && 'opacity-60'"
+            :aria-busy="q.isFetching.value"
+          >
+            <table class="w-full text-sm">
+              <thead class="bg-muted/50 text-left text-xs text-muted-foreground">
+                <tr>
+                  <th class="px-5 py-3 font-medium">Quando</th>
+                  <th class="px-3 py-3 font-medium">Ação</th>
+                  <th class="px-3 py-3 font-medium">Usuário</th>
+                  <th class="px-3 py-3 font-medium">Detalhes</th>
+                  <th class="px-3 py-3 font-medium">IP</th>
+                  <th class="px-5 py-3"><span class="sr-only">Ações</span></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <tr v-for="l in q.data.value?.data" :key="l.id">
+                  <td class="num whitespace-nowrap px-5 py-2.5">{{ formatDateTime(l.createdAt) }}</td>
+                  <td
+                    class="whitespace-nowrap px-3 py-2.5"
+                    :class="/falha|bloqueio|reuso/.test(l.acao) && 'text-danger'"
+                  >
+                    {{ ROTULOS[l.acao] ?? l.acao }}
+                  </td>
+                  <td class="px-3 py-2.5">{{ l.usuario?.nome ?? '—' }}</td>
+                  <td
+                    class="max-w-md truncate px-3 py-2.5 font-mono text-xs text-muted-foreground"
+                    :title="resumo(l.detalhes)"
+                  >
+                    {{ [l.entidade, resumo(l.detalhes)].filter(Boolean).join(' · ') || '—' }}
+                  </td>
+                  <td class="num px-3 py-2.5 text-muted-foreground">{{ l.ip ?? '—' }}</td>
+                  <td class="px-5 py-1.5 text-right">
+                    <UButton
+                      v-if="temDetalhes(l.detalhes)"
+                      color="neutral"
+                      variant="ghost"
+                      size="xs"
+                      label="Ver detalhes"
+                      @click="detalhe = l"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <UiExtraPaginacaoBar
+            :pagina="page"
+            :por-pagina="pageSize"
+            :total="q.data.value?.meta.total ?? 0"
+            rotulo="registros"
+            @update:pagina="(p) => definir('page', p)"
+            @update:por-pagina="(n) => definir('pageSize', n)"
+          />
+        </UiExtraEstadoBloco>
+      </section>
+    </template>
 
     <UModal
       :open="!!detalhe"

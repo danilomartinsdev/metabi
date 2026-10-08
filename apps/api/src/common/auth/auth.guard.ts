@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import type { Permission } from '@meta-bi/shared';
 import type { FastifyRequest } from 'fastify';
 import { Erros } from '../errors.js';
+import { PresencaService } from '../../modules/auth/presenca.service.js';
 import { TokenService } from '../../modules/auth/token.service.js';
 import { UsuarioLoader } from '../../modules/auth/usuario-loader.service.js';
 import { ALLOW_PENDING_PASSWORD, AUTHENTICATED_ONLY, IS_PUBLIC, PERMISSION } from './decorators.js';
@@ -22,6 +23,7 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly tokens: TokenService,
     private readonly loader: UsuarioLoader,
+    private readonly presenca: PresencaService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -38,6 +40,7 @@ export class AuthGuard implements CanActivate {
     const usuario = await this.loader.carregar(payload.sub, payload.sid);
     if (!usuario) throw Erros.naoAutenticado();
     req.user = usuario;
+    this.presenca.registrar(usuario.id, { ip: req.ip, userAgent: req.headers['user-agent'] });
 
     if (usuario.trocarSenha && !this.reflector.getAllAndOverride<boolean>(ALLOW_PENDING_PASSWORD, alvos)) {
       throw Erros.trocaSenhaObrigatoria();

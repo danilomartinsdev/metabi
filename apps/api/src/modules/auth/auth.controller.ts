@@ -86,6 +86,13 @@ export class AuthController {
     this.limparCookie(res);
   }
 
+  /** Sinal de "estou com o sistema aberto" (a tela chama a cada minuto); o guard registra a presença. */
+  @AuthenticatedOnly()
+  @AllowPendingPassword()
+  @Post('presenca')
+  @HttpCode(204)
+  presenca(): void {}
+
   @AuthenticatedOnly()
   @AllowPendingPassword()
   @Get('me')

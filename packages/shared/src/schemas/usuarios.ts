@@ -79,6 +79,21 @@ export const auditoriaQuerySchema = z.object({
 });
 export type AuditoriaQuery = z.output<typeof auditoriaQuerySchema>;
 
+/** Aba "Online" da auditoria: quem usou o sistema nos últimos `janelaMinutos`. */
+export interface UsuariosOnline {
+  janelaMinutos: number;
+  usuarios: {
+    id: string;
+    nome: string;
+    email: string;
+    papel: string;
+    ultimaAtividadeEm: string;
+    /** Navegador e sistema, resumidos do user-agent (ex.: "Chrome · Windows"). */
+    dispositivo: string | null;
+    ip: string | null;
+  }[];
+}
+
 export interface AuditoriaLinha {
   id: string;
   createdAt: string;
