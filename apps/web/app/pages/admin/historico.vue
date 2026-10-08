@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { valorMetaSchema } from '@meta-bi/shared';
 import { useHistoricoQuery, useSalvarHistorico } from '~/composables/api/useCadastros';
+import { useLotesFaturamentoQuery } from '~/composables/api/useFaturamento';
 
 definePageMeta({ titulo: 'Histórico', permissao: 'metas.edit' });
 useHead({ title: 'Histórico de faturamento — BI Metahospitalar' });
 
 const aviso = useAviso();
+const can = useCan();
+const podeImportar = computed(() => can('faturamento.import'));
+const importando = ref(false);
+const lotesQ = useLotesFaturamentoQuery(podeImportar);
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const anoAtual = new Date().getFullYear();
 const ANOS = Array.from({ length: 6 }, (_, i) => anoAtual - i);
@@ -130,5 +135,52 @@ async function salvar() {
         </table>
       </UiExtraEstadoBloco>
     </section>
+    <section v-if="podeImportar" class="rounded-xl border bg-card" aria-labelledby="titulo-importacoes">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
+        <div>
+          <h3 id="titulo-importacoes" class="font-semibold">Importações de faturamento</h3>
+          <p class="text-sm text-muted-foreground">
+            Relatório diário de faturamento do Focco — alimenta a tela Faturamento.
+          </p>
+        </div>
+        <UButton icon="i-lucide-file-up" label="Importar faturamento" @click="importando = true" />
+      </div>
+      <UiExtraEstadoBloco
+        :carregando="lotesQ.isPending.value"
+        :erro="lotesQ.error.value"
+        :linhas="3"
+        @tentar-de-novo="lotesQ.refetch()"
+      >
+        <p v-if="!lotesQ.data.value?.length" class="px-5 py-6 text-sm text-muted-foreground">
+          Nenhuma importação de faturamento ainda.
+        </p>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-muted/50 text-left text-xs text-muted-foreground">
+              <tr>
+                <th class="px-5 py-3 font-medium">Quando</th>
+                <th class="px-5 py-3 font-medium">Arquivo</th>
+                <th class="px-5 py-3 text-right font-medium">Ano</th>
+                <th class="px-5 py-3 text-right font-medium">Dias</th>
+                <th class="px-5 py-3 text-right font-medium">Fatura DRE</th>
+                <th class="px-5 py-3 font-medium">Por</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <tr v-for="l in lotesQ.data.value.slice(0, 10)" :key="l.id">
+                <td class="num px-5 py-2 whitespace-nowrap">{{ formatDateTime(l.createdAt) }}</td>
+                <td class="max-w-56 truncate px-5 py-2" :title="l.arquivoNome">{{ l.arquivoNome }}</td>
+                <td class="num px-5 py-2 text-right">{{ l.ano }}</td>
+                <td class="num px-5 py-2 text-right">{{ formatInt(l.dias) }}</td>
+                <td class="num px-5 py-2 text-right whitespace-nowrap">{{ formatBRL(l.totalDre) }}</td>
+                <td class="px-5 py-2">{{ l.usuario ?? '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </UiExtraEstadoBloco>
+    </section>
+
+    <FaturamentoImportarFaturamento v-if="podeImportar" v-model:aberto="importando" />
   </div>
 </template>
