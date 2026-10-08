@@ -66,6 +66,8 @@ describe('escopo de dados (RBAC) nos dashboards e pedidos', () => {
     expect(visao.status).toBe(200);
     expect(visao.body.kpis.total.valor).toBe(doRep.total);
     expect(visao.body.topGestores.map((g: { chave: string }) => g.chave)).toEqual([repId]);
+    const pedidos = await get(`/api/pedidos?${periodo}`, tokenRep);
+    expect(pedidos.body.meta.valorTotal).toBe(doRep.total);
   });
 
   it('filtrar por outro gestor não vaza dados (interseção com o escopo)', async () => {
@@ -73,6 +75,7 @@ describe('escopo de dados (RBAC) nos dashboards e pedidos', () => {
     expect(r.body.kpis.total.valor).toBe('0.00');
     const p = await get(`/api/pedidos?${periodo}&gestor=${outroRepId}`, tokenRep);
     expect(p.body.meta.total).toBe(0);
+    expect(p.body.meta.valorTotal).toBe('0.00');
   });
 
   it('lista de pedidos e rankings do representante contêm só o seu gestor', async () => {

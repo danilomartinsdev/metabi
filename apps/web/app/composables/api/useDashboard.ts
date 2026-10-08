@@ -41,7 +41,8 @@ export function useMesesQuery() {
 
 export interface PaginaPedidos {
   data: PedidoLinha[];
-  meta: { page: number; pageSize: number; total: number };
+  /** valorTotal: soma de todos os pedidos do filtro (não só da página), em "1234.56". */
+  meta: { page: number; pageSize: number; total: number; valorTotal: string };
   periodo: { de: string; ate: string };
 }
 

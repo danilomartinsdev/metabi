@@ -100,6 +100,22 @@ const total = computed(() => q.data.value?.meta.total ?? 0);
 
     <DashboardFilterBar :periodo="q.data.value?.periodo" />
 
+    <section
+      aria-label="Total dos pedidos filtrados"
+      class="flex flex-wrap items-center gap-x-8 gap-y-2 rounded-xl border bg-card px-5 py-4"
+    >
+      <div>
+        <p class="text-xs text-muted-foreground">Valor total do filtro</p>
+        <USkeleton v-if="q.isPending.value" class="mt-1 h-7 w-44" />
+        <p v-else class="num text-2xl font-semibold">{{ formatBRL(q.data.value?.meta.valorTotal ?? 0) }}</p>
+      </div>
+      <div>
+        <p class="text-xs text-muted-foreground">Pedidos</p>
+        <USkeleton v-if="q.isPending.value" class="mt-1 h-7 w-16" />
+        <p v-else class="num text-2xl font-semibold">{{ formatInt(total) }}</p>
+      </div>
+    </section>
+
     <section class="rounded-xl border bg-card">
       <UiExtraEstadoBloco
         :carregando="q.isPending.value"

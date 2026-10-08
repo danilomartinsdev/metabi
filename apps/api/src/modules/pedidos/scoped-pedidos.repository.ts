@@ -39,6 +39,15 @@ export class ScopedPedidosRepository {
     return this.prisma.pedido.count({ where: { AND: [this.whereEscopo(u), where] } });
   }
 
+  /** Soma de valor dos pedidos (no escopo) que atendem ao filtro. */
+  async soma(u: UsuarioAutenticado, where: Prisma.PedidoWhereInput): Promise<Prisma.Decimal | null> {
+    const r = await this.prisma.pedido.aggregate({
+      where: { AND: [this.whereEscopo(u), where] },
+      _sum: { valor: true },
+    });
+    return r._sum.valor;
+  }
+
   async ultimaCompetencia(u: UsuarioAutenticado, where: Prisma.PedidoWhereInput): Promise<Date | null> {
     const r = await this.prisma.pedido.aggregate({
       where: { AND: [this.whereEscopo(u), where] },

@@ -372,11 +372,11 @@ export class DashboardService {
   }
 
   async listarPedidos(u: UsuarioAutenticado, q: PedidosQuery) {
-    const { data, total, periodo } = await this.consultarPedidos(u, q, {
+    const { data, total, valorTotal, periodo } = await this.consultarPedidos(u, q, {
       skip: (q.page - 1) * q.pageSize,
       take: q.pageSize,
     });
-    return { data, meta: { page: q.page, pageSize: q.pageSize, total }, periodo };
+    return { data, meta: { page: q.page, pageSize: q.pageSize, total, valorTotal }, periodo };
   }
 
   /** Todos os pedidos do filtro (no escopo), para exportação; até `limite` linhas. */
@@ -405,7 +405,7 @@ export class DashboardService {
       cliente: { cliente: { nomeNormalizado: q.dir } },
       representante: { representante: { nomeExibicao: q.dir } },
     };
-    const [rows, total] = await Promise.all([
+    const [rows, total, soma] = await Promise.all([
       this.pedidos.findMany(u, {
         where,
         orderBy: [ordem[q.sort], { focoId: 'desc' }],
@@ -417,6 +417,7 @@ export class DashboardService {
         },
       }),
       this.pedidos.count(u, where),
+      this.pedidos.soma(u, where),
     ]);
     const data: PedidoLinha[] = rows.map((p) => ({
       id: p.id,
@@ -433,7 +434,7 @@ export class DashboardService {
       segmento: rotuloSegmento(p.cliente.segmentoOverride ?? p.representante.segmentoPadrao),
       valor: p.valor.toFixed(2),
     }));
-    return { data, total, periodo: { de, ate } };
+    return { data, total, valorTotal: (soma ?? new Prisma.Decimal(0)).toFixed(2), periodo: { de, ate } };
   }
 
   /** Meses com dados (no escopo) — alimenta o seletor de período. */
