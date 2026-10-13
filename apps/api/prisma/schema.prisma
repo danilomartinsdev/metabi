@@ -67,6 +67,7 @@ model Usuario {
   tokensImpressao  TokenImpressao[]
   auditoria        AuditLog[]
   lotesFaturamento FaturamentoLote[]
+  lotesNotas       NotaFiscalLote[]
   presenca         Presenca?
   // Paleta de cores dos gráficos escolhida pelo usuário (null = padrão). Valores: PALETAS_GRAFICO.
   paletaGraficos   String?
@@ -375,13 +376,68 @@ model FaturamentoLote {
   @@index([ano])
 }
 
+// ─── Notas fiscais (relatório de itens de NF do Focco; análise de faturamento) ───────────────────
+
+// Um item de nota fiscal. Reimportar substitui por completo os meses (de emissão) presentes no arquivo.
+model NotaFiscalItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  itemId           Int            @unique // ITNFS_ID
+  notaId           Int // NFS_ID
+  numNota          String
+  dataEmissao      DateTime       @db.Date
+  ano              Int
+  mes              Int
+  tipoNota         String
+  divisao          String
+  repCodigo        String
+  repNome          String
+  cliCodigo        String
+  cliRazaoSocial   String
+  cliNomeFantasia  String?
+  cliCidade        String?
+  cliUf            String         @db.Char(2)
+  produtoCodigo    String // como veio do Focco ("MT169.")
+  produtoAgrupado  String // sem o ponto final das variantes ("MT169"): chave da curva ABC
+  produtoDescricao String
+  quantidade       Decimal        @db.Decimal(14, 2)
+  valorTotal       Decimal        @db.Decimal(14, 2)
+  loteId           String         @db.Uuid
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  lote             NotaFiscalLote @relation(fields: [loteId], references: [id], onDelete: Cascade)
+
+  @@index([dataEmissao])
+  @@index([ano, mes])
+  @@index([cliCodigo])
+  @@index([repCodigo])
+  @@index([produtoAgrupado])
+  @@index([loteId])
+}
+
+// Histórico das importações de notas fiscais (uma por arquivo confirmado).
+model NotaFiscalLote {
+  id          String           @id @default(uuid()) @db.Uuid
+  arquivoNome String
+  arquivoHash String
+  itens       Int
+  total       Decimal          @db.Decimal(14, 2)
+  meses       String[] // "AAAA-MM" substituídos
+  usuarioId   String?          @db.Uuid
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  usuario     Usuario?         @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  registros   NotaFiscalItem[]
+
+  @@index([createdAt])
+}
+
 // Arquivo enviado na prévia de uma importação, guardado até o "confirmar" (substitui o disco local:
 // em serverless cada requisição pode cair numa instância diferente). Expira em 2 horas.
 model ArquivoTemporario {
   id          String   @id @default(uuid()) @db.Uuid
   hash        String
   usuarioId   String   @db.Uuid
-  tipo        String // "pedidos" | "faturamento"
+  tipo        String // "pedidos" | "faturamento" | "notas"
   arquivoNome String
   conteudo    Bytes
   expiraEm    DateTime

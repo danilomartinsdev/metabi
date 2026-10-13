@@ -16,6 +16,7 @@ import { ImportModule } from './modules/import/import.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { ExportModule } from './modules/export/export.module.js';
 import { FaturamentoModule } from './modules/faturamento/faturamento.module.js';
+import { NotasFiscaisModule } from './modules/notas-fiscais/notas-fiscais.module.js';
 import { PedidosModule } from './modules/pedidos/pedidos.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
@@ -57,6 +58,7 @@ const dev = process.env.NODE_ENV !== 'production';
     DashboardModule,
     ExportModule,
     FaturamentoModule,
+    NotasFiscaisModule,
   ],
   controllers: [HealthController],
   providers: [

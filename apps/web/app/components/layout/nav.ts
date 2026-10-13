@@ -58,6 +58,12 @@ export const NAV: NavGroup[] = [
       },
       { label: 'Pedidos', to: '/pedidos', icon: 'i-lucide-clipboard-list', permissao: 'pedidos.view' },
       { label: 'Faturamento', to: '/faturamento', icon: 'i-lucide-banknote', permissao: 'faturamento.view' },
+      {
+        label: 'Análise de faturamento',
+        to: '/faturamento/analise',
+        icon: 'i-lucide-chart-pie',
+        permissao: 'faturamento.view',
+      },
     ],
   },
   {

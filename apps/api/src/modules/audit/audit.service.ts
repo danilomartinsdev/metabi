@@ -29,7 +29,8 @@ export type AcaoAuditada =
   | 'export.pdf'
   | 'historico.alterado'
   | 'historico-faturamento.alterado'
-  | 'faturamento.importado';
+  | 'faturamento.importado'
+  | 'notas.importadas';
 
 interface Registro {
   acao: AcaoAuditada;

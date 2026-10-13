@@ -43,7 +43,7 @@ export async function limparBanco(prisma: Contexto['prisma']) {
     TRUNCATE "AuditLog", "Sessao", "TokenRedefinicaoSenha", "TokenImpressao", "UsuarioRepresentante",
              "ImportLoteItem", "Pedido", "ImportLote", "Meta", "Usuario", "RolePermission", "Role",
              "Representante", "Cliente", "StatusPdv", "FaturamentoHistorico", "FaturamentoManual", "FaturamentoDia",
-             "FaturamentoLote", "ArquivoTemporario" RESTART IDENTITY CASCADE`);
+             "FaturamentoLote", "NotaFiscalItem", "NotaFiscalLote", "ArquivoTemporario" RESTART IDENTITY CASCADE`);
   for (const [chave, def] of Object.entries(DEFAULT_ROLES)) {
     await prisma.role.create({
       data: {

@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { ApiException } from '../../common/errors.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
-export type TipoArquivo = 'pedidos' | 'faturamento';
+export type TipoArquivo = 'pedidos' | 'faturamento' | 'notas';
 const VALIDADE_MS = 2 * 60 * 60 * 1000;
 
 /**

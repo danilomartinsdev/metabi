@@ -73,6 +73,22 @@ Na importação, a prévia lista os meses da planilha (com o que já está grava
 `id`, `ano`, `arquivoNome`, `arquivoHash`, `dias`, `totalDre` Decimal(14,2), `usuarioId?` — histórico das
 importações de faturamento.
 
+## Notas fiscais (itens de NF do Focco — Análise de faturamento)
+
+### NotaFiscalItem
+
+Uma linha por item de nota (relatório "Intermediador de fontes de dados de widgets"): `itemId` (ITNFS_ID, **único**),
+`notaId` (NFS_ID), `numNota`, `dataEmissao` (Date), `ano`, `mes`, `tipoNota` (Venda, Faturamento Antecipado…),
+`divisao` (DIVD_DESCRICAO), `repCodigo`/`repNome` (REP_*; não ligados ao cadastro de representantes dos pedidos),
+`cliCodigo`, `cliRazaoSocial`, `cliNomeFantasia?`, `cliCidade?`, `cliUf`, `produtoCodigo` (como veio), `produtoAgrupado`
+(sem o ponto final das variantes: "MT169." → "MT169"; chave da curva ABC), `produtoDescricao`, `quantidade` e
+`valorTotal` (ITNFS_VALOR_TOTAL) Decimal(14,2), `loteId`. Reimportar substitui por completo os meses de emissão do
+arquivo. Índices: `dataEmissao`, (`ano`, `mes`), `cliCodigo`, `repCodigo`, `produtoAgrupado`, `loteId`.
+
+### NotaFiscalLote
+
+`id`, `arquivoNome`, `arquivoHash`, `itens`, `total` Decimal(14,2), `meses` ("AAAA-MM"[]), `usuarioId?`.
+
 ## Importação
 
 ### ImportLote
