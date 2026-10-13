@@ -81,7 +81,7 @@ Uma linha por item de nota (relatório "Intermediador de fontes de dados de widg
 `notaId` (NFS_ID), `numNota`, `dataEmissao` (Date), `ano`, `mes`, `tipoNota` (Venda, Faturamento Antecipado…),
 `divisao` (DIVD_DESCRICAO), `repCodigo`/`repNome` (REP_*; não ligados ao cadastro de representantes dos pedidos),
 `cliCodigo`, `cliRazaoSocial`, `cliNomeFantasia?`, `cliCidade?`, `cliUf`, `produtoCodigo` (como veio), `produtoAgrupado`
-(sem o ponto final das variantes: "MT169." → "MT169"; chave da curva ABC), `produtoDescricao`, `quantidade` e
+(sem o ponto final das variantes: "MT169." → "MT169"; chave da curva ABC), `produtoDescricao`, `unidade?` (ITNFS_UNID_MED_CODIGO: UN, KG, PC, M2…; quantidades só se somam na mesma unidade), `quantidade` e
 `valorTotal` (ITNFS_VALOR_TOTAL) Decimal(14,2), `loteId`. Reimportar substitui por completo os meses de emissão do
 arquivo. Índices: `dataEmissao`, (`ano`, `mes`), `cliCodigo`, `repCodigo`, `produtoAgrupado`, `loteId`.
 

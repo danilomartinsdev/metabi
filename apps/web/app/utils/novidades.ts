@@ -20,7 +20,7 @@ export const NOVIDADES: Novidade[] = [
     data: '2026-10-13',
     titulo: 'Análise de faturamento',
     texto:
-      'Nova tela em Análise › Análise de faturamento, a partir das notas fiscais do Focco: faturamento por divisão de venda, ranking por representante e curvas ABC por cliente e por produto (variantes do mesmo produto somadas). O acesso é pela permissão "Ver análise de faturamento", em Papéis.',
+      'Nova tela em Análise › Análise de faturamento, a partir das notas fiscais do Focco: faturamento por divisão de venda (clique numa divisão para ver o ranking dos representantes nela), ranking por representante e curvas ABC por cliente e por produto — esta pelo valor ou pela quantidade vendida, com as variantes do mesmo produto somadas. O acesso é pela permissão "Ver análise de faturamento", em Papéis.',
     para: '/faturamento/analise',
     permissao: 'faturamento-analise.view',
     exigeEscopoTodos: true,

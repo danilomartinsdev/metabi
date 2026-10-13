@@ -48,4 +48,17 @@ describe('divisoesOptions', () => {
     const legenda = (o.legend as { formatter: (n: string) => string }).formatter;
     expect(legenda('PRIVADO')).toBe('PRIVADO 96,0%');
   });
+
+  it('com divisão selecionada, as outras fatias ficam esmaecidas', () => {
+    const o = divisoesOptions(
+      [div('PRIVADO', '960.00', 0.96), div('SUCATA', '40.00', 0.04)],
+      TEMA_CLARO,
+      'PRIVADO',
+    );
+    const s = (o.series as { data: unknown[] }[])[0]!;
+    expect(s.data).toEqual([
+      { name: 'PRIVADO', value: 960 },
+      { name: 'SUCATA', value: 40, itemStyle: { opacity: 0.35 } },
+    ]);
+  });
 });

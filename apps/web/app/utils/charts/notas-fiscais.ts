@@ -24,8 +24,15 @@ export function fatiasDivisoes(divisoes: AnaliseNotas['divisoes']) {
   return fatias;
 }
 
-/** Faturamento por divisão de venda (donut) com o valor nas fatias de 5% ou mais. */
-export function divisoesOptions(divisoes: AnaliseNotas['divisoes'], t: TemaGrafico): EChartsOption {
+/**
+ * Faturamento por divisão de venda (donut) com o valor nas fatias de 5% ou mais. Com uma divisão
+ * selecionada (clique na fatia), ela fica destacada e as demais esmaecidas.
+ */
+export function divisoesOptions(
+  divisoes: AnaliseNotas['divisoes'],
+  t: TemaGrafico,
+  selecionada: string | null = null,
+): EChartsOption {
   const fatias = fatiasDivisoes(divisoes);
   const pct = new Map(fatias.map((f) => [f.name, f.participacao]));
   return {
@@ -65,7 +72,12 @@ export function divisoesOptions(divisoes: AnaliseNotas['divisoes'], t: TemaGrafi
           },
         },
         labelLine: { lineStyle: { color: t.borda } },
-        data: fatias.map(({ name, value }) => ({ name, value })),
+        cursor: 'pointer',
+        data: fatias.map(({ name, value }) =>
+          selecionada && name !== selecionada
+            ? { name, value, itemStyle: { opacity: 0.35 } }
+            : { name, value },
+        ),
       },
     ],
   };

@@ -57,6 +57,34 @@ const opcoesMes = computed(() => {
   return lista;
 });
 
+// Clique numa fatia (ou na divisão da lista): o ranking mostra só os representantes daquela divisão.
+const divisaoSel = ref<string | null>(null);
+const rankingRef = ref<HTMLElement | null>(null);
+const rankingDivisao = computed(() =>
+  divisaoSel.value
+    ? (r.value?.representantesPorDivisao.find((d) => d.divisao === divisaoSel.value) ?? null)
+    : null,
+);
+const linhasRanking = computed(() => rankingDivisao.value?.representantes ?? r.value?.representantes ?? []);
+const totaisRanking = computed(() => {
+  const d = divisaoSel.value ? r.value?.divisoes.find((x) => x.divisao === divisaoSel.value) : null;
+  return d
+    ? { notas: d.notas, clientes: null, total: d.total }
+    : { notas: r.value?.notas, clientes: r.value?.clientes, total: r.value?.total };
+});
+// O período mudou e a divisão sumiu: volta para todas.
+watch(r, (v) => {
+  if (divisaoSel.value && !v?.divisoes.some((d) => d.divisao === divisaoSel.value)) divisaoSel.value = null;
+});
+function escolherDivisao(nome: string | undefined) {
+  if (!nome || !r.value?.divisoes.some((d) => d.divisao === nome)) return; // "Outros (n)" não filtra
+  divisaoSel.value = divisaoSel.value === nome ? null : nome;
+  // Em telas estreitas o ranking fica abaixo do gráfico: leva até ele.
+  if (divisaoSel.value && window.matchMedia('(max-width: 1279px)').matches) {
+    nextTick(() => rankingRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+}
+
 const cards = computed(() => [
   { rotulo: 'Faturamento no período', icone: 'i-lucide-dollar-sign', valor: formatBRL(r.value?.total) },
   { rotulo: 'Notas fiscais', icone: 'i-lucide-receipt', valor: formatInt(r.value?.notas) },
@@ -146,6 +174,9 @@ const cards = computed(() => [
       <section class="grid grid-cols-1 gap-4 lg:gap-6 xl:grid-cols-5">
         <div class="rounded-xl border bg-card p-5 xl:col-span-2">
           <h3 class="text-sm font-medium text-muted-foreground">Faturamento por divisão de venda</h3>
+          <p v-if="r?.divisoes.length" class="text-xs text-muted-foreground">
+            Clique numa divisão para ver o ranking dos representantes nela
+          </p>
           <div v-if="carregando" class="mt-4 h-80 animate-pulse rounded-lg bg-muted" />
           <p v-else-if="!r?.divisoes.length" class="py-24 text-center text-sm text-muted-foreground">
             Sem notas no período.
@@ -158,34 +189,57 @@ const cards = computed(() => [
                 .slice(0, 3)
                 .map((d) => `${d.divisao} ${formatPct(d.participacao)}`)
                 .join(', ')}`"
-              :opcoes="(t) => divisoesOptions(r!.divisoes, t)"
+              :opcoes="(t) => divisoesOptions(r!.divisoes, t, divisaoSel)"
+              @clique="(p) => escolherDivisao(p.name)"
             />
             <ul class="mt-4 divide-y border-t text-sm">
-              <li
-                v-for="d in r.divisoes"
-                :key="d.divisao"
-                class="flex items-center justify-between gap-3 py-1.5"
-              >
-                <span class="min-w-0 truncate" :title="d.divisao">{{ d.divisao }}</span>
-                <span class="num shrink-0 text-right">
-                  {{ formatBRL(d.total) }}
-                  <span class="ml-1 inline-block w-14 text-xs text-muted-foreground">{{
-                    formatPct(d.participacao)
-                  }}</span>
-                </span>
+              <li v-for="d in r.divisoes" :key="d.divisao">
+                <button
+                  type="button"
+                  class="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/40"
+                  :class="divisaoSel === d.divisao ? 'bg-primary-soft text-primary' : ''"
+                  :aria-pressed="divisaoSel === d.divisao"
+                  @click="escolherDivisao(d.divisao)"
+                >
+                  <span class="min-w-0 truncate" :title="d.divisao">{{ d.divisao }}</span>
+                  <span class="num shrink-0 text-right">
+                    {{ formatBRL(d.total) }}
+                    <span class="ml-1 inline-block w-14 text-xs text-muted-foreground">{{
+                      formatPct(d.participacao)
+                    }}</span>
+                  </span>
+                </button>
               </li>
             </ul>
           </template>
         </div>
 
-        <div class="rounded-xl border bg-card xl:col-span-3" aria-labelledby="titulo-rank-rep">
-          <div class="px-5 pt-5 pb-3">
-            <h3 id="titulo-rank-rep" class="text-sm font-medium text-muted-foreground">
-              Ranking por representante
-            </h3>
-            <p v-if="r" class="text-xs text-muted-foreground">
-              Faturamento das notas de cada representante no período
-            </p>
+        <div
+          ref="rankingRef"
+          class="scroll-mt-4 rounded-xl border bg-card xl:col-span-3"
+          aria-labelledby="titulo-rank-rep"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-2 px-5 pt-5 pb-3">
+            <div class="min-w-0">
+              <h3 id="titulo-rank-rep" class="text-sm font-medium text-muted-foreground">
+                Ranking por representante
+              </h3>
+              <p v-if="divisaoSel" class="truncate text-xs text-muted-foreground" :title="divisaoSel">
+                Na divisão <b class="text-foreground">{{ divisaoSel }}</b> · % sobre o total da divisão
+              </p>
+              <p v-else-if="r" class="text-xs text-muted-foreground">
+                Faturamento das notas de cada representante no período, em todas as divisões
+              </p>
+            </div>
+            <UButton
+              v-if="divisaoSel"
+              color="neutral"
+              variant="outline"
+              size="xs"
+              icon="i-lucide-x"
+              label="Todas as divisões"
+              @click="divisaoSel = null"
+            />
           </div>
           <div v-if="carregando" class="space-y-2 px-5 pb-5">
             <div v-for="i in 8" :key="i" class="h-8 animate-pulse rounded bg-muted" />
@@ -203,7 +257,7 @@ const cards = computed(() => [
                 </tr>
               </thead>
               <tbody class="divide-y">
-                <tr v-for="(l, i) in r.representantes" :key="l.codigo" class="hover:bg-muted/30">
+                <tr v-for="(l, i) in linhasRanking" :key="l.codigo" class="hover:bg-muted/30">
                   <td class="px-3 py-2.5">
                     <span
                       class="num inline-grid size-6 place-items-center rounded-md text-xs font-semibold"
@@ -233,10 +287,13 @@ const cards = computed(() => [
                 <tr>
                   <td class="px-3 py-2.5" />
                   <td class="px-3 py-2.5">Total</td>
-                  <td class="num px-3 py-2.5 text-right">{{ formatInt(r.notas) }}</td>
-                  <td class="num px-3 py-2.5 text-right">{{ formatInt(r.clientes) }}</td>
-                  <td class="num whitespace-nowrap px-3 py-2.5 text-right">{{ formatBRL(r.total) }}</td>
-                  <td class="num px-3 py-2.5 text-right">{{ r.representantes.length ? '100,0%' : '—' }}</td>
+                  <td class="num px-3 py-2.5 text-right">{{ formatInt(totaisRanking.notas) }}</td>
+                  <!-- Na divisão, o mesmo cliente pode comprar de mais de um representante: sem soma. -->
+                  <td class="num px-3 py-2.5 text-right">{{ formatInt(totaisRanking.clientes) }}</td>
+                  <td class="num whitespace-nowrap px-3 py-2.5 text-right">
+                    {{ formatBRL(totaisRanking.total) }}
+                  </td>
+                  <td class="num px-3 py-2.5 text-right">{{ linhasRanking.length ? '100,0%' : '—' }}</td>
                 </tr>
               </tfoot>
             </table>
@@ -260,16 +317,22 @@ const cards = computed(() => [
       <section class="rounded-xl border bg-card" aria-labelledby="titulo-abc-prod">
         <div class="px-5 pt-5 pb-3">
           <h3 id="titulo-abc-prod" class="text-sm font-medium text-muted-foreground">
-            Curva ABC de faturamento por produto
+            Curva ABC por produto
           </h3>
           <p class="text-xs text-muted-foreground">
-            Mesmo produto somado em uma linha (variantes de código como "MT169." e "MT169" juntas)
+            Pelo valor ou pela quantidade vendida · mesmo produto somado em uma linha (variantes como "MT169."
+            e "MT169" juntas)
           </p>
         </div>
         <div v-if="carregando" class="space-y-2 px-5 pb-5">
           <div v-for="i in 6" :key="i" class="h-8 animate-pulse rounded bg-muted" />
         </div>
-        <FaturamentoCurvaAbcTabela v-else-if="r" tipo="produtos" :linhas="r.abcProdutos" />
+        <FaturamentoCurvaAbcTabela
+          v-else-if="r"
+          tipo="produtos"
+          :linhas="r.abcProdutos"
+          :por-unidade="r.abcProdutosQuantidade"
+        />
       </section>
     </template>
 

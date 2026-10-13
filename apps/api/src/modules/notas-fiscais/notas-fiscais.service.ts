@@ -177,6 +177,7 @@ export class NotasFiscaisService {
           produtoCodigo: l.produtoCodigo,
           produtoAgrupado: codigoProdutoAgrupado(l.produtoCodigo),
           produtoDescricao: l.produtoDescricao,
+          unidade: l.unidade,
           quantidade: new D(l.quantidade),
           valorTotal: new D(l.valorTotal),
           loteId: novo.id,
@@ -240,6 +241,9 @@ export class NotasFiscaisService {
       porProduto,
       notas,
       clientes,
+      porDivRep,
+      notasDivRep,
+      clientesDivRep,
     ] = await Promise.all([
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao'], where, _sum: { valorTotal: true } }),
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'notaId'], where }),
@@ -249,12 +253,15 @@ export class NotasFiscaisService {
       this.prisma.notaFiscalItem.groupBy({ by: ['cliCodigo'], where, _sum: { valorTotal: true } }),
       this.prisma.notaFiscalItem.groupBy({ by: ['cliCodigo', 'notaId'], where }),
       this.prisma.notaFiscalItem.groupBy({
-        by: ['produtoAgrupado'],
+        by: ['produtoAgrupado', 'unidade'],
         where,
         _sum: { valorTotal: true, quantidade: true },
       }),
       this.prisma.notaFiscalItem.groupBy({ by: ['notaId'], where }),
       this.prisma.notaFiscalItem.groupBy({ by: ['cliCodigo'], where }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo'], where, _sum: { valorTotal: true } }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo', 'notaId'], where }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo', 'cliCodigo'], where }),
     ]);
 
     const total = porDivisao.reduce((t, d) => t.plus(d._sum.valorTotal ?? 0), new D(0));
@@ -298,6 +305,71 @@ export class NotasFiscaisService {
     const cRep = contar(clientesRep, 'repCodigo');
     const nCli = contar(notasCliente, 'cliCodigo');
     const totalTxt = total.toFixed(2);
+    // Divisão + representante numa chave só (separador que não aparece nos textos do Focco).
+    const chave = (l: { divisao: string; repCodigo: string }) => `${l.divisao}\u0000${l.repCodigo}`;
+    const nDivRep = contar(
+      notasDivRep.map((l) => ({ k: chave(l) })),
+      'k',
+    );
+    const cDivRep = contar(
+      clientesDivRep.map((l) => ({ k: chave(l) })),
+      'k',
+    );
+    const linhaRep = (codigo: string, soma: Decimal, notas: number, clientes: number, base: Decimal) => ({
+      codigo,
+      nome: rep.get(codigo) ?? codigo,
+      total: soma.toFixed(2),
+      notas,
+      clientes,
+      participacao: fracao(soma, base),
+    });
+    // Produto × unidade: quantidades de unidades diferentes (UN, KG…) nunca se somam.
+    const produtoUnidade = porProduto.map((p) => ({
+      codigo: p.produtoAgrupado,
+      descricao: prod.get(p.produtoAgrupado) ?? p.produtoAgrupado,
+      unidade: p.unidade,
+      quantidade: p._sum.quantidade ?? new D(0),
+      total: valor(p._sum),
+    }));
+    // Curva por valor: uma linha por produto. Se o mesmo produto saiu em mais de uma unidade, a
+    // quantidade não é somada (fica vazia) e a unidade mostra as que apareceram.
+    const porCodigo = new Map<string, typeof produtoUnidade>();
+    for (const l of produtoUnidade) porCodigo.set(l.codigo, [...(porCodigo.get(l.codigo) ?? []), l]);
+    const produtosPorValor = [...porCodigo.values()]
+      .map((ls) => {
+        const uma = ls.length === 1;
+        return {
+          codigo: ls[0]!.codigo,
+          descricao: ls[0]!.descricao,
+          unidade: uma ? ls[0]!.unidade : ls.map((l) => l.unidade ?? '?').join(' + '),
+          quantidade: uma ? ls[0]!.quantidade.toFixed(2) : '',
+          total: ls.reduce((t, l) => t.plus(l.total), new D(0)),
+        };
+      })
+      .sort((a, b) => b.total.cmp(a.total))
+      .map((l) => ({ ...l, total: l.total.toFixed(2) }));
+    // Curva por quantidade, separada por unidade; unidades com mais faturamento primeiro.
+    const porUnidade = new Map<string, typeof produtoUnidade>();
+    for (const l of produtoUnidade) {
+      const u = l.unidade ?? 'sem unidade';
+      porUnidade.set(u, [...(porUnidade.get(u) ?? []), l]);
+    }
+    const abcProdutosQuantidade = [...porUnidade.entries()]
+      .map(([unidade, ls]) => ({
+        unidade,
+        faturamento: ls.reduce((t, l) => t.plus(l.total), new D(0)),
+        quantidadeTotal: ls.reduce((t, l) => t.plus(l.quantidade), new D(0)).toFixed(2),
+        // Mesma quantidade: desempata pelo valor (maior primeiro).
+        linhas: [...ls]
+          .sort((a, b) => b.quantidade.cmp(a.quantidade) || b.total.cmp(a.total))
+          .map((l) => ({ ...l, quantidade: l.quantidade.toFixed(2), total: l.total.toFixed(2) })),
+      }))
+      .sort((a, b) => b.faturamento.cmp(a.faturamento))
+      .map((u) => ({
+        unidade: u.unidade,
+        quantidadeTotal: u.quantidadeTotal,
+        produtos: curvaAbc(u.linhas, u.quantidadeTotal, 'quantidade'),
+      }));
 
     return {
       periodo: { de, ate },
@@ -311,14 +383,25 @@ export class NotasFiscaisService {
         notas: nDivisao.get(d.divisao) ?? 0,
         participacao: fracao(valor(d._sum), total),
       })),
-      representantes: decrescente(porRep).map((r) => ({
-        codigo: r.repCodigo,
-        nome: rep.get(r.repCodigo) ?? r.repCodigo,
-        total: valor(r._sum).toFixed(2),
-        notas: nRep.get(r.repCodigo) ?? 0,
-        clientes: cRep.get(r.repCodigo) ?? 0,
-        participacao: fracao(valor(r._sum), total),
-      })),
+      representantes: decrescente(porRep).map((r) =>
+        linhaRep(r.repCodigo, valor(r._sum), nRep.get(r.repCodigo) ?? 0, cRep.get(r.repCodigo) ?? 0, total),
+      ),
+      representantesPorDivisao: decrescente(porDivisao).map((d) => {
+        const base = valor(d._sum);
+        return {
+          divisao: d.divisao,
+          total: base.toFixed(2),
+          representantes: decrescente(porDivRep.filter((l) => l.divisao === d.divisao)).map((l) =>
+            linhaRep(
+              l.repCodigo,
+              valor(l._sum),
+              nDivRep.get(chave(l)) ?? 0,
+              cDivRep.get(chave(l)) ?? 0,
+              base,
+            ),
+          ),
+        };
+      }),
       abcClientes: curvaAbc(
         decrescente(porCliente).map((c) => {
           const n = cli.get(c.cliCodigo);
@@ -333,15 +416,8 @@ export class NotasFiscaisService {
         }),
         totalTxt,
       ),
-      abcProdutos: curvaAbc(
-        decrescente(porProduto).map((p) => ({
-          codigo: p.produtoAgrupado,
-          descricao: prod.get(p.produtoAgrupado) ?? p.produtoAgrupado,
-          quantidade: (p._sum.quantidade ?? new D(0)).toFixed(2),
-          total: valor(p._sum).toFixed(2),
-        })),
-        totalTxt,
-      ),
+      abcProdutos: curvaAbc(produtosPorValor, totalTxt),
+      abcProdutosQuantidade,
     };
   }
 }
