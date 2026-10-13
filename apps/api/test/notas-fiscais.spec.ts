@@ -200,6 +200,33 @@ describe('notas fiscais — acesso', () => {
     expect((await previa(t)).statusCode).toBe(403);
   });
 
+  /** Papel sob medida com escopo "todos" (o escopo não é o que está em teste aqui). */
+  async function tokenComPermissoes(email: string, permissoes: string[]) {
+    const role = await ctx.prisma.role.create({
+      data: {
+        chave: `teste-${email}`,
+        nome: email,
+        permissoes: { create: permissoes.map((permissao) => ({ permissao })) },
+      },
+    });
+    const u = await criarUsuario(ctx.prisma, { email });
+    await ctx.prisma.usuario.update({ where: { id: u.id }, data: { roleId: role.id } });
+    return (await login(ctx.app, email)).body.accessToken as string;
+  }
+
+  it('"Ver faturamento" sozinho não abre a análise (permissão própria)', async () => {
+    const t = await tokenComPermissoes('so-fat@meta.com', ['faturamento.view']);
+    expect((await req('GET', '/api/faturamento/notas/analise', t)).statusCode).toBe(403);
+    expect((await req('GET', '/api/faturamento/resumo', t)).statusCode).toBe(200);
+  });
+
+  it('"Ver análise de faturamento" sozinho abre a análise e não o faturamento', async () => {
+    const t = await tokenComPermissoes('so-analise@meta.com', ['faturamento-analise.view']);
+    expect((await req('GET', '/api/faturamento/notas/analise', t)).statusCode).toBe(200);
+    expect((await req('GET', '/api/faturamento/resumo', t)).statusCode).toBe(403);
+    expect((await previa(t)).statusCode).toBe(403);
+  });
+
   it('sem login recebe 401', async () => {
     const r = await ctx.app.inject({ method: 'GET', url: '/api/faturamento/notas/analise' });
     expect(r.statusCode).toBe(401);

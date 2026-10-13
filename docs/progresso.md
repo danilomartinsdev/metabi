@@ -68,7 +68,7 @@ Não implementar nada que dependa destes itens sem resposta do usuário.
    - Valor = ITNFS_VALOR_TOTAL de **todos** os itens (Venda e Faturamento Antecipado): é o que bate com o gráfico "Faturamento por Divisão de Venda no Ano" do Focco.
    - Curva ABC: classe pelo acumulado **antes** do item (A até 80%, B até 95%, C o restante).
    - "Juntar os produtos": o mesmo código sem o ponto final ("MT169." e "MT169") vira uma linha; códigos diferentes não são juntados.
-   - Acesso igual ao do Faturamento: faturamento.view + escopo "todos" (representante não vê).
+   - Acesso: permissão própria "Ver análise de faturamento" (faturamento-analise.view, checkbox em Papéis; pedido do usuário em 2026-10-13) + escopo "todos". Na migração entrou em todo papel que já tinha faturamento.view. Importar notas continua em faturamento.import.
 
 ## Decisões tomadas
 

@@ -19,7 +19,7 @@ const ctx = (req: FastifyRequest) => ({ ip: req.ip, userAgent: req.headers['user
 export class NotasFiscaisController {
   constructor(private readonly service: NotasFiscaisService) {}
 
-  @RequirePermission('faturamento.view')
+  @RequirePermission('faturamento-analise.view')
   @Get('analise')
   analise(
     @Query(new ZodPipe(analiseNotasQuerySchema)) q: AnaliseNotasQuery,

@@ -5,7 +5,7 @@ import { deslocarMes, periodoPorExtenso } from '~/utils/periodo';
 
 // Análise de faturamento a partir das notas fiscais do Focco (itens de NF): divisão de venda,
 // representantes e curvas ABC de clientes e produtos. Número da empresa inteira (escopo "todos").
-definePageMeta({ titulo: 'Análise de faturamento', permissao: 'faturamento.view' });
+definePageMeta({ titulo: 'Análise de faturamento', permissao: 'faturamento-analise.view' });
 useHead({ title: 'Análise de faturamento — BI Metahospitalar' });
 
 const route = useRoute();
