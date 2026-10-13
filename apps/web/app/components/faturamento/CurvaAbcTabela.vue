@@ -150,6 +150,15 @@ const rotulo = computed(() => (props.tipo === 'clientes' ? 'clientes' : 'produto
         />
         <span class="text-xs text-muted-foreground">Quantidades de unidades diferentes não se somam</span>
       </template>
+      <UAlert
+        v-if="porQuantidade && unidades.some((u) => u.unidade === 'sem unidade')"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        class="w-full"
+        title="Há notas importadas antes de o sistema guardar a unidade de medida"
+        description="Importe a planilha de notas de novo para separar as quantidades por unidade (UN, KG…)."
+      />
     </div>
     <div class="grid grid-cols-1 gap-3 px-5 pb-4 sm:grid-cols-3">
       <button
