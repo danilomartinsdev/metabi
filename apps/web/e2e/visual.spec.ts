@@ -24,6 +24,8 @@ const RATIO = (r: number) => ({ maxDiffPixelRatio: r });
 
 test('visual: rotas âncora light/dark (desktop)', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'baseline visual só no desktop');
+  // Baselines geradas no Windows; no Linux (CI) a renderização de fontes difere.
+  test.skip(process.platform !== 'win32', 'baseline visual só no Windows');
   test.setTimeout(120_000);
 
   // /login — pública, sem dados dinâmicos; tolerância apertada.
