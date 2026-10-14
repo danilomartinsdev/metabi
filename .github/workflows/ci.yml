@@ -33,12 +33,13 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
       - run: corepack enable
-      - run: pnpm install --frozen-lockfile
+      # Antes do install: o postinstall da API (prisma generate) precisa de DATABASE_URL.
       - name: Gerar .env de CI
         run: |
-          pnpm setup:env
+          node scripts/setup-env.mjs
           sed -i 's#^DATABASE_URL_TEST=.*#DATABASE_URL_TEST=postgresql://metabi:postgres@127.0.0.1:5517/metabi_test?schema=public#' .env
           sed -i 's#^DATABASE_URL=.*#DATABASE_URL=postgresql://metabi:postgres@127.0.0.1:5517/metabi_test?schema=public#' .env
+      - run: pnpm install --frozen-lockfile
       - run: pnpm secrets:check
       - run: pnpm lint
       - run: pnpm typecheck
