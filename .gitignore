@@ -48,3 +48,6 @@ Thumbs.db
 package-lock.json
 yarn.lock
 .vercel
+
+# Exportação de tarefas para o FlowDesk (local)
+flowdesk.json
