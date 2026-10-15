@@ -1,4 +1,4 @@
-import { expect, type Page, test } from '@playwright/test';
+import { expect, type Page, test } from './fixtures';
 import { USUARIOS } from './global-setup';
 
 // Guarda de drift visual (ADR 0007): rotas âncora em light e dark.

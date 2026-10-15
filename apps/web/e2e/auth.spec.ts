@@ -1,4 +1,4 @@
-import { expect, type Page, test } from '@playwright/test';
+import { expect, type Page, test } from './fixtures';
 import { USUARIOS } from './global-setup';
 
 const senha = () => process.env.E2E_SENHA!;
