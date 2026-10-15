@@ -23,6 +23,8 @@ via `@theme`. Componentes **nunca** usam hex.
 | `--danger` | #DC2626 | #F87171 |
 
 Dark mode por classe `.dark` no `<html>` (preferência salva; padrão = sistema).
+
+**Aparência por navegador** (botão flutuante no canto inferior direito, `LayoutAparenciaFlutuante`; localStorage `meta-bi-fonte` e `meta-bi-tema-cores`): tamanho da fonte em 90–130% no `font-size` do `<html>` (tudo em rem acompanha) e temas de cores Azul (padrão), Esmeralda, Grafite, Vinho, Oceano e Violeta. Os temas ficam em `tokens.css` (`[data-tema]`, versão clara e escura) e trocam só a cor da marca: `--primary`, `--primary-strong`, `--primary-soft`, `--accent`, `--ring` e `--sidebar`. Gráficos com a paleta Padrão seguem o `--primary` do tema.
 Contraste mínimo AA (4.5:1 texto, 3:1 elementos gráficos) — validar ao criar combinações novas.
 
 ## Gráficos

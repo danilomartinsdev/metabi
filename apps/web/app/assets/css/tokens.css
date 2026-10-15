@@ -137,3 +137,125 @@
   --grafico-principal-forte: color-mix(in oklab, var(--grafico-principal) 26%, transparent);
   --grafico-comparacao-forte: color-mix(in oklab, var(--grafico-comparacao) 26%, transparent);
 }
+
+/*
+ * Temas de cores (botão flutuante "Aparência"; utils/aparencia.ts). Trocam só a cor da marca:
+ * principal, superfícies suaves, foco e a barra lateral; neutros, status e gráficos seguem o tema.
+ * Valem no <html> (tema escolhido) e em qualquer elemento com data-tema (amostras do seletor).
+ */
+[data-tema='padrao'] {
+  --primary: #1d5fa8;
+  --primary-strong: #0f2a4a;
+  --primary-soft: #eef4fb;
+  --accent: #eef4fb;
+  --accent-foreground: #0f2a4a;
+  --ring: #1d5fa8;
+  --sidebar: #0f2a4a;
+}
+[data-tema='esmeralda'] {
+  --primary: #047857;
+  --primary-strong: #064e3b;
+  --primary-soft: #ecfdf5;
+  --accent: #ecfdf5;
+  --accent-foreground: #064e3b;
+  --ring: #047857;
+  --sidebar: #064e3b;
+}
+[data-tema='grafite'] {
+  --primary: #334155;
+  --primary-strong: #1e293b;
+  --primary-soft: #f1f5f9;
+  --accent: #f1f5f9;
+  --accent-foreground: #1e293b;
+  --ring: #334155;
+  --sidebar: #1e293b;
+}
+[data-tema='vinho'] {
+  --primary: #9f1239;
+  --primary-strong: #4c0519;
+  --primary-soft: #fff1f2;
+  --accent: #fff1f2;
+  --accent-foreground: #4c0519;
+  --ring: #9f1239;
+  --sidebar: #4c0519;
+}
+[data-tema='oceano'] {
+  --primary: #0369a1;
+  --primary-strong: #082f49;
+  --primary-soft: #f0f9ff;
+  --accent: #f0f9ff;
+  --accent-foreground: #082f49;
+  --ring: #0369a1;
+  --sidebar: #082f49;
+}
+[data-tema='violeta'] {
+  --primary: #6d28d9;
+  --primary-strong: #2e1065;
+  --primary-soft: #f5f3ff;
+  --accent: #f5f3ff;
+  --accent-foreground: #2e1065;
+  --ring: #6d28d9;
+  --sidebar: #2e1065;
+}
+
+/* Escuro: fundos neutros do tema escuro; a cor da marca clareia para manter contraste. */
+.dark[data-tema='padrao'],
+.dark [data-tema='padrao'] {
+  --primary: #3b82d6;
+  --primary-strong: #0b1220;
+  --primary-soft: #13233d;
+  --accent: #13233d;
+  --accent-foreground: #e2e8f0;
+  --ring: #3b82d6;
+  --sidebar: #0b1220;
+}
+.dark[data-tema='esmeralda'],
+.dark [data-tema='esmeralda'] {
+  --primary: #059669;
+  --primary-strong: #0b1220;
+  --primary-soft: #0f2a24;
+  --accent: #0f2a24;
+  --accent-foreground: #e2e8f0;
+  --ring: #10b981;
+  --sidebar: #0b1220;
+}
+.dark[data-tema='grafite'],
+.dark [data-tema='grafite'] {
+  --primary: #64748b;
+  --primary-strong: #0b1220;
+  --primary-soft: #1e2633;
+  --accent: #1e2633;
+  --accent-foreground: #e2e8f0;
+  --ring: #94a3b8;
+  --sidebar: #0b1220;
+}
+.dark[data-tema='vinho'],
+.dark [data-tema='vinho'] {
+  --primary: #e11d48;
+  --primary-strong: #0b1220;
+  --primary-soft: #2a1320;
+  --accent: #2a1320;
+  --accent-foreground: #e2e8f0;
+  --ring: #fb7185;
+  --sidebar: #0b1220;
+}
+.dark[data-tema='oceano'],
+.dark [data-tema='oceano'] {
+  --primary: #0284c7;
+  --primary-strong: #0b1220;
+  --primary-soft: #0c2536;
+  --accent: #0c2536;
+  --accent-foreground: #e2e8f0;
+  --ring: #38bdf8;
+  --sidebar: #0b1220;
+}
+.dark[data-tema='violeta'],
+.dark [data-tema='violeta'] {
+  --primary: #7c3aed;
+  --primary-strong: #0b1220;
+  --primary-soft: #211a3a;
+  --accent: #211a3a;
+  --accent-foreground: #e2e8f0;
+  --ring: #a78bfa;
+  --sidebar: #0b1220;
+}

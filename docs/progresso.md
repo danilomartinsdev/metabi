@@ -27,6 +27,8 @@ Período e busca ficaram na barra de filtros de cada tela (não na topbar).
 - [x] **Mapas do Brasil** (malhas IBGE de regiões e UFs em public/geo): aba "Mapa" na Visão geral; mapa centralizado nos rankings de regiões e de estados; clique filtra.
 - [ ] **Análise de faturamento** (2026-10-13, `fase-5g-analise-faturamento`): Análise › Análise de faturamento (`/faturamento/analise`) com pizza por divisão de venda, ranking por representante e curvas ABC por cliente e por produto, a partir do relatório de itens de NF do Focco (botão "Importar notas"). Testes de integração (importação, ABC, 403/escopo). Conferido com a planilha real no dev: total R$ 55.880.900,12, divisões iguais ao gráfico do Focco. Regras confirmadas pelo usuário em 2026-10-14 (ver Decisões tomadas). Falta: validação do usuário na homologação (já roda `78a91e5`) e deploy em produção.
 
+- [x] **Fonte e cores do sistema** (2026-10-15, `fase-5g-analise-faturamento`): botão flutuante com A−/A+ (90–130%) e 6 temas de cores (tokens em `[data-tema]`, claro e escuro), salvos por navegador.
+
 - [ ] **Planilha real** em `fixtures/focco/ano-todo-ate-agora.xls` (gitignored) — necessária para validar o importador.
 - [ ] Gerar amostra anonimizada em `fixtures/focco/amostras/` a partir da planilha real.
 - [ ] Rodar `/memory` e confirmar a hierarquia de contexto (comando interativo, usuário).

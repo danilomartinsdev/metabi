@@ -16,6 +16,13 @@ export interface Novidade {
 /** Novidades do sistema, a mais recente primeiro. Acrescente no topo a cada entrega. */
 export const NOVIDADES: Novidade[] = [
   {
+    id: '2026-10-15-1',
+    data: '2026-10-15',
+    titulo: 'Tamanho da fonte e cores do sistema',
+    texto:
+      'Botão redondo no canto inferior direito: A− e A+ diminuem ou aumentam a fonte de todas as telas (tabelas, rankings e curvas ABC incluídos), e dá para escolher as cores do sistema entre Azul, Esmeralda, Grafite, Vinho, Oceano e Violeta — no tema claro e no escuro. A escolha fica salva neste navegador.',
+  },
+  {
     id: '2026-10-13-1',
     data: '2026-10-13',
     titulo: 'Análise de faturamento',
