@@ -1,5 +1,7 @@
 import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import type {
+  AnaliseFaturamentoImpressao,
+  AnaliseNotasQuery,
   ExportXlsxQuery,
   ExportXlsxTipo,
   FaturamentoImpressao,
@@ -16,6 +18,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import { DashboardService } from '../dashboard/dashboard.service.js';
 import { FaturamentoService } from '../faturamento/faturamento.service.js';
+import { NotasFiscaisService } from '../notas-fiscais/notas-fiscais.service.js';
 import { PdfRenderer } from './pdf-renderer.service.js';
 import { type InfoExportacao, planilhaClientes, planilhaPedidos, planilhaRanking } from './planilhas.js';
 import { PrintTokenService } from './print-token.service.js';
@@ -47,6 +50,7 @@ export class ExportService {
   constructor(
     private readonly dashboard: DashboardService,
     private readonly faturamento: FaturamentoService,
+    private readonly notas: NotasFiscaisService,
     private readonly tokens: PrintTokenService,
     private readonly renderer: PdfRenderer,
     private readonly audit: AuditService,
@@ -186,6 +190,28 @@ export class ExportService {
     };
   }
 
+  /** PDF da Análise de faturamento (notas fiscais): empresa inteira — exige a permissão e escopo "todos". */
+  async pdfAnaliseFaturamento(
+    u: UsuarioAutenticado,
+    p: AnaliseNotasQuery,
+    ctx: ContextoRequisicao,
+  ): Promise<Arquivo> {
+    exigirAnaliseFaturamento(u);
+    const { periodo } = await this.notas.analise(p);
+    const conteudo = await this.gerarPdf(u, { tipo: 'analise-faturamento', params: p }, 'analise-faturamento');
+    await this.audit.registrar({
+      acao: 'export.pdf',
+      usuarioId: u.id,
+      detalhes: { relatorio: 'analise-faturamento', ...periodo },
+      ctx,
+    });
+    return {
+      conteudo,
+      nome: `meta-bi-analise-faturamento-${periodo.de}_${periodo.ate}.pdf`,
+      tipo: 'application/pdf',
+    };
+  }
+
   /** Dados da página de impressão: consome o token (uso único) e aplica o escopo de quem pediu o PDF. */
   async relatorio(token: string): Promise<RelatorioImpressao> {
     const e = await this.tokens.consumir(token, 'vendas');
@@ -232,6 +258,21 @@ export class ExportService {
       comparativo,
     };
   }
+
+  /** Dados do PDF da Análise de faturamento. Revalida permissão e escopo com o usuário atual. */
+  async analiseFaturamentoImpressao(token: string): Promise<AnaliseFaturamentoImpressao> {
+    const e = await this.tokens.consumir(token, 'analise-faturamento');
+    if (!e) throw Erros.naoAutenticado();
+    const { usuario: u, solicitacao } = e;
+    exigirAnaliseFaturamento(u);
+    return {
+      geradoPor: u.nome,
+      geradoEm: new Date().toISOString(),
+      paletaGraficos: u.paletaGraficos,
+      params: solicitacao.params,
+      analise: await this.notas.analise(solicitacao.params),
+    };
+  }
 }
 
 /** Só os filtros preenchidos (sem ordenação), para o log de auditoria. */
@@ -242,6 +283,14 @@ function filtrosParaAuditoria(f: Filtros): Record<string, string | string[]> {
     if (Array.isArray(v) ? v.length : v) r[k] = v as string | string[];
   }
   return r;
+}
+
+/** Análise de faturamento (notas fiscais): além do PDF, exige a permissão da tela e escopo "todos". */
+function exigirAnaliseFaturamento(u: UsuarioAutenticado): void {
+  if (!u.permissoes.includes('faturamento-analise.view')) {
+    throw new ApiException(HttpStatus.FORBIDDEN, 'FORBIDDEN', 'Sem permissão para ver a análise de faturamento.');
+  }
+  exigirEscopoTodos(u);
 }
 
 /** Faturamento é da empresa inteira: além do PDF, exige ver faturamento e escopo "todos". */

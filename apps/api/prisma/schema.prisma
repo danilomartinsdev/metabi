@@ -399,6 +399,7 @@ model NotaFiscalItem {
   produtoCodigo    String // como veio do Focco ("MT169.")
   produtoAgrupado  String // sem o ponto final das variantes ("MT169"): chave da curva ABC
   produtoDescricao String
+  unidade          String? // ITNFS_UNID_MED_CODIGO (UN, KG, PC…): quantidades só se somam na mesma unidade
   quantidade       Decimal        @db.Decimal(14, 2)
   valorTotal       Decimal        @db.Decimal(14, 2)
   loteId           String         @db.Uuid

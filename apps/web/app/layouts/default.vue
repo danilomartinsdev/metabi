@@ -47,10 +47,12 @@ usePresenca();
 
       <!-- Conteúdo no #body: um slot default substituiria header/body do painel. -->
       <template #body>
-        <main id="conteudo" class="flex min-w-0 flex-1 flex-col px-4 py-6 md:px-8 md:py-8">
+        <main id="conteudo" class="flex min-w-0 flex-1 flex-col px-4 pt-6 pb-20 md:px-8 md:pt-8">
           <slot />
         </main>
       </template>
     </UDashboardPanel>
   </UDashboardGroup>
+
+  <LayoutAparenciaFlutuante />
 </template>

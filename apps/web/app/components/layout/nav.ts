@@ -62,7 +62,7 @@ export const NAV: NavGroup[] = [
         label: 'Análise de faturamento',
         to: '/faturamento/analise',
         icon: 'i-lucide-chart-pie',
-        permissao: 'faturamento.view',
+        permissao: 'faturamento-analise.view',
       },
     ],
   },

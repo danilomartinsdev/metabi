@@ -12,6 +12,7 @@ export const PERMISSIONS = [
   'users.manage',
   'audit.view',
   'faturamento.view',
+  'faturamento-analise.view',
   'faturamento.import',
 ] as const;
 
@@ -30,6 +31,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   'users.manage': 'Gerenciar usuários e papéis',
   'audit.view': 'Ver auditoria',
   'faturamento.view': 'Ver faturamento',
+  'faturamento-analise.view': 'Ver análise de faturamento',
   'faturamento.import': 'Importar faturamento',
 };
 
@@ -56,6 +58,7 @@ export const DEFAULT_ROLES: Record<RoleKey, { nome: string; permissoes: readonly
       'export.pdf',
       'metas.edit',
       'faturamento.view',
+      'faturamento-analise.view',
       'faturamento.import',
     ],
   },

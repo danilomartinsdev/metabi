@@ -21,6 +21,7 @@ export const COLUNAS_NOTAS = {
   cliUf: 'CLI_UF',
   produtoCodigo: 'ITNFS_CODIGO',
   produtoDescricao: 'ITNFS_DESCRICAO',
+  unidade: 'ITNFS_UNID_MED_CODIGO',
   quantidade: 'ITNFS_QUANTIDADE',
   valorTotal: 'ITNFS_VALOR_TOTAL',
 } as const;
@@ -91,6 +92,12 @@ export const linhaNotaSchema = z.object({
     .regex(/^[A-Z]{2}$/, { error: 'CLI_UF inválida' }),
   produtoCodigo: texto('ITNFS_CODIGO', 60),
   produtoDescricao: texto('ITNFS_DESCRICAO', 300),
+  unidade: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .max(10, { error: 'ITNFS_UNID_MED_CODIGO muito longo' })
+    .transform((s) => s || null),
   quantidade: decimal('ITNFS_QUANTIDADE'),
   valorTotal: decimal('ITNFS_VALOR_TOTAL'),
 });
@@ -137,23 +144,34 @@ export const LIMITES_ABC = { A: 0.8, B: 0.95 } as const;
  * (o item que cruza 80% ainda é A), então o maior item é sempre A. Valores como string decimal; as
  * frações são só para exibição.
  */
-export function curvaAbc<T extends { total: string }>(
+export function curvaAbc<T extends Record<C, string>, C extends string = 'total'>(
   linhas: T[],
   total: string,
+  /** Campo (string decimal) que define a curva: o valor (padrão) ou, por exemplo, a quantidade. */
+  campo: C = 'total' as C,
 ): (T & { participacao: number; acumulado: number; classe: ClasseAbc })[] {
   const t = Number(total);
   let acumuladoCentavos = 0;
   return linhas.map((l) => {
     const anterior = t > 0 ? acumuladoCentavos / 100 / t : 0;
-    acumuladoCentavos += Math.round(Number(l.total) * 100);
+    acumuladoCentavos += Math.round(Number(l[campo]) * 100);
     const classe: ClasseAbc = anterior < LIMITES_ABC.A ? 'A' : anterior < LIMITES_ABC.B ? 'B' : 'C';
     return {
       ...l,
-      participacao: t > 0 ? Number(l.total) / t : 0,
+      participacao: t > 0 ? Number(l[campo]) / t : 0,
       acumulado: t > 0 ? acumuladoCentavos / 100 / t : 0,
       classe,
     };
   });
+}
+
+export interface LinhaRepresentanteNotas {
+  codigo: string;
+  nome: string;
+  total: string;
+  notas: number;
+  clientes: number;
+  participacao: number;
 }
 
 export interface AnaliseNotas {
@@ -164,14 +182,9 @@ export interface AnaliseNotas {
   clientes: number;
   /** Fatias do gráfico de pizza (maior primeiro); participacao em fração (0–1). */
   divisoes: { divisao: string; total: string; notas: number; participacao: number }[];
-  representantes: {
-    codigo: string;
-    nome: string;
-    total: string;
-    notas: number;
-    clientes: number;
-    participacao: number;
-  }[];
+  representantes: LinhaRepresentanteNotas[];
+  /** Ranking de representantes dentro de cada divisão (clique na fatia); participacao = fração da divisão. */
+  representantesPorDivisao: { divisao: string; total: string; representantes: LinhaRepresentanteNotas[] }[];
   abcClientes: {
     codigo: string;
     nomeFantasia: string | null;
@@ -183,13 +196,24 @@ export interface AnaliseNotas {
     acumulado: number;
     classe: ClasseAbc;
   }[];
-  abcProdutos: {
-    codigo: string;
-    descricao: string;
-    quantidade: string;
-    total: string;
-    participacao: number;
-    acumulado: number;
-    classe: ClasseAbc;
-  }[];
+  /** Curva ABC de produtos pelo valor vendido (maior valor primeiro). */
+  abcProdutos: LinhaAbcProduto[];
+  /**
+   * Curva ABC pela quantidade vendida, uma por unidade de medida (UN, KG, PC…): quantidades de unidades
+   * diferentes não se somam. Maior faturamento primeiro (na prática, UN); % e classe sobre a quantidade
+   * total daquela unidade.
+   */
+  abcProdutosQuantidade: { unidade: string; quantidadeTotal: string; produtos: LinhaAbcProduto[] }[];
+}
+
+export interface LinhaAbcProduto {
+  codigo: string;
+  descricao: string;
+  /** Unidade de medida (null: o arquivo não informou). */
+  unidade: string | null;
+  quantidade: string;
+  total: string;
+  participacao: number;
+  acumulado: number;
+  classe: ClasseAbc;
 }

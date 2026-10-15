@@ -144,6 +144,7 @@ describe('notas fiscais — análise', () => {
       {
         codigo: 'MT169',
         descricao: 'CAMA EXEMPLO MT169',
+        unidade: 'UN',
         quantidade: '3.00',
         total: '1500.00',
         participacao: 0.75,
@@ -153,6 +154,7 @@ describe('notas fiscais — análise', () => {
       {
         codigo: 'MT416',
         descricao: 'MACA EXEMPLO',
+        unidade: 'UN',
         quantidade: '4.00',
         total: '450.00',
         participacao: 0.225,
@@ -162,12 +164,68 @@ describe('notas fiscais — análise', () => {
       {
         codigo: 'ND1150',
         descricao: 'SUPORTE EXEMPLO',
+        unidade: 'KG',
         quantidade: '1.00',
         total: '50.00',
         participacao: 0.025,
         acumulado: 1,
         classe: 'C',
       },
+    ]);
+  });
+
+  it('ranking de representantes por divisão (participação dentro da divisão)', async () => {
+    const a = (await req('GET', '/api/faturamento/notas/analise', tokenGestor)).json();
+    expect(a.representantesPorDivisao).toEqual([
+      {
+        divisao: 'PRIVADO - MERCADO INTERNO PRIVADO',
+        total: '1650.00',
+        representantes: [
+          {
+            codigo: '1',
+            nome: 'REPRESENTANTE ALFA LTDA',
+            total: '1650.00',
+            notas: 2,
+            clientes: 2,
+            participacao: 1,
+          },
+        ],
+      },
+      {
+        divisao: 'LICITACAO - LICITACAO ELETRONICA E PRESENCIAL',
+        total: '350.00',
+        representantes: [
+          {
+            codigo: '2',
+            nome: 'REPRESENTANTE BETA LTDA',
+            total: '350.00',
+            notas: 2,
+            clientes: 1,
+            participacao: 1,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('curva ABC pela quantidade, separada por unidade (UN e KG não se somam)', async () => {
+    const a = (await req('GET', '/api/faturamento/notas/analise', tokenGestor)).json();
+    type P = { codigo: string; quantidade: string; participacao: number; acumulado: number; classe: string };
+    type U = { unidade: string; quantidadeTotal: string; produtos: P[] };
+    // UN (R$ 1.950) antes de KG (R$ 50). UN: MT416 = 3 + 1 (4/7, A) · MT169 = 2 + 1 (anterior 4/7 → A)
+    expect(a.abcProdutosQuantidade.map((u: U) => [u.unidade, u.quantidadeTotal])).toEqual([
+      ['UN', '7.00'],
+      ['KG', '1.00'],
+    ]);
+    const un = a.abcProdutosQuantidade[0].produtos as P[];
+    expect(un.map((p) => [p.codigo, p.quantidade, p.classe])).toEqual([
+      ['MT416', '4.00', 'A'],
+      ['MT169', '3.00', 'A'],
+    ]);
+    expect(un[0]!.participacao).toBeCloseTo(4 / 7, 10);
+    expect(un[1]!.acumulado).toBeCloseTo(1, 10);
+    expect(a.abcProdutosQuantidade[1].produtos).toMatchObject([
+      { codigo: 'ND1150', quantidade: '1.00', participacao: 1, acumulado: 1, classe: 'A' },
     ]);
   });
 
@@ -197,6 +255,33 @@ describe('notas fiscais — acesso', () => {
     const t = (await login(ctx.app, 'gestor-parcial@meta.com')).body.accessToken;
     expect((await req('GET', '/api/faturamento/notas/analise', t)).statusCode).toBe(403);
     expect((await req('GET', '/api/faturamento/notas/import/lotes', t)).statusCode).toBe(403);
+    expect((await previa(t)).statusCode).toBe(403);
+  });
+
+  /** Papel sob medida com escopo "todos" (o escopo não é o que está em teste aqui). */
+  async function tokenComPermissoes(email: string, permissoes: string[]) {
+    const role = await ctx.prisma.role.create({
+      data: {
+        chave: `teste-${email}`,
+        nome: email,
+        permissoes: { create: permissoes.map((permissao) => ({ permissao })) },
+      },
+    });
+    const u = await criarUsuario(ctx.prisma, { email });
+    await ctx.prisma.usuario.update({ where: { id: u.id }, data: { roleId: role.id } });
+    return (await login(ctx.app, email)).body.accessToken as string;
+  }
+
+  it('"Ver faturamento" sozinho não abre a análise (permissão própria)', async () => {
+    const t = await tokenComPermissoes('so-fat@meta.com', ['faturamento.view']);
+    expect((await req('GET', '/api/faturamento/notas/analise', t)).statusCode).toBe(403);
+    expect((await req('GET', '/api/faturamento/resumo', t)).statusCode).toBe(200);
+  });
+
+  it('"Ver análise de faturamento" sozinho abre a análise e não o faturamento', async () => {
+    const t = await tokenComPermissoes('so-analise@meta.com', ['faturamento-analise.view']);
+    expect((await req('GET', '/api/faturamento/notas/analise', t)).statusCode).toBe(200);
+    expect((await req('GET', '/api/faturamento/resumo', t)).statusCode).toBe(403);
     expect((await previa(t)).statusCode).toBe(403);
   });
 

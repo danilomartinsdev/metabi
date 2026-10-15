@@ -23,6 +23,7 @@ const linha = (sobre: Partial<Record<string, string>> = {}) => ({
   cliUf: 'al',
   produtoCodigo: 'MT931',
   produtoDescricao: 'SUPORTE PARA SORO',
+  unidade: 'un',
   quantidade: '5',
   valorTotal: '3462.005000',
   ...sobre,
@@ -36,6 +37,7 @@ describe('linhaNotaSchema', () => {
       dataEmissao: '2026-04-07',
       cliUf: 'AL',
       cliNomeFantasia: null,
+      unidade: 'UN',
       quantidade: '5.00',
       valorTotal: '3462.01',
     });
@@ -74,7 +76,26 @@ describe('curvaAbc', () => {
     expect(r[1]!.participacao).toBe(0.3);
   });
 
+  it('pela quantidade: a curva usa o campo pedido, não o valor', () => {
+    const r = curvaAbc(
+      [
+        { total: '10.00', quantidade: '90.00' },
+        { total: '90.00', quantidade: '10.00' },
+      ],
+      '100.00',
+      'quantidade',
+    );
+    expect(r.map((l) => [l.participacao, l.acumulado, l.classe])).toEqual([
+      [0.9, 0.9, 'A'],
+      [0.1, 1, 'B'],
+    ]);
+  });
+
   it('total zero não divide por zero', () => {
-    expect(curvaAbc([{ total: '0.00' }], '0.00')[0]).toMatchObject({ participacao: 0, acumulado: 0, classe: 'A' });
+    expect(curvaAbc([{ total: '0.00' }], '0.00')[0]).toMatchObject({
+      participacao: 0,
+      acumulado: 0,
+      classe: 'A',
+    });
   });
 });

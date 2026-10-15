@@ -62,6 +62,8 @@ const ROTULOS: Record<string, string> = {
   'papel.criado': 'Papel criado',
   'papel.alterado': 'Permissões alteradas',
   'papel.removido': 'Papel removido',
+  'notas.importadas': 'Notas fiscais importadas',
+  'sessoes.todas-encerradas': 'Todas as sessões encerradas (atualização)',
 };
 // Listar usuários exige users.manage; sem ela, o filtro por usuário não aparece.
 const can = useCan();

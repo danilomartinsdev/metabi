@@ -16,21 +16,22 @@
 
 ## Papéis padrão (editáveis na UI)
 
-| Permissão       | Admin | Gestor comercial | Representante | Visualizador |
-| --------------- | :---: | :--------------: | :-----------: | :----------: |
-| dashboard.view  |   ✔   |        ✔         |       ✔       |      ✔       |
-| minhas-vendas.view |  |                  |       ✔       |              |
-| pedidos.view    |   ✔   |        ✔         |       ✔       |      ✔       |
-| import.run      |   ✔   |        ✔         |               |              |
-| import.rollback |   ✔   |        ✔         |               |              |
-| export.xlsx     |   ✔   |        ✔         |       ✔       | configurável |
-| export.pdf      |   ✔   |        ✔         |       ✔       | configurável |
-| metas.edit      |   ✔   |        ✔         |               |              |
-| faturamento.view   |   ✔   |        ✔         |               |              |
-| faturamento.import |   ✔   |        ✔         |               |              |
-| cadastros.edit  |   ✔   |                  |               |              |
-| users.manage    |   ✔   |                  |               |              |
-| audit.view      |   ✔   |                  |               |              |
+| Permissão                | Admin | Gestor comercial | Representante | Visualizador |
+| ------------------------ | :---: | :--------------: | :-----------: | :----------: |
+| dashboard.view           |   ✔   |        ✔         |       ✔       |      ✔       |
+| minhas-vendas.view       |       |                  |       ✔       |              |
+| pedidos.view             |   ✔   |        ✔         |       ✔       |      ✔       |
+| import.run               |   ✔   |        ✔         |               |              |
+| import.rollback          |   ✔   |        ✔         |               |              |
+| export.xlsx              |   ✔   |        ✔         |       ✔       | configurável |
+| export.pdf               |   ✔   |        ✔         |       ✔       | configurável |
+| metas.edit               |   ✔   |        ✔         |               |              |
+| faturamento.view         |   ✔   |        ✔         |               |              |
+| faturamento-analise.view |   ✔   |        ✔         |               |              |
+| faturamento.import       |   ✔   |        ✔         |               |              |
+| cadastros.edit           |   ✔   |                  |               |              |
+| users.manage             |   ✔   |                  |               |              |
+| audit.view               |   ✔   |                  |               |              |
 
 `import.rollback` para Gestor e `cadastros.edit` só para Admin são **propostas** a confirmar.
 Escopo padrão: Admin/Gestor comercial = todos; Representante = representantes vinculados;

@@ -100,6 +100,11 @@ export function aplicarPaleta(
   };
 }
 
+/** Cores das fatias (donuts) da paleta do usuário, na ordem em que o ECharts as usa. */
+export function coresFatias(paleta: PaletaGrafico | null | undefined): string[] {
+  return (PALETAS[paleta ?? 'padrao'] ?? PALETAS.padrao).fatias;
+}
+
 export function lerTema(paleta?: PaletaGrafico | null): TemaGrafico {
   if (typeof window === 'undefined') return aplicarPaleta(TEMA_CLARO, paleta, false);
   const raiz = document.documentElement;

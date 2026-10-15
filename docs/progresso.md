@@ -22,10 +22,12 @@ Período e busca ficaram na barra de filtros de cada tela (não na topbar).
 
 - [x] **Migração UI → Nuxt UI v4** (fase-4b-ui, ADR 0007): fases 0–8 feitas (tema, shell, primitivos/overlays/toasts, tabelas/paginação/selects, formulários de auth com UForm, telas de admin com UCheckbox/USwitch/URadioGroup, filtro por usuário e detalhe na auditoria, validação/alterações pendentes em metas; dashboards com atingimento acumulado da meta, comparativo acumulado em gráfico, sparkline de % Público, atalhos de período, aviso de busca ativa e top 3 destacado nos rankings — inspirados no dashboard HTML de referência); 8 (2026-10-06): removidos components/ui, components.json, shadcn-nuxt, reka-ui (direto), vue-sonner, tw-animate-css, cva/clsx/tailwind-merge e os pacotes lucide — ícones só via UIcon (i-lucide-*, bundle local). Exportação CSV da referência não entra: a spec prevê Excel (export.xlsx) em fase própria.
 - [ ] Tela de override de segmento por cliente (Fase 4, ainda não feita).
-- [ ] **Exportação** Excel (pedidos, rankings, clientes) e PDF executivo (ADR 0004): funcionando (menu "Exportar" nas análises) e **PDF de faturamento** (botão "Exportar PDF" na tela de Faturamento: período, tabela do ano e comparativo com meses/indicador da tela; exige faturamento.view + escopo "todos"). Token de impressão no banco (`TokenImpressao`), de uso único e preso ao tipo de relatório; testes de token, 401/403 e parâmetros. Falta: atualizar docs/arquitetura/api.md; revisor-rbac.
+- [ ] **Exportação** Excel (pedidos, rankings, clientes) e PDF executivo (ADR 0004): funcionando (menu "Exportar" nas análises) e **PDF de faturamento** (botão "Exportar PDF" na tela de Faturamento: período, tabela do ano e comparativo com meses/indicador da tela; exige faturamento.view + escopo "todos") e **PDF da Análise de faturamento** (2026-10-15; `/export/pdf/analise-faturamento` → `/print/analise-faturamento`: indicadores, rosca e divisões, ranking de representantes e curvas ABC com resumo por classe + 30 maiores clientes/produtos; exige faturamento-analise.view + escopo "todos"). Token de impressão no banco (`TokenImpressao`), de uso único e preso ao tipo de relatório; testes de token, 401/403 e parâmetros. Falta: atualizar docs/arquitetura/api.md; revisor-rbac.
 - [ ] **Histórico manual** de faturamento mensal: tela Administração › Histórico e cálculo prontos (total vendido, evolução, atingimento, acumulado e PDF). Falta: testes (unitário do total com manual + integração 403/escopo) e docs/dados/metricas-kpis.md.
 - [x] **Mapas do Brasil** (malhas IBGE de regiões e UFs em public/geo): aba "Mapa" na Visão geral; mapa centralizado nos rankings de regiões e de estados; clique filtra.
-- [ ] **Análise de faturamento** (2026-10-13, `fase-5g-analise-faturamento`): Análise › Análise de faturamento (`/faturamento/analise`) com pizza por divisão de venda, ranking por representante e curvas ABC por cliente e por produto, a partir do relatório de itens de NF do Focco (botão "Importar notas"). Testes de integração (importação, ABC, 403/escopo). Conferido com a planilha real no dev: total R$ 55.880.900,12, divisões iguais ao gráfico do Focco. Falta: validação do usuário, item 8 das decisões pendentes, homologação.
+- [ ] **Análise de faturamento** (2026-10-13, `fase-5g-analise-faturamento`): Análise › Análise de faturamento (`/faturamento/analise`) com pizza por divisão de venda, ranking por representante e curvas ABC por cliente e por produto, a partir do relatório de itens de NF do Focco (botão "Importar notas"). Testes de integração (importação, ABC, 403/escopo). Conferido com a planilha real no dev: total R$ 55.880.900,12, divisões iguais ao gráfico do Focco. Regras confirmadas pelo usuário em 2026-10-14 (ver Decisões tomadas). Falta: validação do usuário na homologação (já roda `78a91e5`) e deploy em produção.
+
+- [x] **Fonte e cores do sistema** (2026-10-15, `fase-5g-analise-faturamento`): barra flutuante (? Novidades | A− A+ | menu Tema com 7 opções cor + claro/escuro) e 6 temas de cores (tokens em `[data-tema]`, claro e escuro), salvos por navegador.
 
 - [ ] **Planilha real** em `fixtures/focco/ano-todo-ate-agora.xls` (gitignored) — necessária para validar o importador.
 - [ ] Gerar amostra anonimizada em `fixtures/focco/amostras/` a partir da planilha real.
@@ -36,6 +38,14 @@ Período e busca ficaram na barra de filtros de cada tela (não na topbar).
 - [x] **Ambiente de homologação** (2026-10-07): stack `meta-bi-homolog` isolada da produção, em http://localhost:4337 (Mailpit em :4339), faixa "Homologação", cópia da produção via `pnpm homolog:copiar-prod` — ver docs/operacao/homologacao.md. Fluxo: validar na homologação, depois produção.
 
 ## Decisões tomadas
+
+- **Análise de faturamento por notas fiscais (proposta de 2026-10-13, confirmada pelo usuário em 2026-10-14):**
+  - Valor = ITNFS_VALOR_TOTAL de **todos** os itens (Venda e Faturamento Antecipado): é o que bate com o gráfico "Faturamento por Divisão de Venda no Ano" do Focco.
+  - Curva ABC: classe pelo acumulado **antes** do item (A até 80%, B até 95%, C o restante).
+  - "Juntar os produtos": o mesmo código sem o ponto final ("MT169." e "MT169") vira uma linha; códigos diferentes não são juntados.
+  - Curva ABC por quantidade: uma curva por unidade de medida (UN, KG, PC, M2), padrão UN; unidades diferentes não se somam (a planilha tem sucata em KG, 63.360, que distorceria o ranking).
+  - Clique numa divisão da pizza: ranking dos representantes daquela divisão, % sobre o total da divisão.
+  - Acesso: permissão própria "Ver análise de faturamento" (faturamento-analise.view, checkbox em Papéis; pedido do usuário em 2026-10-13) + escopo "todos". Na migração entrou em todo papel que já tinha faturamento.view. Importar notas continua em faturamento.import.
 
 - **Minhas vendas (2026-10-07):** aparece só para representante, por checkbox em Papéis (`minhas-vendas.view`, marcada só no papel Representante; o Admin não recebe). Montada sobre a versão da produção (`062dfff`); o cadastro de usuário continua como na produção (escopo "Por representante" define quais vendas ele vê). A simplificação "papel decide as vendas" ficou guardada em stash, não aplicada.
 
@@ -64,11 +74,6 @@ Não implementar nada que dependa destes itens sem resposta do usuário.
    - Rollback só do lote mais recente que tocou cada pedido.
    - Status/representante desconhecidos na importação são criados automaticamente e sinalizados na prévia.
    - Matriz de papéis padrão em docs/arquitetura/seguranca-rbac.md (rollback para Gestor comercial, cadastros só Admin).
-8. **Análise de faturamento por notas fiscais (2026-10-13), assumido, a confirmar:**
-   - Valor = ITNFS_VALOR_TOTAL de **todos** os itens (Venda e Faturamento Antecipado): é o que bate com o gráfico "Faturamento por Divisão de Venda no Ano" do Focco.
-   - Curva ABC: classe pelo acumulado **antes** do item (A até 80%, B até 95%, C o restante).
-   - "Juntar os produtos": o mesmo código sem o ponto final ("MT169." e "MT169") vira uma linha; códigos diferentes não são juntados.
-   - Acesso igual ao do Faturamento: faturamento.view + escopo "todos" (representante não vê).
 
 ## Decisões tomadas
 

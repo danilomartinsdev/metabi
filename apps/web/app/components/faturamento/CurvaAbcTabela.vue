@@ -8,21 +8,57 @@ type Linha = (LinhaCliente | LinhaProduto) & { pos: number };
 
 const props = defineProps<
   | { tipo: 'clientes'; linhas: AnaliseNotas['abcClientes'] }
-  | { tipo: 'produtos'; linhas: AnaliseNotas['abcProdutos'] }
+  | {
+      tipo: 'produtos';
+      linhas: AnaliseNotas['abcProdutos'];
+      /** Curvas pela quantidade vendida, uma por unidade de medida (UN, KG…). */
+      porUnidade: AnaliseNotas['abcProdutosQuantidade'];
+    }
 >();
+
+// Quantidade só se compara na mesma unidade: padrão é a primeira (a de maior faturamento, na prática UN).
+const unidadeSel = ref<string>();
+const unidades = computed(() => (props.tipo === 'produtos' ? props.porUnidade : []));
+watch(
+  unidades,
+  (us) => {
+    if (!us.some((u) => u.unidade === unidadeSel.value)) unidadeSel.value = us[0]?.unidade;
+  },
+  { immediate: true },
+);
+const curvaUnidade = computed(() => unidades.value.find((u) => u.unidade === unidadeSel.value));
+const NOME_UNIDADE: Record<string, string> = {
+  UN: 'unidades',
+  KG: 'kg',
+  PC: 'peças',
+  M2: 'm²',
+  M: 'metros',
+  CX: 'caixas',
+};
+const nomeUnidade = (u: string | null | undefined) => (u ? (NOME_UNIDADE[u] ?? u) : '');
+
+/** Produtos: curva pelo valor vendido ou pela quantidade vendida. */
+type Criterio = 'valor' | 'quantidade';
+const criterio = ref<Criterio>('valor');
+const CRITERIOS = [
+  { label: 'Por valor', value: 'valor' },
+  { label: 'Por quantidade', value: 'quantidade' },
+];
+const porQuantidade = computed(() => props.tipo === 'produtos' && criterio.value === 'quantidade');
 
 const busca = ref('');
 const classe = ref<ClasseAbc | 'todas'>('todas');
 const pagina = ref(1);
 const porPagina = ref(25);
-watch([busca, classe, porPagina], () => (pagina.value = 1));
+watch([busca, classe, porPagina, criterio, unidadeSel], () => (pagina.value = 1));
 
 const CLASSES: ClasseAbc[] = ['A', 'B', 'C'];
-const DESCRICAO_CLASSE: Record<ClasseAbc, string> = {
-  A: 'até 80% do faturamento',
-  B: 'de 80% a 95%',
-  C: 'últimos 5%',
-};
+const descricaoClasse = (c: ClasseAbc) =>
+  c === 'A'
+    ? `até 80% ${porQuantidade.value ? 'da quantidade' : 'do faturamento'}`
+    : c === 'B'
+      ? 'de 80% a 95%'
+      : 'últimos 5%';
 const COR: Record<ClasseAbc, 'primary' | 'warning' | 'neutral'> = {
   A: 'primary',
   B: 'warning',
@@ -30,7 +66,11 @@ const COR: Record<ClasseAbc, 'primary' | 'warning' | 'neutral'> = {
 };
 
 const comPosicao = computed<Linha[]>(() =>
-  (props.linhas as (LinhaCliente | LinhaProduto)[]).map((l, i) => ({ ...l, pos: i + 1 })),
+  (
+    (porQuantidade.value ? (curvaUnidade.value?.produtos ?? []) : props.linhas) as (
+      LinhaCliente | LinhaProduto
+    )[]
+  ).map((l, i) => ({ ...l, pos: i + 1 })),
 );
 const resumo = computed(() =>
   CLASSES.map((c) => {
@@ -39,6 +79,7 @@ const resumo = computed(() =>
       classe: c,
       qtd: ls.length,
       total: ls.reduce((s, l) => s + Number(l.total), 0),
+      quantidade: ls.reduce((s, l) => s + ('quantidade' in l ? Number(l.quantidade) : 0), 0),
       participacao: ls.reduce((s, l) => s + l.participacao, 0),
     };
   }),
@@ -76,8 +117,8 @@ const colunas = computed<TableColumn<Linha>[]>(() => [
         { id: 'quantidade', header: 'Qtde', meta: NUM },
       ] as TableColumn<Linha>[])),
   { id: 'total', header: 'Valor', meta: NUM },
-  { id: 'participacao', header: '% Part.', meta: NUM },
-  { id: 'acumulado', header: '% Acum.', meta: NUM },
+  { id: 'participacao', header: porQuantidade.value ? '% Part. qtde' : '% Part.', meta: NUM },
+  { id: 'acumulado', header: porQuantidade.value ? '% Acum. qtde' : '% Acum.', meta: NUM },
   { id: 'classe', header: 'Classe', meta: { class: { th: 'text-center', td: 'text-center' } } },
 ]);
 const rotulo = computed(() => (props.tipo === 'clientes' ? 'clientes' : 'produtos'));
@@ -85,6 +126,40 @@ const rotulo = computed(() => (props.tipo === 'clientes' ? 'clientes' : 'produto
 
 <template>
   <div>
+    <div v-if="tipo === 'produtos'" class="flex flex-wrap items-center gap-2 px-5 pb-3">
+      <UTabs
+        v-model="criterio"
+        :items="CRITERIOS"
+        :content="false"
+        size="xs"
+        class="w-fit"
+        aria-label="Curva ABC por"
+      />
+      <template v-if="porQuantidade && unidades.length > 1">
+        <USelect
+          v-model="unidadeSel"
+          size="xs"
+          class="w-44"
+          aria-label="Unidade de medida"
+          :items="
+            unidades.map((u) => ({
+              label: `${u.unidade} · ${formatInt(u.quantidadeTotal)} ${nomeUnidade(u.unidade)}`,
+              value: u.unidade,
+            }))
+          "
+        />
+        <span class="text-xs text-muted-foreground">Quantidades de unidades diferentes não se somam</span>
+      </template>
+      <UAlert
+        v-if="porQuantidade && unidades.some((u) => u.unidade === 'sem unidade')"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        class="w-full"
+        title="Há notas importadas antes de o sistema guardar a unidade de medida"
+        description="Importe a planilha de notas de novo para separar as quantidades por unidade (UN, KG…)."
+      />
+    </div>
     <div class="grid grid-cols-1 gap-3 px-5 pb-4 sm:grid-cols-3">
       <button
         v-for="r in resumo"
@@ -97,12 +172,23 @@ const rotulo = computed(() => (props.tipo === 'clientes' ? 'clientes' : 'produto
       >
         <div class="flex items-center justify-between gap-2">
           <UBadge :color="COR[r.classe]" variant="soft" :label="`Classe ${r.classe}`" />
-          <span class="text-xs text-muted-foreground">{{ DESCRICAO_CLASSE[r.classe] }}</span>
+          <span class="text-xs text-muted-foreground">{{ descricaoClasse(r.classe) }}</span>
         </div>
-        <p class="num mt-2 text-lg font-semibold">{{ formatBRL(r.total) }}</p>
-        <p class="num text-xs text-muted-foreground">
-          {{ formatInt(r.qtd) }} {{ rotulo }} · {{ formatPct(r.participacao) }} do total
-        </p>
+        <template v-if="porQuantidade">
+          <p class="num mt-2 text-lg font-semibold">
+            {{ formatInt(r.quantidade) }} {{ nomeUnidade(unidadeSel) }}
+          </p>
+          <p class="num text-xs text-muted-foreground">
+            {{ formatInt(r.qtd) }} {{ rotulo }} · {{ formatPct(r.participacao) }} da quantidade ·
+            {{ formatBRL(r.total) }}
+          </p>
+        </template>
+        <template v-else>
+          <p class="num mt-2 text-lg font-semibold">{{ formatBRL(r.total) }}</p>
+          <p class="num text-xs text-muted-foreground">
+            {{ formatInt(r.qtd) }} {{ rotulo }} · {{ formatPct(r.participacao) }} do total
+          </p>
+        </template>
       </button>
     </div>
 
@@ -168,7 +254,12 @@ const rotulo = computed(() => (props.tipo === 'clientes' ? 'clientes' : 'produto
           }}</span>
         </template>
         <template #quantidade-cell="{ row }">
-          {{ 'quantidade' in row.original ? formatInt(row.original.quantidade) : '' }}
+          <template v-if="'quantidade' in row.original">
+            <template v-if="row.original.quantidade">{{ formatInt(row.original.quantidade) }}</template>
+            <span v-if="row.original.unidade" class="ml-1 text-xs text-muted-foreground">{{
+              row.original.unidade
+            }}</span>
+          </template>
         </template>
         <template #total-cell="{ row }">{{ formatBRL(row.original.total) }}</template>
         <template #participacao-cell="{ row }">{{ formatPct(row.original.participacao) }}</template>

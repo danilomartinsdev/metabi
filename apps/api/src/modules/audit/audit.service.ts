@@ -30,7 +30,9 @@ export type AcaoAuditada =
   | 'historico.alterado'
   | 'historico-faturamento.alterado'
   | 'faturamento.importado'
-  | 'notas.importadas';
+  | 'notas.importadas'
+  // Gravada só pela migration que encerra as sessões numa atualização (todos entram de novo).
+  | 'sessoes.todas-encerradas';
 
 interface Registro {
   acao: AcaoAuditada;

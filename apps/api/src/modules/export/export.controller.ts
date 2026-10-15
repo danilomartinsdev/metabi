@@ -1,5 +1,7 @@
 import { Controller, Get, Header, Param, Query, Req, Res } from '@nestjs/common';
 import {
+  type AnaliseNotasQuery,
+  analiseNotasQuerySchema,
   EXPORT_XLSX_TIPOS,
   type ExportXlsxQuery,
   type ExportXlsxTipo,
@@ -70,6 +72,18 @@ export class ExportController {
     enviar(reply, await this.service.pdfFaturamento(u, q, contexto(req)));
   }
 
+  /** PDF da Análise de faturamento (permissão de PDF + faturamento-analise.view + escopo "todos", no serviço). */
+  @RequirePermission('export.pdf')
+  @Get('export/pdf/analise-faturamento')
+  async pdfAnaliseFaturamento(
+    @CurrentUser() u: UsuarioAutenticado,
+    @Query(new ZodPipe(analiseNotasQuerySchema)) q: AnaliseNotasQuery,
+    @Req() req: FastifyRequest,
+    @Res() reply: FastifyReply,
+  ) {
+    enviar(reply, await this.service.pdfAnaliseFaturamento(u, q, contexto(req)));
+  }
+
   /** Lido pela página /print/relatorio aberta pelo Chromium da API. O token é a credencial (uso único). */
   @Public()
   @Get('print/relatorio')
@@ -84,5 +98,13 @@ export class ExportController {
   @Header('cache-control', 'no-store')
   faturamento(@Query(new ZodPipe(printTokenSchema)) q: { token: string }) {
     return this.service.faturamentoImpressao(q.token);
+  }
+
+  /** Lido pela página /print/analise-faturamento (mesmo esquema de token de uso único). */
+  @Public()
+  @Get('print/analise-faturamento')
+  @Header('cache-control', 'no-store')
+  analiseFaturamento(@Query(new ZodPipe(printTokenSchema)) q: { token: string }) {
+    return this.service.analiseFaturamentoImpressao(q.token);
   }
 }

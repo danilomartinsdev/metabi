@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatBRL } from '../format';
-import { divisoesOptions, fatiasDivisoes } from './notas-fiscais';
-import { TEMA_CLARO } from './palette';
+import { corDaDivisao, divisoesOptions, fatiasDivisoes } from './notas-fiscais';
+import { coresFatias, PALETA_CATEGORICA, PALETAS, TEMA_CLARO } from './palette';
 
 const div = (divisao: string, total: string, participacao: number) => ({
   divisao,
@@ -32,20 +31,48 @@ describe('fatiasDivisoes', () => {
 });
 
 describe('divisoesOptions', () => {
-  it('donut com as cores da paleta e valor em R$ só nas fatias de 5% ou mais', () => {
+  it('donut com as cores da paleta, sem rótulos nem legenda do ECharts (a lista de divisões faz de legenda)', () => {
     const o = divisoesOptions([div('PRIVADO', '960.00', 0.96), div('SUCATA', '40.00', 0.04)], TEMA_CLARO);
     expect(o.color).toEqual(TEMA_CLARO.categorica);
-    const s = (
-      o.series as { type: string; data: unknown[]; label: { formatter: (p: unknown) => string } }[]
-    )[0]!;
+    expect(o.legend).toBeUndefined();
+    const s = (o.series as { type: string; data: unknown[]; label: { show: boolean } }[])[0]!;
     expect(s.type).toBe('pie');
+    expect(s.label.show).toBe(false);
     expect(s.data).toEqual([
       { name: 'PRIVADO', value: 960 },
       { name: 'SUCATA', value: 40 },
     ]);
-    expect(s.label.formatter({ value: 960, percent: 96 })).toBe(formatBRL(960));
-    expect(s.label.formatter({ value: 40, percent: 4 })).toBe('');
-    const legenda = (o.legend as { formatter: (n: string) => string }).formatter;
-    expect(legenda('PRIVADO')).toBe('PRIVADO 96,0%');
+  });
+
+  it('com divisão selecionada, as outras fatias ficam esmaecidas', () => {
+    const o = divisoesOptions(
+      [div('PRIVADO', '960.00', 0.96), div('SUCATA', '40.00', 0.04)],
+      TEMA_CLARO,
+      'PRIVADO',
+    );
+    const s = (o.series as { data: unknown[] }[])[0]!;
+    expect(s.data).toEqual([
+      { name: 'PRIVADO', value: 960 },
+      { name: 'SUCATA', value: 40, itemStyle: { opacity: 0.35 } },
+    ]);
+  });
+});
+
+describe('corDaDivisao', () => {
+  const cores = ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777'];
+
+  it('as 6 maiores têm a cor da própria fatia; as demais, a cor de "Outros"', () => {
+    expect(corDaDivisao(0, cores)).toBe('#111111');
+    expect(corDaDivisao(5, cores)).toBe('#666666');
+    expect(corDaDivisao(6, cores)).toBe('#777777');
+    expect(corDaDivisao(12, cores)).toBe('#777777');
+  });
+});
+
+describe('coresFatias', () => {
+  it('padrão (ou sem paleta) usa a paleta categórica; as demais, as fatias da paleta escolhida', () => {
+    expect(coresFatias(null)).toEqual(PALETA_CATEGORICA);
+    expect(coresFatias('padrao')).toEqual(PALETA_CATEGORICA);
+    expect(coresFatias('oceano')).toEqual(PALETAS.oceano.fatias);
   });
 });
