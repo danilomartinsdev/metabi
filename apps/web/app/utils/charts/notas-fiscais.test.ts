@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatBRL } from '../format';
-import { divisoesOptions, fatiasDivisoes } from './notas-fiscais';
-import { TEMA_CLARO } from './palette';
+import { corDaDivisao, divisoesOptions, fatiasDivisoes, legendaDivisoes } from './notas-fiscais';
+import { coresFatias, PALETA_CATEGORICA, PALETAS, TEMA_CLARO } from './palette';
 
 const div = (divisao: string, total: string, participacao: number) => ({
   divisao,
@@ -32,21 +31,17 @@ describe('fatiasDivisoes', () => {
 });
 
 describe('divisoesOptions', () => {
-  it('donut com as cores da paleta e valor em R$ só nas fatias de 5% ou mais', () => {
+  it('donut com as cores da paleta, sem rótulos nem legenda do ECharts (a legenda é HTML)', () => {
     const o = divisoesOptions([div('PRIVADO', '960.00', 0.96), div('SUCATA', '40.00', 0.04)], TEMA_CLARO);
     expect(o.color).toEqual(TEMA_CLARO.categorica);
-    const s = (
-      o.series as { type: string; data: unknown[]; label: { formatter: (p: unknown) => string } }[]
-    )[0]!;
+    expect(o.legend).toBeUndefined();
+    const s = (o.series as { type: string; data: unknown[]; label: { show: boolean } }[])[0]!;
     expect(s.type).toBe('pie');
+    expect(s.label.show).toBe(false);
     expect(s.data).toEqual([
       { name: 'PRIVADO', value: 960 },
       { name: 'SUCATA', value: 40 },
     ]);
-    expect(s.label.formatter({ value: 960, percent: 96 })).toBe(formatBRL(960));
-    expect(s.label.formatter({ value: 40, percent: 4 })).toBe('');
-    const legenda = (o.legend as { formatter: (n: string) => string }).formatter;
-    expect(legenda('PRIVADO')).toBe('PRIVADO 96,0%');
   });
 
   it('com divisão selecionada, as outras fatias ficam esmaecidas', () => {
@@ -60,5 +55,47 @@ describe('divisoesOptions', () => {
       { name: 'PRIVADO', value: 960 },
       { name: 'SUCATA', value: 40, itemStyle: { opacity: 0.35 } },
     ]);
+  });
+});
+
+describe('legendaDivisoes', () => {
+  const cores = ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777'];
+
+  it('uma linha por fatia, na ordem e com a cor de cada fatia', () => {
+    const l = legendaDivisoes([div('PRIVADO', '750.00', 0.75), div('LICITACAO', '250.00', 0.25)], cores);
+    expect(l).toEqual([
+      { nome: 'PRIVADO', valor: 750, participacao: 0.75, cor: '#111111', divisao: 'PRIVADO' },
+      { nome: 'LICITACAO', valor: 250, participacao: 0.25, cor: '#222222', divisao: 'LICITACAO' },
+    ]);
+  });
+
+  it('"Outros" recebe a 7ª cor e não filtra o ranking (divisao null)', () => {
+    const ds = [70, 10, 6, 5, 4, 2, 2, 1].map((v, i) => div(`D${i}`, `${v}.00`, v / 100));
+    const l = legendaDivisoes(ds, cores);
+    expect(l).toHaveLength(7);
+    expect(l.at(-1)).toMatchObject({ nome: 'Outros (2)', cor: '#777777', divisao: null });
+  });
+
+  it('sem divisões: legenda vazia', () => {
+    expect(legendaDivisoes([], cores)).toEqual([]);
+  });
+});
+
+describe('corDaDivisao', () => {
+  const cores = ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777'];
+
+  it('as 6 maiores têm a cor da própria fatia; as demais, a cor de "Outros"', () => {
+    expect(corDaDivisao(0, cores)).toBe('#111111');
+    expect(corDaDivisao(5, cores)).toBe('#666666');
+    expect(corDaDivisao(6, cores)).toBe('#777777');
+    expect(corDaDivisao(12, cores)).toBe('#777777');
+  });
+});
+
+describe('coresFatias', () => {
+  it('padrão (ou sem paleta) usa a paleta categórica; as demais, as fatias da paleta escolhida', () => {
+    expect(coresFatias(null)).toEqual(PALETA_CATEGORICA);
+    expect(coresFatias('padrao')).toEqual(PALETA_CATEGORICA);
+    expect(coresFatias('oceano')).toEqual(PALETAS.oceano.fatias);
   });
 });

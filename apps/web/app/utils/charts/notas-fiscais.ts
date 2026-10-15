@@ -6,7 +6,6 @@ import type { TemaGrafico } from './palette';
 
 /** Donut: no máximo 6 fatias + "Outros" (design system). */
 const MAX_FATIAS = 6;
-const curto = (s: string, n = 26) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
 /** Fatias do donut de divisões: as 6 maiores e o restante somado em "Outros". */
 export function fatiasDivisoes(divisoes: AnaliseNotas['divisoes']) {
@@ -25,8 +24,28 @@ export function fatiasDivisoes(divisoes: AnaliseNotas['divisoes']) {
 }
 
 /**
- * Faturamento por divisão de venda (donut) com o valor nas fatias de 5% ou mais. Com uma divisão
- * selecionada (clique na fatia), ela fica destacada e as demais esmaecidas.
+ * Legenda do donut (HTML, ao lado do gráfico): uma linha por fatia com a mesma cor dela.
+ * `divisao` é null em "Outros", que não filtra o ranking.
+ */
+export function legendaDivisoes(divisoes: AnaliseNotas['divisoes'], cores: string[]) {
+  return fatiasDivisoes(divisoes).map((f, i) => ({
+    nome: f.name,
+    valor: f.value,
+    participacao: f.participacao,
+    cor: cores[i % cores.length]!,
+    divisao: i < MAX_FATIAS ? f.name : null,
+  }));
+}
+
+/** Cor da divisão na lista completa: a da sua fatia, ou a de "Outros" fora das 6 maiores. */
+export function corDaDivisao(indice: number, cores: string[]) {
+  return cores[Math.min(indice, MAX_FATIAS) % cores.length]!;
+}
+
+/**
+ * Faturamento por divisão de venda (donut). Valores e nomes ficam na legenda HTML ao lado
+ * (legendaDivisoes), que não trunca os nomes longos. Com uma divisão selecionada (clique na fatia),
+ * ela fica destacada e as demais esmaecidas.
  */
 export function divisoesOptions(
   divisoes: AnaliseNotas['divisoes'],
@@ -34,7 +53,6 @@ export function divisoesOptions(
   selecionada: string | null = null,
 ): EChartsOption {
   const fatias = fatiasDivisoes(divisoes);
-  const pct = new Map(fatias.map((f) => [f.name, f.participacao]));
   return {
     textStyle: { fontFamily: 'Inter, system-ui, sans-serif', color: t.texto },
     animationDuration: 300,
@@ -49,29 +67,14 @@ export function divisoesOptions(
         return `${x.name}<br/><b>${formatBRL(x.value)}</b> · ${formatPct(x.percent / 100)}`;
       },
     },
-    legend: {
-      bottom: 0,
-      type: 'scroll',
-      textStyle: { color: t.textoSuave },
-      itemWidth: 10,
-      itemHeight: 10,
-      formatter: (nome: string) => `${curto(nome)} ${formatPct(pct.get(nome) ?? null)}`,
-    },
     series: [
       {
         type: 'pie',
-        radius: ['42%', '68%'],
-        center: ['50%', '44%'],
+        radius: ['50%', '80%'],
+        center: ['50%', '50%'],
         itemStyle: { borderColor: t.fundo, borderWidth: 2 },
-        label: {
-          color: t.texto,
-          fontSize: 11,
-          formatter: (p) => {
-            const x = p as { value: number; percent: number };
-            return x.percent >= 5 ? formatBRL(x.value) : '';
-          },
-        },
-        labelLine: { lineStyle: { color: t.borda } },
+        label: { show: false },
+        labelLine: { show: false },
         cursor: 'pointer',
         data: fatias.map(({ name, value }) =>
           selecionada && name !== selecionada

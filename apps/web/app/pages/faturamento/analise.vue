@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAnaliseNotasQuery } from '~/composables/api/useNotasFiscais';
-import { divisoesOptions } from '~/utils/charts/notas-fiscais';
+import { corDaDivisao, divisoesOptions, legendaDivisoes } from '~/utils/charts/notas-fiscais';
+import { coresFatias } from '~/utils/charts/palette';
 import { deslocarMes, periodoPorExtenso } from '~/utils/periodo';
 
 // Análise de faturamento a partir das notas fiscais do Focco (itens de NF): divisão de venda,
@@ -72,6 +73,10 @@ const totaisRanking = computed(() => {
     ? { notas: d.notas, clientes: null, total: d.total }
     : { notas: r.value?.notas, clientes: r.value?.clientes, total: r.value?.total };
 });
+// Legenda ao lado do donut e marcadores da lista com as mesmas cores das fatias (paleta do usuário).
+const paleta = usePaletaGraficos();
+const cores = computed(() => coresFatias(paleta.value));
+const legenda = computed(() => legendaDivisoes(r.value?.divisoes ?? [], cores.value));
 // O período mudou e a divisão sumiu: volta para todas.
 watch(r, (v) => {
   if (divisaoSel.value && !v?.divisoes.some((d) => d.divisao === divisaoSel.value)) divisaoSel.value = null;
@@ -172,7 +177,7 @@ const cards = computed(() => [
       </section>
 
       <section class="grid grid-cols-1 gap-4 lg:gap-6 xl:grid-cols-5">
-        <div class="rounded-xl border bg-card p-5 xl:col-span-2">
+        <div class="@container rounded-xl border bg-card p-5 xl:col-span-2">
           <h3 class="text-sm font-medium text-muted-foreground">Faturamento por divisão de venda</h3>
           <p v-if="r?.divisoes.length" class="text-xs text-muted-foreground">
             Clique numa divisão para ver o ranking dos representantes nela
@@ -182,18 +187,50 @@ const cards = computed(() => [
             Sem notas no período.
           </p>
           <template v-else>
-            <ChartsBaseChart
-              class="mt-2"
-              altura="360px"
-              :rotulo="`Faturamento por divisão de venda: ${r.divisoes
-                .slice(0, 3)
-                .map((d) => `${d.divisao} ${formatPct(d.participacao)}`)
-                .join(', ')}`"
-              :opcoes="(t) => divisoesOptions(r!.divisoes, t, divisaoSel)"
-              @clique="(p) => escolherDivisao(p.name)"
-            />
+            <!-- Legenda ao lado quando o card tem largura (container query); senão, embaixo do donut. -->
+            <div class="mt-4 flex flex-col items-center gap-4 @md:flex-row">
+              <ChartsBaseChart
+                class="w-full max-w-72 shrink-0 @md:w-[42%]"
+                altura="260px"
+                :rotulo="`Faturamento por divisão de venda: ${r.divisoes
+                  .slice(0, 3)
+                  .map((d) => `${d.divisao} ${formatPct(d.participacao)}`)
+                  .join(', ')}`"
+                :opcoes="(t) => divisoesOptions(r!.divisoes, t, divisaoSel)"
+                @clique="(p) => escolherDivisao(p.name)"
+              />
+              <!-- Legenda: mesma ordem e cores das fatias; clicar filtra o ranking (menos "Outros"). -->
+              <ul class="w-full min-w-0 flex-1 space-y-0.5" aria-label="Legenda do gráfico">
+                <li v-for="item in legenda" :key="item.nome">
+                  <button
+                    type="button"
+                    class="flex w-full items-start gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors enabled:hover:bg-muted/40 disabled:cursor-default"
+                    :class="[
+                      divisaoSel === item.divisao && item.divisao ? 'bg-primary-soft' : '',
+                      divisaoSel && divisaoSel !== item.divisao ? 'opacity-50' : '',
+                    ]"
+                    :disabled="!item.divisao"
+                    :aria-pressed="item.divisao ? divisaoSel === item.divisao : undefined"
+                    @click="escolherDivisao(item.divisao ?? undefined)"
+                  >
+                    <span
+                      class="mt-0.5 size-3.5 shrink-0 rounded-sm"
+                      :style="{ backgroundColor: item.cor }"
+                      aria-hidden="true"
+                    />
+                    <span class="min-w-0 flex-1">
+                      <span class="line-clamp-2 text-xs leading-snug font-medium" :title="item.nome">
+                        {{ item.nome }}
+                      </span>
+                      <span class="num block text-xs text-muted-foreground">{{ formatBRL(item.valor) }}</span>
+                    </span>
+                    <span class="num shrink-0 text-sm font-semibold">{{ formatPct(item.participacao) }}</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
             <ul class="mt-4 divide-y border-t text-sm">
-              <li v-for="d in r.divisoes" :key="d.divisao">
+              <li v-for="(d, i) in r.divisoes" :key="d.divisao">
                 <button
                   type="button"
                   class="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/40"
@@ -201,7 +238,14 @@ const cards = computed(() => [
                   :aria-pressed="divisaoSel === d.divisao"
                   @click="escolherDivisao(d.divisao)"
                 >
-                  <span class="min-w-0 truncate" :title="d.divisao">{{ d.divisao }}</span>
+                  <span class="flex min-w-0 items-center gap-2">
+                    <span
+                      class="size-2.5 shrink-0 rounded-full"
+                      :style="{ backgroundColor: corDaDivisao(i, cores) }"
+                      aria-hidden="true"
+                    />
+                    <span class="truncate" :title="d.divisao">{{ d.divisao }}</span>
+                  </span>
                   <span class="num shrink-0 text-right">
                     {{ formatBRL(d.total) }}
                     <span class="ml-1 inline-block w-14 text-xs text-muted-foreground">{{
