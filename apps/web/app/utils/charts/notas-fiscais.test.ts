@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { corDaDivisao, divisoesOptions, fatiasDivisoes, legendaDivisoes } from './notas-fiscais';
+import { corDaDivisao, divisoesOptions, fatiasDivisoes } from './notas-fiscais';
 import { coresFatias, PALETA_CATEGORICA, PALETAS, TEMA_CLARO } from './palette';
 
 const div = (divisao: string, total: string, participacao: number) => ({
@@ -31,7 +31,7 @@ describe('fatiasDivisoes', () => {
 });
 
 describe('divisoesOptions', () => {
-  it('donut com as cores da paleta, sem rótulos nem legenda do ECharts (a legenda é HTML)', () => {
+  it('donut com as cores da paleta, sem rótulos nem legenda do ECharts (a lista de divisões faz de legenda)', () => {
     const o = divisoesOptions([div('PRIVADO', '960.00', 0.96), div('SUCATA', '40.00', 0.04)], TEMA_CLARO);
     expect(o.color).toEqual(TEMA_CLARO.categorica);
     expect(o.legend).toBeUndefined();
@@ -55,29 +55,6 @@ describe('divisoesOptions', () => {
       { name: 'PRIVADO', value: 960 },
       { name: 'SUCATA', value: 40, itemStyle: { opacity: 0.35 } },
     ]);
-  });
-});
-
-describe('legendaDivisoes', () => {
-  const cores = ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777'];
-
-  it('uma linha por fatia, na ordem e com a cor de cada fatia', () => {
-    const l = legendaDivisoes([div('PRIVADO', '750.00', 0.75), div('LICITACAO', '250.00', 0.25)], cores);
-    expect(l).toEqual([
-      { nome: 'PRIVADO', valor: 750, participacao: 0.75, cor: '#111111', divisao: 'PRIVADO' },
-      { nome: 'LICITACAO', valor: 250, participacao: 0.25, cor: '#222222', divisao: 'LICITACAO' },
-    ]);
-  });
-
-  it('"Outros" recebe a 7ª cor e não filtra o ranking (divisao null)', () => {
-    const ds = [70, 10, 6, 5, 4, 2, 2, 1].map((v, i) => div(`D${i}`, `${v}.00`, v / 100));
-    const l = legendaDivisoes(ds, cores);
-    expect(l).toHaveLength(7);
-    expect(l.at(-1)).toMatchObject({ nome: 'Outros (2)', cor: '#777777', divisao: null });
-  });
-
-  it('sem divisões: legenda vazia', () => {
-    expect(legendaDivisoes([], cores)).toEqual([]);
   });
 });
 

@@ -23,28 +23,14 @@ export function fatiasDivisoes(divisoes: AnaliseNotas['divisoes']) {
   return fatias;
 }
 
-/**
- * Legenda do donut (HTML, ao lado do gráfico): uma linha por fatia com a mesma cor dela.
- * `divisao` é null em "Outros", que não filtra o ranking.
- */
-export function legendaDivisoes(divisoes: AnaliseNotas['divisoes'], cores: string[]) {
-  return fatiasDivisoes(divisoes).map((f, i) => ({
-    nome: f.name,
-    valor: f.value,
-    participacao: f.participacao,
-    cor: cores[i % cores.length]!,
-    divisao: i < MAX_FATIAS ? f.name : null,
-  }));
-}
-
 /** Cor da divisão na lista completa: a da sua fatia, ou a de "Outros" fora das 6 maiores. */
 export function corDaDivisao(indice: number, cores: string[]) {
   return cores[Math.min(indice, MAX_FATIAS) % cores.length]!;
 }
 
 /**
- * Faturamento por divisão de venda (donut). Valores e nomes ficam na legenda HTML ao lado
- * (legendaDivisoes), que não trunca os nomes longos. Com uma divisão selecionada (clique na fatia),
+ * Faturamento por divisão de venda (donut). Nomes, valores e cores ficam na lista de divisões
+ * abaixo do gráfico (corDaDivisao), que não trunca os nomes longos. Com uma divisão selecionada (clique na fatia),
  * ela fica destacada e as demais esmaecidas.
  */
 export function divisoesOptions(
