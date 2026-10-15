@@ -4,7 +4,8 @@ import type { DropdownMenuItem } from '@nuxt/ui';
 const auth = useAuthStore();
 const router = useRouter();
 const paletaAberta = ref(false);
-const novidadesAbertas = ref(false);
+// Compartilhado com o botão ? da barra flutuante (LayoutAparenciaFlutuante).
+const novidadesAbertas = useState('novidades-abertas', () => false);
 const { visiveis, naoVistas, marcarVistas } = useNovidades();
 // Abre sozinho uma vez, ao entrar, se houver novidade ainda não vista.
 onMounted(() => {

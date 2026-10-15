@@ -20,7 +20,7 @@ export const NOVIDADES: Novidade[] = [
     data: '2026-10-15',
     titulo: 'Tamanho da fonte e cores do sistema',
     texto:
-      'Botão redondo no canto inferior direito: A− e A+ diminuem ou aumentam a fonte de todas as telas (tabelas, rankings e curvas ABC incluídos), e dá para escolher as cores do sistema entre Azul, Esmeralda, Grafite, Vinho, Oceano e Violeta — no tema claro e no escuro. A escolha fica salva neste navegador.',
+      'Barra no canto inferior direito: A− e A+ diminuem ou aumentam a letra de todas as telas (tabelas, rankings e curvas ABC incluídos), e a paleta escolhe o tema — Azul, Noite, Esmeralda, Oceano, Violeta, Grafite ou Vinho, claros e escuros. O ? abre estas novidades. A escolha fica salva neste navegador.',
   },
   {
     id: '2026-10-13-1',

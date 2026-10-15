@@ -11,6 +11,17 @@ export const TEMAS = {
 } as const;
 export type Tema = keyof typeof TEMAS;
 
+/** Opções do menu "Tema" da barra flutuante: cada uma escolhe a cor e o modo claro/escuro juntos. */
+export const OPCOES_TEMA: { nome: string; tema: Tema; modo: 'claro' | 'escuro' }[] = [
+  { nome: 'Azul', tema: 'padrao', modo: 'claro' },
+  { nome: 'Noite', tema: 'padrao', modo: 'escuro' },
+  { nome: 'Esmeralda', tema: 'esmeralda', modo: 'claro' },
+  { nome: 'Oceano', tema: 'oceano', modo: 'claro' },
+  { nome: 'Violeta', tema: 'violeta', modo: 'claro' },
+  { nome: 'Grafite', tema: 'grafite', modo: 'escuro' },
+  { nome: 'Vinho', tema: 'vinho', modo: 'escuro' },
+];
+
 /** Tamanhos da fonte em % do padrão do navegador; tudo em rem (texto e espaçamentos) acompanha. */
 export const ESCALAS_FONTE = [90, 100, 110, 120, 130] as const;
 export const ESCALA_PADRAO = 100;
