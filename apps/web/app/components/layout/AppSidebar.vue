@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
-import { paginaInicial } from '~/utils/navegacao';
+import { itemAtivo, paginaInicial } from '~/utils/navegacao';
 import { NAV } from './nav';
 
 defineProps<{ recolhida?: boolean }>();
@@ -18,9 +18,13 @@ const grupos = computed(() =>
   })).filter((g) => g.itens.length),
 );
 
-function ativo(to: string) {
-  return to === '/dashboard' ? route.path === to : route.path.startsWith(to);
-}
+const destinoAtivo = computed(() =>
+  itemAtivo(
+    route.path,
+    grupos.value.flatMap((g) => g.itens.map((i) => i.to)),
+  ),
+);
+const ativo = (to: string) => to === destinoAtivo.value;
 </script>
 
 <template>

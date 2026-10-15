@@ -18,3 +18,13 @@ export function paginaInicial(usuario: UsuarioNav | null | undefined): string {
     ? '/minhas-vendas'
     : '/dashboard';
 }
+
+/**
+ * Item do menu ativo: o de prefixo mais longo que casa com a rota, para não acender dois ao mesmo
+ * tempo (ex.: em /faturamento/analise, só "Análise de faturamento", não também "Faturamento").
+ */
+export function itemAtivo(path: string, destinos: readonly string[]): string | undefined {
+  return destinos
+    .filter((d) => path === d || path.startsWith(`${d}/`))
+    .sort((a, b) => b.length - a.length)[0];
+}
