@@ -8,6 +8,7 @@ import {
   type FaturamentoResumo,
   faturamentoPdfQuerySchema,
 } from './faturamento.js';
+import { type AnaliseNotas, type AnaliseNotasQuery, analiseNotasQuerySchema } from './notas-fiscais.js';
 
 /** O que pode ser exportado em Excel (uma planilha por tela de análise). */
 export const EXPORT_XLSX_TIPOS = ['pedidos', 'gestores', 'estados', 'regioes', 'clientes'] as const;
@@ -30,6 +31,7 @@ export const printTokenSchema = z.object({ token: z.string().regex(/^[\w-]{43}$/
 export const solicitacaoImpressaoSchema = z.discriminatedUnion('tipo', [
   z.object({ tipo: z.literal('vendas'), filtros: filtrosSchema }),
   z.object({ tipo: z.literal('faturamento'), params: faturamentoPdfQuerySchema }),
+  z.object({ tipo: z.literal('analise-faturamento'), params: analiseNotasQuerySchema }),
 ]);
 export type SolicitacaoImpressao = z.output<typeof solicitacaoImpressaoSchema>;
 
@@ -42,6 +44,15 @@ export interface FaturamentoImpressao {
   resumo: FaturamentoResumo;
   mensal: FaturamentoMensal;
   comparativo: FaturamentoComparativo | null;
+}
+
+/** Dados do PDF da Análise de faturamento (rota /print/analise-faturamento da SPA). */
+export interface AnaliseFaturamentoImpressao {
+  geradoPor: string;
+  geradoEm: string;
+  paletaGraficos: PaletaGrafico | null;
+  params: AnaliseNotasQuery;
+  analise: AnaliseNotas;
 }
 
 /** Dados do relatório executivo em PDF (rota /print/relatorio da SPA). */

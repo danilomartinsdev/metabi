@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useApi } from '~/composables/api/useApi';
 import { useAnaliseNotasQuery } from '~/composables/api/useNotasFiscais';
 import { corDaDivisao, divisoesOptions } from '~/utils/charts/notas-fiscais';
 import { coresFatias } from '~/utils/charts/palette';
@@ -46,6 +47,22 @@ function atalho(tipo: 'mes' | 'ano') {
   void router.replace({
     query: { ...route.query, de: tipo === 'mes' ? fim : `${fim.slice(0, 4)}-01`, ate: fim },
   });
+}
+
+// PDF: o período da tela (o mesmo filtro de/até da URL).
+const { baixar } = useApi();
+const aviso = useAviso();
+const gerandoPdf = ref(false);
+async function exportarPdf() {
+  gerandoPdf.value = true;
+  try {
+    await baixar(`/export/pdf/analise-faturamento${qs.value ? `?${qs.value}` : ''}`);
+    aviso.sucesso('PDF gerado.');
+  } catch (e) {
+    aviso.erro(e, 'Não foi possível gerar o PDF.');
+  } finally {
+    gerandoPdf.value = false;
+  }
 }
 
 const NOMES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -111,12 +128,23 @@ const cards = computed(() => [
           <template v-if="r?.temDados"> · notas fiscais do Focco</template>
         </p>
       </div>
-      <UButton
-        v-if="can('faturamento.import')"
-        icon="i-lucide-file-up"
-        label="Importar notas"
-        @click="importando = true"
-      />
+      <div class="flex flex-wrap gap-2">
+        <UButton
+          v-if="can('export.pdf') && r?.temDados"
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-file-text"
+          :label="gerandoPdf ? 'Gerando PDF…' : 'Exportar PDF'"
+          :loading="gerandoPdf"
+          @click="exportarPdf"
+        />
+        <UButton
+          v-if="can('faturamento.import')"
+          icon="i-lucide-file-up"
+          label="Importar notas"
+          @click="importando = true"
+        />
+      </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3">

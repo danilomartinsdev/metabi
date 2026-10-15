@@ -1,4 +1,4 @@
-import { faturamentoPdfQuerySchema, filtrosSchema } from '@meta-bi/shared';
+import { analiseNotasQuerySchema, faturamentoPdfQuerySchema, filtrosSchema } from '@meta-bi/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { type Contexto, criarUsuario, iniciarApp, limparBanco, login } from './helpers.js';
 
@@ -9,7 +9,7 @@ let ctx: Contexto;
 let usuarioId: string;
 let tokens: InstanceType<typeof PrintTokenService>;
 
-const ler = (pagina: 'relatorio' | 'faturamento', token: string) =>
+const ler = (pagina: 'relatorio' | 'faturamento' | 'analise-faturamento', token: string) =>
   ctx.app.inject({ method: 'GET', url: `/api/print/${pagina}?token=${encodeURIComponent(token)}` });
 const relatorio = (token: string) => ler('relatorio', token);
 
@@ -32,6 +32,12 @@ async function tokenFaturamento(id = usuarioId) {
     meses: '1,2',
   });
   return tokens.criar(u!, { tipo: 'faturamento', params });
+}
+
+async function tokenAnalise(id = usuarioId) {
+  const u = await ctx.app.get(UsuarioLoader).carregarAtivo(id);
+  const params = analiseNotasQuerySchema.parse({ de: '2026-01', ate: '2026-03' });
+  return tokens.criar(u!, { tipo: 'analise-faturamento', params });
 }
 
 beforeAll(async () => {
@@ -110,6 +116,46 @@ describe('PDF de faturamento', () => {
       const r = await ctx.app.inject({
         method: 'GET',
         url: `/api/export/pdf/faturamento?${qs}`,
+        headers: { authorization: `Bearer ${t}` },
+      });
+      expect(r.statusCode, qs).toBe(400);
+    }
+  });
+});
+
+describe('PDF da Análise de faturamento', () => {
+  it('token da análise traz o período pedido e a análise das notas', async () => {
+    const r = await ler('analise-faturamento', await tokenAnalise());
+    expect(r.statusCode).toBe(200);
+    const b = r.json();
+    expect(b.params).toEqual({ de: '2026-01', ate: '2026-03' });
+    expect(b.analise.periodo).toEqual({ de: '2026-01', ate: '2026-03' });
+    expect(b.analise).toMatchObject({ temDados: false, divisoes: [], representantes: [] });
+  });
+
+  it('um token só abre o relatório do seu tipo', async () => {
+    expect((await ler('analise-faturamento', await tokenFaturamento())).statusCode).toBe(401);
+    expect((await ler('faturamento', await tokenAnalise())).statusCode).toBe(401);
+  });
+
+  it('quem não vê a análise: 403 ao pedir o PDF e ao ler os dados', async () => {
+    const rep = await criarUsuario(ctx.prisma, { email: 'rep-analise@meta.com', papel: 'representante' });
+    const t = (await login(ctx.app, 'rep-analise@meta.com')).body.accessToken;
+    const pedir = await ctx.app.inject({
+      method: 'GET',
+      url: '/api/export/pdf/analise-faturamento',
+      headers: { authorization: `Bearer ${t}` },
+    });
+    expect(pedir.statusCode).toBe(403);
+    expect((await ler('analise-faturamento', await tokenAnalise(rep.id))).statusCode).toBe(403);
+  });
+
+  it('período inválido no PDF da análise: 400', async () => {
+    const t = (await login(ctx.app, 'gestor@meta.com')).body.accessToken;
+    for (const qs of ['de=2026-05&ate=2026-01', 'de=2026-13']) {
+      const r = await ctx.app.inject({
+        method: 'GET',
+        url: `/api/export/pdf/analise-faturamento?${qs}`,
         headers: { authorization: `Bearer ${t}` },
       });
       expect(r.statusCode, qs).toBe(400);

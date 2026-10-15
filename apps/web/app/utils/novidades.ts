@@ -16,6 +16,16 @@ export interface Novidade {
 /** Novidades do sistema, a mais recente primeiro. Acrescente no topo a cada entrega. */
 export const NOVIDADES: Novidade[] = [
   {
+    id: '2026-10-15-2',
+    data: '2026-10-15',
+    titulo: 'PDF da Análise de faturamento',
+    texto:
+      'Botão "Exportar PDF" na Análise de faturamento: o período da tela com indicadores, faturamento por divisão, ranking por representante e as curvas ABC de clientes e produtos (resumo por classe e os 30 maiores).',
+    para: '/faturamento/analise',
+    permissao: 'faturamento-analise.view',
+    exigeEscopoTodos: true,
+  },
+  {
     id: '2026-10-15-1',
     data: '2026-10-15',
     titulo: 'Tamanho da fonte e cores do sistema',
