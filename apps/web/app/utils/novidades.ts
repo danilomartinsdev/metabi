@@ -16,6 +16,13 @@ export interface Novidade {
 /** Novidades do sistema, a mais recente primeiro. Acrescente no topo a cada entrega. */
 export const NOVIDADES: Novidade[] = [
   {
+    id: '2026-10-19-1',
+    data: '2026-10-19',
+    titulo: 'Menu mais limpo e aparência num lugar só',
+    texto:
+      'Seu nome, Trocar senha e Sair agora ficam no rodapé do menu lateral. Tema (claro, escuro e cores), tamanho da letra e cores dos gráficos ficam todos na barra do canto inferior direito, no botão da paleta. O grupo Administração do menu abre e fecha.',
+  },
+  {
     id: '2026-10-15-2',
     data: '2026-10-15',
     titulo: 'PDF da Análise de faturamento',

@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 
+/** No rodapé do menu lateral; recolhida = menu só com ícones (mostra só o avatar). */
+defineProps<{ recolhida?: boolean }>();
+
 const auth = useAuthStore();
 const router = useRouter();
-const paletaAberta = ref(false);
-// Compartilhado com o botão ? da barra flutuante (LayoutAparenciaFlutuante).
-const novidadesAbertas = useState('novidades-abertas', () => false);
-const { visiveis, naoVistas, marcarVistas } = useNovidades();
-// Abre sozinho uma vez, ao entrar, se houver novidade ainda não vista.
-onMounted(() => {
-  if (naoVistas.value.length) novidadesAbertas.value = true;
-});
 
 const iniciais = computed(() =>
   (auth.usuario?.nome ?? '?')
@@ -32,19 +27,6 @@ const itens = computed<DropdownMenuItem[][]>(() => [
   ],
   [
     {
-      label: 'Novidades',
-      icon: 'i-lucide-sparkles',
-      ...(naoVistas.value.length
-        ? { trailingIcon: 'i-lucide-dot', ui: { itemTrailingIcon: 'text-primary size-6' } }
-        : {}),
-      onSelect: () => (novidadesAbertas.value = true),
-    },
-    {
-      label: 'Cores dos gráficos',
-      icon: 'i-lucide-palette',
-      onSelect: () => (paletaAberta.value = true),
-    },
-    {
       label: 'Trocar senha',
       icon: 'i-lucide-key-round',
       onSelect: () => router.push('/trocar-senha'),
@@ -59,31 +41,30 @@ const itens = computed<DropdownMenuItem[][]>(() => [
 </script>
 
 <template>
-  <UDropdownMenu :items="itens" :ui="{ content: 'w-60' }">
+  <UDropdownMenu
+    :items="itens"
+    :content="{ side: recolhida ? 'right' : 'top', align: recolhida ? 'end' : 'start' }"
+    :ui="{ content: 'w-60' }"
+  >
     <button
       type="button"
       aria-label="Menu do usuário"
-      class="flex items-center gap-3 rounded-lg p-1 pr-2 text-left hover:bg-accent focus-visible:outline-2"
+      class="flex w-full items-center gap-2.5 rounded-md p-1.5 text-left text-sidebar-foreground transition-colors duration-150 hover:bg-sidebar-active/60 focus-visible:outline-2"
+      :class="recolhida && 'justify-center'"
     >
-      <UChip :show="naoVistas.length > 0" color="primary" size="md" position="top-right" inset>
-        <UAvatar
-        :text="iniciais"
-        :alt="auth.usuario?.nome"
-        size="md"
-        :ui="{ root: 'bg-primary-soft', fallback: 'text-xs font-semibold text-primary' }"
+      <UAvatar
+          :text="iniciais"
+          :alt="auth.usuario?.nome"
+          size="sm"
+          :ui="{ root: 'bg-sidebar-active', fallback: 'text-[11px] font-semibold text-sidebar-foreground' }"
         />
-      </UChip>
-      <span class="hidden leading-tight md:block">
-        <span class="block text-sm font-medium">{{ auth.usuario?.nome }}</span>
-        <span class="block truncate text-xs text-muted-foreground">{{ auth.usuario?.papel.nome }}</span>
-      </span>
+      <template v-if="!recolhida">
+        <span class="min-w-0 flex-1 leading-tight">
+          <span class="block truncate text-[13px] font-medium">{{ auth.usuario?.nome }}</span>
+          <span class="block truncate text-[11px] text-sidebar-muted">{{ auth.usuario?.papel.nome }}</span>
+        </span>
+        <UIcon name="i-lucide-chevrons-up-down" class="size-3.5 shrink-0 text-sidebar-muted" aria-hidden="true" />
+      </template>
     </button>
   </UDropdownMenu>
-  <LayoutPaletaGraficosModal v-model:aberto="paletaAberta" />
-  <LayoutNovidadesModal
-    v-model:aberto="novidadesAbertas"
-    :novidades="visiveis"
-    :nao-vistas="naoVistas"
-    @vistas="marcarVistas"
-  />
 </template>
