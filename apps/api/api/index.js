@@ -1,4 +1,4 @@
-// Função serverless da Vercel: toda requisição /api/* cai aqui e é repassada à mesma aplicação NestJS
+// Função serverless da Vercel: todo /api/* chega aqui (rewrite no vercel.json) e é repassado à mesma aplicação NestJS
 // (Fastify) usada no Docker. A aplicação é criada uma vez por instância e reaproveitada entre requisições.
 import 'reflect-metadata';
 import { criarApp } from '../dist/app.factory.js';

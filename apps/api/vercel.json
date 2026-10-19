@@ -6,9 +6,15 @@
   "outputDirectory": "public",
   "regions": ["gru1"],
   "functions": {
-    "api/[...rota].js": {
+    "api/index.js": {
       "maxDuration": 60,
       "includeFiles": "dist/**"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    }
+  ]
 }
