@@ -45,7 +45,8 @@ const botao =
       :class="botao"
       aria-label="Novidades do sistema"
       title="Novidades do sistema"
-      @click="novidadesAbertas = true"
+      :aria-expanded="novidadesAbertas"
+      @click="novidadesAbertas = !novidadesAbertas"
     >
       <UChip :show="naoVistas.length > 0" color="primary" size="sm" position="top-right" inset>
         <UIcon name="i-lucide-circle-help" class="size-5" />
@@ -125,7 +126,7 @@ const botao =
     </UPopover>
   </div>
   <LayoutPaletaGraficosModal v-model:aberto="paletaAberta" />
-  <LayoutNovidadesModal
+  <LayoutNovidadesCartao
     v-model:aberto="novidadesAbertas"
     :novidades="visiveis"
     :nao-vistas="naoVistas"

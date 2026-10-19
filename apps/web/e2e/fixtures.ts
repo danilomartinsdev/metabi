@@ -3,7 +3,7 @@ import { test as base } from '@playwright/test';
 export { expect, type Page } from '@playwright/test';
 
 /**
- * `test` dos E2E: o modal de Novidades (abre no primeiro login após cada entrega) cobriria as telas.
+ * `test` dos E2E: o cartão de Novidades (abre no primeiro login após cada entrega) cobriria parte das telas.
  * A última novidade vista fica no localStorage (`meta-bi-novidades:<id do usuário>`); como o id muda a
  * cada seed, a leitura dessas chaves devolve um id maior que qualquer novidade.
  */
