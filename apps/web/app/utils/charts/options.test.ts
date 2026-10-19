@@ -75,3 +75,11 @@ describe('donutOptions — legenda', () => {
     expect((donutOptions(ls, TEMA_CLARO, { impressao: true }).legend as { type: string }).type).toBe('plain');
   });
 });
+
+describe('donutOptions — semLegenda', () => {
+  it('esconde a legenda do ECharts (a tela mostra a lista HTML)', () => {
+    const ls = [linha('Sudeste', '6'), linha('Nordeste', '5')];
+    expect((donutOptions(ls, TEMA_CLARO, { semLegenda: true }).legend as { show: boolean }).show).toBe(false);
+    expect((donutOptions(ls, TEMA_CLARO).legend as { show: boolean }).show).toBe(true);
+  });
+});

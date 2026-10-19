@@ -4,7 +4,8 @@
 //
 //   pnpm homolog:preparar [--rede [--ip x]]  1ª vez: clone + .env da homologação (segredos novos);
 //                                            padrão http://localhost:4337, --rede = rede local
-//   pnpm homolog:copiar-prod                 copia o banco da produção (pg_dump só leitura) para a homologação
+//   pnpm homolog:copiar-prod                 copia o banco (pg_dump) e as planilhas importadas da produção
+//                                            (só leitura) para a homologação
 //   pnpm homolog:subir <branch>              põe a branch no ar na homologação (migrations rodam sozinhas)
 //   pnpm homolog:status | homolog:parar
 //
@@ -21,6 +22,10 @@ const CLONE = 'C:/Users/Danilo/meta-bi-homolog';
 const BACKUPS = 'C:/Users/Danilo/meta-bi-backups';
 const PROJETO = 'meta-bi-homolog';
 const PROD_POSTGRES = 'meta-bi-prod-postgres-1';
+// Planilhas das importações (volume storage). Da produção só se lê (montado :ro).
+const PROD_STORAGE = 'meta-bi-prod_storage';
+const HOMOLOG_STORAGE = 'meta-bi-homolog_storage';
+const IMAGEM_COPIA = 'postgres:16-alpine'; // já baixada (é a do banco); só usa sh/cp
 const MARCADOR = 'AMBIENTE=homologacao';
 const HTTP_PORT = 4337;
 const MAILPIT_PORT = 4339;
@@ -191,9 +196,33 @@ function copiarProd() {
     'DELETE FROM "Sessao"; DELETE FROM "TokenRedefinicaoSenha"; DELETE FROM "TokenImpressao"; DELETE FROM "ArquivoTemporario";',
   );
 
-  // 3. Sobe de novo: o migrate aplica as migrations da branch atual por cima da cópia.
+  // 3. Planilhas das importações: a API da homologação está parada; a produção é montada só leitura.
+  copiarArquivos();
+
+  // 4. Sobe de novo: o migrate aplica as migrations da branch atual por cima da cópia.
   compose(['up', '-d', '--wait']);
   console.log('\n✔ Homologação com a cópia da produção. Usuários entram com a mesma senha da produção.');
+}
+
+/** Substitui o volume storage da homologação por uma cópia do da produção (montado :ro). */
+function copiarArquivos() {
+  const volumes = (saida('docker', ['volume', 'ls', '--format', '{{.Name}}']) ?? '').split(/\r?\n/);
+  if (!volumes.includes(PROD_STORAGE)) falhar(`Volume ${PROD_STORAGE} não encontrado.`);
+  if (!volumes.includes(HOMOLOG_STORAGE)) rodar('docker', ['volume', 'create', HOMOLOG_STORAGE]);
+  rodar('docker', [
+    'run',
+    '--rm',
+    '--network',
+    'none',
+    '-v',
+    `${PROD_STORAGE}:/de:ro`,
+    '-v',
+    `${HOMOLOG_STORAGE}:/para`,
+    IMAGEM_COPIA,
+    'sh',
+    '-c',
+    'find /para -mindepth 1 -delete && cp -a /de/. /para/ && echo "Planilhas copiadas: $(find /para -type f | wc -l) arquivo(s)."',
+  ]);
 }
 
 const comandos = {
