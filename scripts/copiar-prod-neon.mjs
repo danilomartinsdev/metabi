@@ -26,6 +26,13 @@ function rodar(cmd, args, opts = {}) {
   if (r.status !== 0) falhar(`Falhou: ${cmd} ${args[0]} (detalhes acima).`);
 }
 
+// Desde a virada (2026-10-19) o Neon É a produção: copiar o Docker antigo por cima apagaria dados reais.
+if (!process.argv.includes('--sobrescrever-producao-vercel')) {
+  falhar(
+    'Desde 2026-10-19 o banco da Vercel (Neon) é a produção. Este comando o substituiria pela cópia antiga do Docker. ' +
+      'Só use em recuperação de desastre, com --sobrescrever-producao-vercel.',
+  );
+}
 if (!fs.existsSync(ARQUIVO_URL)) {
   falhar(
     `Crie ${ARQUIVO_URL} com a URL DIRETA do Neon (Vercel › Storage › Neon › .env.local: DATABASE_URL_UNPOOLED).`,

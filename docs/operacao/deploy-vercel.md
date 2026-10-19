@@ -86,7 +86,13 @@ Sem domínio próprio o endereço é o do projeto web (ex.: `https://metabi-web.
    - Nome: `bi` · Registro: `cname.vercel-dns.com`
 3. Em alguns minutos a Vercel valida e emite o HTTPS. Acesse `https://bi.seudominio.com.br`.
 
-## 6. Virada (sair do ngrok)
+## 6. Virada (sair do ngrok) — feita em 2026-10-19
+
+Depois da virada o Neon é a produção: `pnpm vercel:copiar-prod` recusa rodar sem `--sobrescrever-producao-vercel`
+(só para recuperação). Para definir a senha de alguém no banco da Vercel:
+`NOVA_SENHA=... pnpm vercel:definir-senha <e-mail>`.
+
+Passos usados na virada:
 
 1. Avise os usuários; ninguém importa nada durante a virada.
 2. Rode de novo `pnpm vercel:copiar-prod` (dados mais recentes).
