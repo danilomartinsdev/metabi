@@ -15,7 +15,7 @@ corpo de requisição de até 4,5 MB e Chromium próprio para o PDF.
 
 - **Dois projetos Vercel** no mesmo repositório: `apps/web` (SPA estática via Build Output API, com os
   mesmos cabeçalhos de segurança/CSP do Caddy e `/api/*` encaminhado à API — mesma origem) e `apps/api`
-  (função `api/[...rota].js` que reaproveita `criarApp()`, o mesmo código do Docker).
+  (função `api/index.js`, que recebe todo `/api/*` por um rewrite e reaproveita `criarApp()`, o mesmo código do Docker).
 - **Banco no Neon** (Postgres gerenciado): `DATABASE_URL` com pool de conexões para a aplicação e
   `DATABASE_URL_DIRECT` para as migrations (`prisma migrate deploy` roda no build da API).
 - **Estado fora do disco/memória**: prévia de importação em `ArquivoTemporario` (banco) e token do PDF em
