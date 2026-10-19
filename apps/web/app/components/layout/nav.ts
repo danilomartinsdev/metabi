@@ -14,6 +14,8 @@ export interface NavItem {
 export interface NavGroup {
   titulo: string;
   itens: NavItem[];
+  /** Grupo que abre e fecha no menu (começa fechado, a não ser que a tela atual esteja nele). */
+  recolhivel?: boolean;
 }
 
 export const NAV: NavGroup[] = [
@@ -68,6 +70,7 @@ export const NAV: NavGroup[] = [
   },
   {
     titulo: 'Administração',
+    recolhivel: true,
     itens: [
       { label: 'Importações', to: '/admin/importacoes', icon: 'i-lucide-file-up', permissao: 'import.run' },
       { label: 'Metas', to: '/admin/metas', icon: 'i-lucide-target', permissao: 'metas.edit' },
@@ -78,13 +81,13 @@ export const NAV: NavGroup[] = [
         permissao: 'metas.edit',
       },
       {
-        label: 'Cadastro de representantes',
+        label: 'Representantes',
         to: '/admin/representantes',
         icon: 'i-lucide-square-user-round',
         permissao: 'cadastros.edit',
       },
       {
-        label: 'Segmento por cliente',
+        label: 'Segmentos',
         to: '/admin/clientes',
         icon: 'i-lucide-building-complex',
         permissao: 'cadastros.edit',

@@ -71,3 +71,13 @@
 @utility num {
   font-variant-numeric: tabular-nums;
 }
+
+/* Rolagem discreta (menu lateral): barra fina, invisível até passar o mouse. */
+@utility scroll-discreto {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  &:hover,
+  &:focus-within {
+    scrollbar-color: color-mix(in srgb, var(--sidebar-muted) 35%, transparent) transparent;
+  }
+}
