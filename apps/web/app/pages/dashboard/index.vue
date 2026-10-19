@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useMesesQuery, useVisaoGeralQuery } from '~/composables/api/useDashboard';
 import { periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
-import { barrasRankingOptions, donutOptions, evolucaoOptions } from '~/utils/charts/options';
+import { barrasRankingOptions, donutOptions, evolucaoOptions, fatiasDonut } from '~/utils/charts/options';
+import { coresFatias } from '~/utils/charts/palette';
 
 definePageMeta({ titulo: 'Visão geral', permissao: 'dashboard.view' });
 useHead({ title: 'Visão geral — BI Metahospitalar' });
@@ -13,6 +14,15 @@ const v = computed(() => q.data.value);
 const carregando = computed(() => q.isPending.value);
 const donut = ref<'mapa' | 'regiao' | 'segmento'>('mapa');
 const can = useCan();
+// Legenda da rosca como lista (mesmas cores das fatias): não trunca nem pagina os nomes.
+const paleta = usePaletaGraficos();
+const fatias = computed(() =>
+  v.value ? fatiasDonut(donut.value === 'segmento' ? v.value.porSegmento : v.value.porRegiao) : [],
+);
+const corFatia = (i: number) => {
+  const c = coresFatias(paleta.value);
+  return c[i % c.length]!;
+};
 
 const NOMES_MES = [
   'janeiro',
@@ -197,12 +207,34 @@ const ABAS_DONUT = [
             :linhas="v.porRegiao"
             altura="290px"
           />
-          <ChartsBaseChart
-            v-else-if="v"
-            altura="300px"
-            :rotulo="`Participação das vendas por ${donut === 'regiao' ? 'região' : 'segmento'}`"
-            :opcoes="(t) => donutOptions(donut === 'regiao' ? v!.porRegiao : v!.porSegmento, t)"
-          />
+          <template v-else-if="v">
+            <ChartsBaseChart
+              class="mx-auto mt-4 w-full max-w-60"
+              altura="200px"
+              :rotulo="`Participação das vendas por ${donut === 'regiao' ? 'região' : 'segmento'}`"
+              :opcoes="
+                (t) => donutOptions(donut === 'regiao' ? v!.porRegiao : v!.porSegmento, t, { semLegenda: true })
+              "
+            />
+            <ul class="mt-4 space-y-1.5 text-sm">
+              <li v-for="(f, i) in fatias" :key="f.name" class="flex items-center justify-between gap-3">
+                <span class="flex min-w-0 items-center gap-2">
+                  <span
+                    class="size-2.5 shrink-0 rounded-full"
+                    :style="{ backgroundColor: corFatia(i) }"
+                    aria-hidden="true"
+                  />
+                  <span class="truncate" :title="f.name">{{ f.name }}</span>
+                </span>
+                <span class="num shrink-0 text-right">
+                  {{ formatBRL(f.value) }}
+                  <span class="ml-1 inline-block w-12 text-xs text-muted-foreground">{{
+                    formatPct(f.participacao)
+                  }}</span>
+                </span>
+              </li>
+            </ul>
+          </template>
         </div>
       </section>
 

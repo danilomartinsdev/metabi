@@ -76,27 +76,36 @@ export function evolucaoOptions(ev: VisaoGeral['evolucao'], t: TemaGrafico): ECh
   };
 }
 
-/** Donut de participação (máx. 6 fatias + "Outros"). */
+/** Fatias do donut de participação: as 6 maiores e o restante somado em "Outros". */
+export function fatiasDonut(linhas: LinhaRanking[]) {
+  const fatias = linhas
+    .slice(0, 6)
+    .map((l) => ({ name: l.rotulo, value: Number(l.total), participacao: l.participacao ?? null }));
+  const resto = linhas.slice(6);
+  // % vem da participação calculada na API (Decimal); "Outros" soma as participações.
+  if (resto.length)
+    fatias.push({
+      name: 'Outros',
+      value: resto.reduce((s, l) => s + Number(l.total), 0),
+      participacao: resto.reduce((s, l) => s + (l.participacao ?? 0), 0),
+    });
+  return fatias;
+}
+
 /**
+ * Donut de participação (máx. 6 fatias + "Outros").
  * `impressao`: legenda inteira quebrando em linhas (no PDF não há como clicar nas setas da legenda
  * paginada) e rosca menor para caber.
+ * `semLegenda`: a tela mostra a legenda como lista HTML abaixo do gráfico (não trunca nem pagina).
  */
 export function donutOptions(
   linhas: LinhaRanking[],
   t: TemaGrafico,
-  { impressao = false }: { impressao?: boolean } = {},
+  { impressao = false, semLegenda = false }: { impressao?: boolean; semLegenda?: boolean } = {},
 ): EChartsOption {
-  const principais = linhas.slice(0, 6);
-  const resto = linhas.slice(6);
-  const dados = principais.map((l) => ({ name: l.rotulo, value: Number(l.total) }));
-  if (resto.length) dados.push({ name: 'Outros', value: resto.reduce((s, l) => s + Number(l.total), 0) });
-  // % da legenda vem da participação calculada na API (Decimal); "Outros" soma as participações.
-  const pct = new Map(principais.map((l) => [l.rotulo, l.participacao]));
-  if (resto.length)
-    pct.set(
-      'Outros',
-      resto.reduce((s, l) => s + (l.participacao ?? 0), 0),
-    );
+  const fatias = fatiasDonut(linhas);
+  const dados = fatias.map(({ name, value }) => ({ name, value }));
+  const pct = new Map(fatias.map((f) => [f.name, f.participacao]));
   return {
     ...base(t),
     color: t.categorica,
@@ -109,6 +118,7 @@ export function donutOptions(
       },
     },
     legend: {
+      show: !semLegenda,
       bottom: 0,
       textStyle: { color: t.textoSuave },
       itemWidth: 10,
@@ -119,8 +129,8 @@ export function donutOptions(
     series: [
       {
         type: 'pie',
-        radius: impressao ? ['45%', '66%'] : ['55%', '80%'],
-        center: ['50%', impressao ? '36%' : '44%'],
+        radius: impressao ? ['45%', '66%'] : semLegenda ? ['62%', '90%'] : ['55%', '80%'],
+        center: ['50%', impressao ? '36%' : semLegenda ? '50%' : '44%'],
         itemStyle: { borderColor: t.fundo, borderWidth: 2 },
         label: { show: false },
         data: dados,
