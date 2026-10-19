@@ -14,6 +14,9 @@ async function itensDoMenu(page: Page) {
   if (await menu.isVisible()) await menu.click();
   const nav = page.getByRole('navigation', { name: 'Navegação principal' }).last();
   await nav.getByRole('link', { name: /Visão geral/ }).waitFor();
+  // Administração começa recolhida: abre para listar os itens (se o papel tiver o grupo).
+  const admin = nav.getByRole('button', { name: 'Administração' });
+  if ((await admin.count()) && (await admin.getAttribute('aria-expanded')) === 'false') await admin.click();
   const textos = await nav.getByRole('link').allInnerTexts();
   await page.keyboard.press('Escape');
   return textos.map((t) => t.trim());

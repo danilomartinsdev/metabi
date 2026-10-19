@@ -147,18 +147,7 @@ function alternar(titulo: string) {
     </div>
 
     <div class="shrink-0 border-t border-sidebar-border px-3 py-2">
-      <UTooltip text="Sair" :content="{ side: 'right' }" :delay-duration="0" :disabled="!recolhida">
-        <button
-          type="button"
-          class="flex h-9 w-full items-center gap-2.5 rounded-md px-3 text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-active/60 hover:text-sidebar-foreground"
-          :class="recolhida && 'justify-center px-0'"
-          :aria-label="recolhida ? 'Sair' : undefined"
-          @click="auth.logout()"
-        >
-          <UIcon name="i-lucide-log-out" class="size-4 shrink-0 opacity-75" aria-hidden="true" />
-          <span v-if="!recolhida" class="flex-1 truncate text-left">Sair</span>
-        </button>
-      </UTooltip>
+      <LayoutUserMenu :recolhida="recolhida" />
     </div>
   </nav>
 </template>

@@ -35,10 +35,6 @@ usePresenca();
               class="hidden md:inline-flex"
             />
           </template>
-          <template #right>
-            <LayoutThemeToggle />
-            <LayoutUserMenu />
-          </template>
           <template #toggle>
             <UDashboardSidebarToggle aria-label="Abrir menu" class="md:hidden" />
           </template>

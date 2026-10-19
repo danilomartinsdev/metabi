@@ -37,6 +37,8 @@ test('admin entra, vê o dashboard e o menu completo, e sai', async ({ page }) =
 
   await abrirMenuSeCelular(page);
   const nav = page.getByRole('navigation', { name: 'Navegação principal' }).last();
+  // Administração começa recolhida no menu.
+  await nav.getByRole('button', { name: 'Administração' }).click();
   await expect(nav.getByRole('link', { name: /Usuários/ })).toBeVisible();
   await expect(nav.getByRole('link', { name: /Auditoria/ })).toBeVisible();
   await page.keyboard.press('Escape');
@@ -45,7 +47,9 @@ test('admin entra, vê o dashboard e o menu completo, e sai', async ({ page }) =
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Visão geral', level: 2 })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Menu do usuário' }).click();
+  // Menu do usuário fica no rodapé do menu lateral (no celular, dentro da gaveta).
+  await abrirMenuSeCelular(page);
+  await page.getByRole('button', { name: 'Menu do usuário' }).last().click();
   await page.getByRole('menuitem', { name: 'Sair' }).click();
   await expect(page).toHaveURL(/\/login/);
   await page.goto('/dashboard');
