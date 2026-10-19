@@ -47,7 +47,9 @@ da `main` antes disso, faça merge da `main` nela.
 2. Para a API da homologação, recria o schema e restaura a cópia.
 3. Apaga sessões, links de redefinição de senha, tokens de impressão e arquivos temporários — nada
    da produção vale na homologação.
-4. Sobe de novo: o `migrate` aplica as migrations da branch por cima da cópia (é aqui que uma
+4. Substitui as planilhas importadas da homologação (volume `storage`) por uma cópia das da produção
+   (volume da produção montado só leitura).
+5. Sobe de novo: o `migrate` aplica as migrations da branch por cima da cópia (é aqui que uma
    migration nova é testada contra os dados reais).
 
 Fluxo completo: `subir <branch>` → `copiar-prod` → testar → merge na `main` → deploy em produção
@@ -64,8 +66,6 @@ pnpm homolog:parar               # para a homologação (a produção não é to
 
 - A cópia tem **dados reais de clientes e usuários**. Fica só nesta máquina (ou na rede local, com `--rede`); usuários entram com a
   mesma senha da produção; e-mails ficam no Mailpit.
-- Os arquivos de importação (volume `storage`) não são copiados: desfazer um lote antigo na
-  homologação pode não achar a planilha original.
 - O modo automático do Claude Code bloqueia esses comandos: quem roda é você, com `!` no prompt e
   caminhos `/c/Users/...` (em 2026-10-06 um `cd` com barras invertidas falhou e o compose rodou na
   pasta errada, recriando o Postgres da produção com outra senha — o script existe para evitar isso).
