@@ -28,6 +28,8 @@
     "homolog:copiar-prod": "node scripts/homologacao.mjs copiar-prod",
     "homolog:status": "node scripts/homologacao.mjs status",
     "homolog:parar": "node scripts/homologacao.mjs parar",
+    "vercel:copiar-prod": "node scripts/copiar-prod-neon.mjs",
+    "vercel:definir-senha": "node scripts/definir-senha-neon.mjs",
     "hooks:test": "node --test .claude/hooks/*.test.mjs",
     "prepare": "git config core.hooksPath .githooks"
   },
