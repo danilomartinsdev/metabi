@@ -2,5 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile --filter web...",
-  "buildCommand": "cd ../.. && pnpm --filter @meta-bi/shared build && cd apps/web && NITRO_PRESET=static pnpm exec nuxt generate && node scripts/vercel-output.mjs"
+  "buildCommand": "cd ../.. && pnpm --filter @meta-bi/shared build && cd apps/web && NITRO_PRESET=static pnpm exec nuxt generate && node scripts/vercel-output.mjs",
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "main": true
+    }
+  }
 }
