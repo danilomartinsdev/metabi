@@ -1,8 +1,11 @@
 import { useDocumentVisibility, useIntervalFn } from '@vueuse/core';
 import { useApi } from './api/useApi';
 
-/** Intervalo do sinal de presença (a API conta como online quem deu sinal nos últimos 5 minutos). */
-const INTERVALO_MS = 60_000;
+/**
+ * Intervalo do sinal de presença (a API conta como online quem deu sinal nos últimos 10 minutos).
+ * 5 min: na Vercel cada sinal é uma chamada de função e uma consulta ao banco; 1 min gastava o plano à toa.
+ */
+const INTERVALO_MS = 5 * 60_000;
 
 /**
  * Avisa a API que o usuário está com o sistema aberto (aba "Online" da auditoria).

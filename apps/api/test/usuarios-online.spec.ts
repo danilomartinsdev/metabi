@@ -49,7 +49,7 @@ describe('auditoria — usuários online', () => {
     expect(emails).toContain('rep@meta.com');
 
     const b = (await get('/api/auditoria/online', tokenAdmin)).json();
-    expect(b.janelaMinutos).toBe(5);
+    expect(b.janelaMinutos).toBe(10);
     const u = b.usuarios.find((x: { email: string }) => x.email === 'rep@meta.com');
     expect(u).toMatchObject({
       nome: expect.any(String),
@@ -63,7 +63,7 @@ describe('auditoria — usuários online', () => {
     const rep = await ctx.prisma.usuario.findUniqueOrThrow({ where: { email: 'rep@meta.com' } });
     await ctx.prisma.presenca.update({
       where: { usuarioId: rep.id },
-      data: { ultimaAtividadeEm: new Date(Date.now() - 6 * 60_000) },
+      data: { ultimaAtividadeEm: new Date(Date.now() - 11 * 60_000) },
     });
     expect(await onlineAte((e) => !e.includes('rep@meta.com'))).not.toContain('rep@meta.com');
   });

@@ -11,8 +11,8 @@ import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { resumirDispositivo } from './dispositivo.js';
 
-/** Conta como online quem teve atividade nestes últimos minutos (a tela manda sinal a cada minuto). */
-const JANELA_ONLINE_MINUTOS = 5;
+/** Conta como online quem teve atividade nestes últimos minutos (a tela manda sinal a cada 5 minutos). */
+const JANELA_ONLINE_MINUTOS = 10;
 
 @Controller('auditoria')
 export class AuditController {

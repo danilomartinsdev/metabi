@@ -31,7 +31,7 @@ function ha(iso: string) {
       </div>
       <p class="max-w-md text-xs text-muted-foreground">
         Conta quem está com o sistema aberto e deu sinal nos últimos
-        {{ q.data.value?.janelaMinutos ?? 5 }} minutos. A lista se atualiza sozinha a cada 30 segundos.
+        {{ q.data.value?.janelaMinutos ?? 10 }} minutos. A lista se atualiza sozinha a cada 2 minutos.
       </p>
     </section>
 
