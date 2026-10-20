@@ -46,7 +46,7 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
       <p class="mt-2 text-sm text-muted-foreground">Use o e-mail e a senha fornecidos pelo administrador.</p>
     </div>
 
-    <UForm :schema="loginSchema" :state="estado" class="mt-8 space-y-4" @submit="entrar">
+    <UForm :schema="loginSchema" :state="estado" class="mt-6 space-y-4" @submit="entrar">
       <UiExtraFormField
         v-model="estado.email"
         name="email"
@@ -71,7 +71,11 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
         </template>
       </UiExtraFormField>
 
-      <p v-if="erroGeral" class="rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive" role="alert">
+      <p
+        v-if="erroGeral"
+        class="rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive"
+        role="alert"
+      >
         {{ erroGeral }}
       </p>
 

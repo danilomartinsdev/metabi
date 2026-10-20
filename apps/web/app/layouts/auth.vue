@@ -27,14 +27,17 @@ const LINHAS = [
       class="grid w-full max-w-6xl gap-3 rounded-3xl bg-card p-3 shadow-xl md:min-h-[640px] md:grid-cols-2"
     >
       <section class="flex flex-col items-center px-4 pt-10 pb-6 sm:px-10">
-        <!-- translate-x-1: ajuste óptico; o "meta" escuro pesa mais e a logo parecia puxada para a esquerda. -->
-        <img
-          src="/brand/logo-meta-hospitalar.webp"
-          alt="Metahospitalar"
-          class="h-12 w-auto translate-x-1 dark:brightness-0 dark:invert"
-        />
-        <div class="flex w-full max-w-sm flex-1 flex-col justify-center py-10 [&_input]:rounded-lg">
-          <slot />
+        <!-- Logo, título e formulário num bloco só, centralizado na altura do cartão. -->
+        <div class="flex w-full max-w-sm flex-1 flex-col items-center justify-center pb-8">
+          <!-- translate-x-1: ajuste óptico; o "meta" escuro pesa mais e a logo parecia puxada para a esquerda. -->
+          <img
+            src="/brand/logo-meta-hospitalar.webp"
+            alt="Metahospitalar"
+            class="h-12 w-auto translate-x-1 dark:brightness-0 dark:invert"
+          />
+          <div class="mt-8 w-full [&_input]:rounded-lg">
+            <slot />
+          </div>
         </div>
         <p class="text-xs text-muted-foreground">© {{ ano }} Meta Hospitalar · BI Comercial</p>
       </section>
