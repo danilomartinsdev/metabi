@@ -41,7 +41,10 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
 
 <template>
   <UForm :schema="loginSchema" :state="estado" class="space-y-5" @submit="entrar">
-    <h1 class="text-xl font-semibold">Entrar</h1>
+    <div class="mb-8 text-center">
+      <h1 class="text-3xl font-semibold tracking-tight">Bem-vindo de volta</h1>
+      <p class="mt-2 text-sm text-muted-foreground">Use o e-mail e a senha fornecidos pelo administrador.</p>
+    </div>
 
     <p
       v-if="erroGeral"
@@ -58,6 +61,7 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
       type="email"
       autocomplete="username"
       inputmode="email"
+      placeholder="Seu e-mail"
     />
     <UiExtraFormField
       v-model="estado.senha"
@@ -65,6 +69,7 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
       label="Senha"
       type="password"
       autocomplete="current-password"
+      placeholder="Sua senha"
     >
       <template #acao>
         <NuxtLink to="/esqueci-senha" class="text-xs font-medium text-primary hover:underline"
@@ -73,6 +78,13 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
       </template>
     </UiExtraFormField>
 
-    <UButton type="submit" size="lg" block class="h-10 justify-center" label="Entrar" loading-auto />
+    <UButton
+      type="submit"
+      size="lg"
+      block
+      class="h-11 justify-center bg-primary-strong hover:bg-primary-strong/90 dark:bg-primary dark:hover:bg-primary/90"
+      label="Entrar"
+      loading-auto
+    />
   </UForm>
 </template>
