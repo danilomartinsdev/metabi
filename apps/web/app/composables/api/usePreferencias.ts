@@ -1,4 +1,4 @@
-import type { Preferencias, UsuarioLogado } from '@meta-bi/shared';
+import type { Preferencias, UsuarioLogado } from '@metabi/shared';
 import { useMutation } from '@tanstack/vue-query';
 import { useAuthStore } from '~/stores/auth';
 import { useApi } from './useApi';

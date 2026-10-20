@@ -13,7 +13,7 @@ import {
   preferenciasSchema,
   redefinirSenhaSchema,
   trocarSenhaSchema,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ENV, type Env } from '../../config/env.js';
 import {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ExportXlsxTipo } from '@meta-bi/shared';
+import type { ExportXlsxTipo } from '@metabi/shared';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { useApi } from '~/composables/api/useApi';
 

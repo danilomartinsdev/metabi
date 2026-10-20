@@ -5,7 +5,7 @@ import {
   REGIOES_ENUM,
   type RegiaoEnum,
   type UsuarioAdmin,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import { mensagemErro } from '~/composables/api/useApi';
 import { usePapeisQuery, useSalvarUsuario } from '~/composables/api/useAdmin';
 import { useRepresentantesQuery } from '~/composables/api/useCadastros';

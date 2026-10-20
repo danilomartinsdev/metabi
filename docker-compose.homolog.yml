@@ -1,6 +1,6 @@
 # Homologação: segunda stack, isolada da produção, na mesma máquina. Só é usada pelo
-# scripts/homologacao.mjs, sempre com projeto próprio (-p meta-bi-homolog) e a partir do clone
-# C:/Users/Danilo/meta-bi-homolog — volumes, rede e containers não se misturam com os da produção.
+# scripts/homologacao.mjs, sempre com projeto próprio (-p metabi-homolog) e a partir do clone
+# C:/Users/Danilo/metabi-homolog — volumes, rede e containers não se misturam com os da produção.
 # Acesso por HTTP: só nesta máquina (padrão, HTTP_BIND=127.0.0.1) ou na rede local (0.0.0.0).
 # Ver docs/operacao/homologacao.md.
 

@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import type { CodigoErro, ErroApi } from '@meta-bi/shared';
+import type { CodigoErro, ErroApi } from '@metabi/shared';
 
 /** Exceção de negócio com código estável (o front traduz o código em mensagem). */
 export class ApiException extends HttpException {

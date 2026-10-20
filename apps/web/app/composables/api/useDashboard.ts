@@ -1,4 +1,4 @@
-import type { ClientesResumo, DimensaoRanking, PedidoLinha, Ranking, VisaoGeral } from '@meta-bi/shared';
+import type { ClientesResumo, DimensaoRanking, PedidoLinha, Ranking, VisaoGeral } from '@metabi/shared';
 import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import type { MaybeRefOrGetter } from 'vue';
 import { useApi } from './useApi';

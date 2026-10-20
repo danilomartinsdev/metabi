@@ -38,7 +38,7 @@ Com o Docker de desenvolvimento rodando (`pnpm db:up`):
 
 ```bash
 cd ~/Documents
-docker exec meta-bi-postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > meta-bi-base.dump
+docker exec metabi-postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > metabi-base.dump
 ```
 
 > ⚠️ Esse arquivo tem dados reais de clientes e usuários. **Não coloque no GitHub**, não mande por
@@ -47,7 +47,7 @@ docker exec meta-bi-postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB
 ### 3. Copiar o backup para o servidor
 
 ```bash
-scp ~/Documents/meta-bi-base.dump usuario@IP-DO-SERVIDOR:~/
+scp ~/Documents/metabi-base.dump usuario@IP-DO-SERVIDOR:~/
 ```
 
 ---
@@ -76,16 +76,16 @@ O repositório é privado. Crie uma chave para o servidor e cadastre no GitHub c
 (só leitura):
 
 ```bash
-ssh-keygen -t ed25519 -C "servidor-meta-bi" -f ~/.ssh/id_ed25519 -N ""
+ssh-keygen -t ed25519 -C "servidor-metabi" -f ~/.ssh/id_ed25519 -N ""
 cat ~/.ssh/id_ed25519.pub
 ```
 
-Copie a linha que aparecer e cole em **GitHub › metahospitalar-bi › Settings › Deploy keys › Add deploy key**
+Copie a linha que aparecer e cole em **GitHub › metabi › Settings › Deploy keys › Add deploy key**
 (deixe "Allow write access" desmarcado). Depois:
 
 ```bash
-git clone -b main git@github.com:danilomartinsdev/metahospitalar-bi.git
-cd metahospitalar-bi
+git clone -b main git@github.com:danilomartinsdev/metabi.git
+cd metabi
 ```
 
 ### 6. Configurar o `.env`
@@ -137,10 +137,10 @@ Esperado: `postgres`, `api` e `web` rodando; `migrate` como **exited (0)** (ele 
 docker compose -f docker-compose.prod.yml stop api
 
 docker compose -f docker-compose.prod.yml exec -T postgres \
-  sh -c 'pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < ~/meta-bi-base.dump
+  sh -c 'pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < ~/metabi-base.dump
 
 docker compose -f docker-compose.prod.yml start api
-rm ~/meta-bi-base.dump
+rm ~/metabi-base.dump
 ```
 
 Pedidos, cadastros, segmentos, metas, histórico de faturamento e usuários passam a estar em produção.
@@ -177,7 +177,7 @@ O sistema pede a troca da senha no primeiro login. Depois, importe a planilha do
 ## Atualizar para uma versão nova
 
 ```bash
-cd ~/metahospitalar-bi
+cd ~/metabi
 git pull
 docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 ```

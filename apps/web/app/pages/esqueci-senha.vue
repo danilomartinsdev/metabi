@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { esqueciSenhaSchema } from '@meta-bi/shared';
+import { esqueciSenhaSchema } from '@metabi/shared';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import type { z } from 'zod';
 
 definePageMeta({ layout: 'auth' });
-useHead({ title: 'Esqueci minha senha — BI Metahospitalar' });
+useHead({ title: 'Esqueci minha senha — MetaBI' });
 
 const enviado = ref(false);
 const erro = ref<string | null>(null);

@@ -1,4 +1,4 @@
-import type { Permission } from '@meta-bi/shared';
+import type { Permission } from '@metabi/shared';
 
 /** Minhas vendas aparece só por permissão, marcada em Administração › Papéis. */
 export const MINHAS_VENDAS = { permissao: 'minhas-vendas.view' } as const satisfies { permissao: Permission };

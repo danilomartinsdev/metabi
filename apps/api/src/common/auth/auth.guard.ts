@@ -1,6 +1,6 @@
 import { type CanActivate, type ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { Permission } from '@meta-bi/shared';
+import type { Permission } from '@metabi/shared';
 import type { FastifyRequest } from 'fastify';
 import { Erros } from '../errors.js';
 import { PresencaService } from '../../modules/auth/presenca.service.js';

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { SEGMENTO_ROTULO, SEGMENTOS, type Segmento } from '@meta-bi/shared';
+import { SEGMENTO_ROTULO, SEGMENTOS, type Segmento } from '@metabi/shared';
 import { refDebounced } from '@vueuse/core';
 import { useAtualizarCliente, useClientesAdminQuery } from '~/composables/api/useAdmin';
 
 const aviso = useAviso();
 definePageMeta({ titulo: 'Segmento por cliente', permissao: 'cadastros.edit' });
-useHead({ title: 'Segmento por cliente — BI Metahospitalar' });
+useHead({ title: 'Segmento por cliente — MetaBI' });
 
 const busca = ref('');
 const buscaDebounced = refDebounced(busca, 350);

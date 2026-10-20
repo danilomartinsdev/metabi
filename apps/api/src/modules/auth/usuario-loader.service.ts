@@ -6,7 +6,7 @@ import {
   type PaletaGrafico,
   type Permission,
   type UsuarioLogado,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import type { UsuarioAutenticado } from '../../common/auth/types.js';

@@ -26,8 +26,8 @@ export const OPCOES_TEMA: { nome: string; tema: Tema; modo: 'claro' | 'escuro' }
 export const ESCALAS_FONTE = [90, 100, 110, 120, 130] as const;
 export const ESCALA_PADRAO = 100;
 
-export const CHAVE_FONTE = 'meta-bi-fonte';
-export const CHAVE_TEMA = 'meta-bi-tema-cores';
+export const CHAVE_FONTE = 'metabi-fonte';
+export const CHAVE_TEMA = 'metabi-tema-cores';
 
 export function lerTemaSalvo(v: string | null | undefined): Tema {
   return v && Object.hasOwn(TEMAS, v) ? (v as Tema) : 'padrao';

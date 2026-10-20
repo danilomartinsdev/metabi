@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { CampoTotalFaturamento, FaturamentoImpressao, PaletaGrafico } from '@meta-bi/shared';
+import type { CampoTotalFaturamento, FaturamentoImpressao, PaletaGrafico } from '@metabi/shared';
 import { evolucaoFaturamentoOptions } from '~/utils/charts/faturamento';
 import { anoAnterior, periodoCurto } from '~/utils/periodo';
 
 // PDF da página de Faturamento, aberto pelo Chromium da API (ADR 0004). Sem sessão: o token de uso
 // único na URL é a credencial; a API confere permissão e escopo "todos" de quem pediu o PDF.
 definePageMeta({ layout: 'print' });
-useHead({ title: 'Relatório de faturamento — BI Metahospitalar' });
+useHead({ title: 'Relatório de faturamento — MetaBI' });
 
 type Janela = Window & { __relatorio?: 'pronto' | 'erro' };
 const route = useRoute();

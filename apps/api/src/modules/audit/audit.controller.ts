@@ -4,7 +4,7 @@ import {
   type AuditoriaQuery,
   auditoriaQuerySchema,
   type UsuariosOnline,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import { RequirePermission } from '../../common/auth/decorators.js';
 import { ZodPipe } from '../../common/zod-validation.pipe.js';
 import type { Prisma } from '../../generated/prisma/client.js';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AuthResposta } from '@meta-bi/shared';
-import { trocarSenhaSchema } from '@meta-bi/shared';
+import type { AuthResposta } from '@metabi/shared';
+import { trocarSenhaSchema } from '@metabi/shared';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import type { z } from 'zod';
 import { useApi } from '~/composables/api/useApi';
@@ -11,7 +11,7 @@ const aviso = useAviso();
 const auth = useAuthStore();
 const obrigatoria = computed(() => auth.usuario?.trocarSenha === true);
 definePageMeta({ layout: 'auth' });
-useHead({ title: 'Trocar senha — BI Metahospitalar' });
+useHead({ title: 'Trocar senha — MetaBI' });
 
 const { request } = useApi();
 const erro = ref<string | null>(null);

@@ -1,4 +1,4 @@
-import type { Regiao } from '@meta-bi/shared';
+import type { Regiao } from '@metabi/shared';
 import type { Regiao as RegiaoEnum } from '../generated/prisma/client.js';
 
 /** Rótulo de região (packages/shared) ↔ enum do banco. */

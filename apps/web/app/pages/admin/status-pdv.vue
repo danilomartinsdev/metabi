@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { CORES_STATUS } from '@meta-bi/shared';
+import { CORES_STATUS } from '@metabi/shared';
 import { type StatusPdv, useAtualizarStatus, useStatusQuery } from '~/composables/api/useCadastros';
 
 const aviso = useAviso();
 definePageMeta({ titulo: 'Status PDV', permissao: 'cadastros.edit' });
-useHead({ title: 'Status PDV — BI Metahospitalar' });
+useHead({ title: 'Status PDV — MetaBI' });
 
 const status = useStatusQuery();
 const atualizar = useAtualizarStatus();

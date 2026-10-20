@@ -1,5 +1,5 @@
 // Gráficos da página de Faturamento (funções puras; os componentes só renderizam).
-import type { FaturamentoResumo } from '@meta-bi/shared';
+import type { FaturamentoResumo } from '@metabi/shared';
 import type { EChartsOption } from 'echarts';
 import { formatBRL, formatCompact } from '../format';
 import type { TemaGrafico } from './palette';

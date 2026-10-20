@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ titulo: 'Acesso negado' });
-useHead({ title: 'Acesso negado — BI Metahospitalar' });
+useHead({ title: 'Acesso negado — MetaBI' });
 </script>
 
 <template>

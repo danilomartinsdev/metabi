@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { redefinirSenhaSchema } from '@meta-bi/shared';
+import { redefinirSenhaSchema } from '@metabi/shared';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import type { z } from 'zod';
 
 const aviso = useAviso();
 definePageMeta({ layout: 'auth' });
-useHead({ title: 'Redefinir senha — BI Metahospitalar' });
+useHead({ title: 'Redefinir senha — MetaBI' });
 
 const route = useRoute();
 const token = typeof route.query.token === 'string' ? route.query.token : '';

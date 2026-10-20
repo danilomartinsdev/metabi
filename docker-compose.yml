@@ -1,11 +1,11 @@
 # Ambiente de desenvolvimento. Segredos vêm do .env (gere com `pnpm setup:env`).
 # Portas publicadas só em 127.0.0.1: nada fica acessível pela rede local.
-name: meta-bi
+name: metabi
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: meta-bi-postgres
+    container_name: metabi-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no .env (pnpm setup:env)}
@@ -30,7 +30,7 @@ services:
   # Caixa de e-mail falsa para dev ("esqueci minha senha"): http://localhost:8125
   mailpit:
     image: axllent/mailpit:v1.27
-    container_name: meta-bi-mailpit
+    container_name: metabi-mailpit
     restart: unless-stopped
     ports:
       - '127.0.0.1:1125:1025'

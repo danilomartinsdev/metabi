@@ -29,7 +29,7 @@ const ativo = (to: string) => to === destinoAtivo.value;
 
 // Grupos recolhíveis (Administração): fechados por padrão, lembrados por navegador.
 // O grupo da tela atual sempre aparece aberto.
-const CHAVE_ABERTOS = 'meta-bi:menu-grupos-abertos';
+const CHAVE_ABERTOS = 'metabi:menu-grupos-abertos';
 const abertos = ref<string[]>([]);
 onMounted(() => {
   try {

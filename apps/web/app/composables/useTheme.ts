@@ -1,7 +1,7 @@
 /*
  * Tema claro/escuro/sistema delegando ao color-mode do Nuxt UI (não ao do @vueuse).
  * API { mode, isDark, toggle } preservada — app.vue, BaseChart e ThemeToggle não mudam.
- * O color-mode do @nuxtjs/color-mode persiste a preferência em localStorage `meta-bi-tema`.
+ * O color-mode do @nuxtjs/color-mode persiste a preferência em localStorage `metabi-tema`.
  */
 export function useTheme() {
   const colorMode = useColorMode();

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { valorMetaSchema } from '@meta-bi/shared';
+import { valorMetaSchema } from '@metabi/shared';
 
 /** Grade de 12 meses para digitar um valor por mês (Administração › Histórico). */
 const props = defineProps<{

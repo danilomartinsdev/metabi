@@ -1,4 +1,4 @@
-import type { EscopoTipo, PaletaGrafico, Permission, Regiao } from '@meta-bi/shared';
+import type { EscopoTipo, PaletaGrafico, Permission, Regiao } from '@metabi/shared';
 
 export interface Escopo {
   tipo: EscopoTipo;

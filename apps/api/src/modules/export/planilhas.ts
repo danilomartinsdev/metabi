@@ -1,7 +1,7 @@
 // Montagem das planilhas Excel (puro, sem banco). Dinheiro vem como string decimal da camada de
 // métricas e vira célula numérica só aqui, na apresentação, com formato R$.
-import type { ClientesResumo, Filtros, PedidoLinha, Ranking } from '@meta-bi/shared';
-import { REGIAO_ENUM_ROTULO } from '@meta-bi/shared';
+import type { ClientesResumo, Filtros, PedidoLinha, Ranking } from '@metabi/shared';
+import { REGIAO_ENUM_ROTULO } from '@metabi/shared';
 import * as XLSX from 'xlsx';
 
 const BRL = '"R$" #,##0.00';

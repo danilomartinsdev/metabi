@@ -31,7 +31,7 @@ Antes: no GitHub, **Settings › General › Default branch** = `main`. Ao impor
 deploy; se falhar por falta de banco/variáveis, tudo bem — complete os passos e use **Deployments › Redeploy**.
 
 1. Crie a conta em https://vercel.com entrando com o GitHub.
-2. **Add New › Project** › importe `danilomartinsdev/metahospitalar-bi`.
+2. **Add New › Project** › importe `danilomartinsdev/metabi`.
 3. **Root Directory:** `apps/api` · Framework: _Other_ (o `apps/api/vercel.json` define o build).
 4. **Environment Variables** (Production):
 
@@ -40,7 +40,7 @@ deploy; se falhar por falta de banco/variáveis, tudo bem — complete os passos
 | `NODE_ENV`                                                                         | `production`                                                                              |
 | `DATABASE_URL`                                                                     | URL **pooled** do Neon (criada pela integração)                                           |
 | `DATABASE_URL_UNPOOLED`                                                            | URL **direta** do Neon (criada pela integração; ou `DATABASE_URL_DIRECT` se Neon próprio) |
-| `JWT_ACCESS_SECRET`                                                                | segredo forte (arquivo `C:\Users\Danilo\meta-bi-segredos\meta-bi-vercel-api.env`)         |
+| `JWT_ACCESS_SECRET`                                                                | segredo forte (arquivo `C:\Users\Danilo\metabi-segredos\metabi-vercel-api.env`)         |
 | `WEB_ORIGIN`, `APP_URL`, `PRINT_BASE_URL`                                          | `https://bi.seudominio.com.br`                                                            |
 | `COOKIE_SECURE`                                                                    | `true`                                                                                    |
 | `IMPORT_MAX_FILE_MB`                                                               | `4`                                                                                       |
@@ -52,18 +52,18 @@ deploy; se falhar por falta de banco/variáveis, tudo bem — complete os passos
 
 ## 3. Levar a base da produção para o Neon
 
-A produção atual roda no Docker deste PC (`meta-bi-prod`, exposta pelo ngrok). O script copia o banco dela
+A produção atual roda no Docker deste PC (`metabi-prod`, exposta pelo ngrok). O script copia o banco dela
 (só leitura) para o Neon, **substituindo** o que houver lá, e apaga sessões, links de senha, tokens de
 impressão e prévias (não valem no novo endereço). Os usuários entram com a mesma senha.
 
 1. Vercel › **Storage** › banco Neon › **.env.local** (ou **Show secret**): copie o valor de
    `DATABASE_URL_UNPOOLED` (URL **direta**, sem `-pooler`).
-2. Cole essa URL, sozinha, no arquivo `C:\Users\Danilo\meta-bi-segredos\neon-url-direta.txt` (fora do
+2. Cole essa URL, sozinha, no arquivo `C:\Users\Danilo\metabi-segredos\neon-url-direta.txt` (fora do
    repositório, junto dos outros segredos; o script nunca a imprime).
 3. Neste PC, com a produção rodando: `pnpm vercel:copiar-prod`. No fim ele mostra quantos pedidos e
    usuários foram copiados — confira com a produção.
 
-A cópia fica também em `C:\Users\Danilo\meta-bi-backups\prod-para-neon-<data>.dump`.
+A cópia fica também em `C:\Users\Danilo\metabi-backups\prod-para-neon-<data>.dump`.
 Pode rodar de novo quantas vezes quiser até a virada (passo 6): cada vez substitui o Neon inteiro.
 Se os usuários de exemplo (`admin@`, `gestor@`, `representante@`, `visualizador@metahospitalar.com.br`)
 existirem na produção, desative-os em Administração › Usuários.
@@ -99,8 +99,8 @@ Passos usados na virada:
 3. Entre no endereço da Vercel e confira: Visão geral, Faturamento, Análise de faturamento, um PDF e o login de
    um representante (só vê os próprios dados).
 4. Desligue o túnel do ngrok (feche a janela dele) e passe o novo endereço aos usuários.
-5. Deixe a stack Docker `meta-bi-prod` parada mas guardada por alguns dias, como plano B
-   (`docker compose -p meta-bi-prod stop`, na pasta `meta-bi-publico`).
+5. Deixe a stack Docker `metabi-prod` parada mas guardada por alguns dias, como plano B
+   (`docker compose -p metabi-prod stop`, na pasta `metabi-publico`).
 
 A partir daqui a produção é a Vercel: o fluxo vira homologação (Docker, neste PC) → merge na `main` → push.
 

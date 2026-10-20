@@ -1,5 +1,5 @@
 import { createParamDecorator, type ExecutionContext, SetMetadata } from '@nestjs/common';
-import type { Permission } from '@meta-bi/shared';
+import type { Permission } from '@metabi/shared';
 import type { FastifyRequest } from 'fastify';
 import type { UsuarioAutenticado } from './types.js';
 

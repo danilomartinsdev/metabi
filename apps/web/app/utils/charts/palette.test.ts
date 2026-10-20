@@ -1,4 +1,4 @@
-import { PALETAS_GRAFICO } from '@meta-bi/shared';
+import { PALETAS_GRAFICO } from '@metabi/shared';
 import { describe, expect, it } from 'vitest';
 import { evolucaoOptions } from './options';
 import { PALETAS, TEMA_CLARO, aplicarPaleta } from './palette';

@@ -1,5 +1,5 @@
 // Funções puras que geram as options do ECharts (testáveis; componentes só renderizam).
-import type { LinhaRanking, VisaoGeral } from '@meta-bi/shared';
+import type { LinhaRanking, VisaoGeral } from '@metabi/shared';
 import type { EChartsOption } from 'echarts';
 import { formatBRL, formatCompact, formatPct } from '../format';
 import type { TemaGrafico } from './palette';

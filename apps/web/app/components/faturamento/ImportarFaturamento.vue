@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PreviaFaturamento } from '@meta-bi/shared';
+import type { PreviaFaturamento } from '@metabi/shared';
 import { useConfirmarFaturamento, usePreviaFaturamento } from '~/composables/api/useFaturamento';
 
 const aberto = defineModel<boolean>('aberto', { required: true });

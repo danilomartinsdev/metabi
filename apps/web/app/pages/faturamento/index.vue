@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CampoTotalFaturamento } from '@meta-bi/shared';
+import type { CampoTotalFaturamento } from '@metabi/shared';
 import {
   useFaturamentoAnosQuery,
   useFaturamentoComparativoQuery,
@@ -16,7 +16,7 @@ import { anoAnterior, deslocarMes, periodoCurto, periodoPorExtenso } from '~/uti
 
 // Faturamento: domínio separado dos pedidos (relatório diário do Focco). Não altera outras telas.
 definePageMeta({ titulo: 'Faturamento', permissao: 'faturamento.view' });
-useHead({ title: 'Faturamento — BI Metahospitalar' });
+useHead({ title: 'Faturamento — MetaBI' });
 
 const route = useRoute();
 const router = useRouter();

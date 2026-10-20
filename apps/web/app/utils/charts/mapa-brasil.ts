@@ -1,6 +1,6 @@
 // Mapa do Brasil por região ou por UF (malhas do IBGE em public/geo, registradas pelo MapaBrasilChart).
 // Sem filtro: intensidade proporcional à participação. Com filtro: selecionados em destaque.
-import { type LinhaRanking, REGIAO_ENUM_ROTULO, type RegiaoEnum, UFS } from '@meta-bi/shared';
+import { type LinhaRanking, REGIAO_ENUM_ROTULO, type RegiaoEnum, UFS } from '@metabi/shared';
 import type { EChartsOption } from 'echarts';
 import { formatBRL, formatInt, formatPct } from '../format';
 import type { TemaGrafico } from './palette';

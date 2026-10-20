@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { PERMISSION_LABELS, PERMISSIONS, type PapelAdmin, type Permission } from '@meta-bi/shared';
+import { PERMISSION_LABELS, PERMISSIONS, type PapelAdmin, type Permission } from '@metabi/shared';
 import { usePapeisQuery, useRemoverPapel, useSalvarPapel } from '~/composables/api/useAdmin';
 
 const aviso = useAviso();
 const confirmar = useConfirmacao();
 definePageMeta({ titulo: 'Papéis', permissao: 'users.manage' });
-useHead({ title: 'Papéis — BI Metahospitalar' });
+useHead({ title: 'Papéis — MetaBI' });
 
 const papeis = usePapeisQuery();
 const salvar = useSalvarPapel();

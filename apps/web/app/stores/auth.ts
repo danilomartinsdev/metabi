@@ -1,4 +1,4 @@
-import type { AuthResposta, LoginInput, Permission, UsuarioLogado } from '@meta-bi/shared';
+import type { AuthResposta, LoginInput, Permission, UsuarioLogado } from '@metabi/shared';
 import { defineStore } from 'pinia';
 
 /**

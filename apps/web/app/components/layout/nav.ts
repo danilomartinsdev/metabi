@@ -1,4 +1,4 @@
-import type { Permission } from '@meta-bi/shared';
+import type { Permission } from '@metabi/shared';
 import { MINHAS_VENDAS } from '~/utils/navegacao';
 
 export interface NavItem {

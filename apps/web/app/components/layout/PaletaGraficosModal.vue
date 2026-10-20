@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PALETAS_GRAFICO, type PaletaGrafico } from '@meta-bi/shared';
+import { PALETAS_GRAFICO, type PaletaGrafico } from '@metabi/shared';
 import { useSalvarPreferencias } from '~/composables/api/usePreferencias';
 import { PALETAS, aplicarPaleta, lerTema } from '~/utils/charts/palette';
 

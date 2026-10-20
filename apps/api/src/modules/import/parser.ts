@@ -1,4 +1,4 @@
-import { COLUNAS_FOCCO, normalizarNome } from '@meta-bi/shared';
+import { COLUNAS_FOCCO, normalizarNome } from '@metabi/shared';
 import * as XLSX from 'xlsx';
 
 export type Formato = 'html' | 'xls' | 'xlsx' | 'csv';

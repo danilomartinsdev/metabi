@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ titulo: 'Ranking de estados', permissao: 'dashboard.view' });
-useHead({ title: 'Ranking de estados — BI Metahospitalar' });
+useHead({ title: 'Ranking de estados — MetaBI' });
 </script>
 
 <template>

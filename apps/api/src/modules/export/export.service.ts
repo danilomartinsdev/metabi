@@ -9,7 +9,7 @@ import type {
   Filtros,
   SolicitacaoImpressao,
   RelatorioImpressao,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import { exigirEscopoTodos } from '../../common/auth/privilegios.js';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';
 import { ApiException, Erros } from '../../common/errors.js';
@@ -121,7 +121,7 @@ export class ExportService {
     });
     return {
       conteudo,
-      nome: `meta-bi-${tipo}-${periodo.de}_${periodo.ate}.xlsx`,
+      nome: `metabi-${tipo}-${periodo.de}_${periodo.ate}.xlsx`,
       tipo: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     };
   }
@@ -137,7 +137,7 @@ export class ExportService {
     try {
       return await this.renderer.renderizar(
         `${base}/print/${pagina}?token=${token}`,
-        `Metahospitalar · BI Executivo — gerado por ${u.nome} em ${quando} · uso interno`,
+        `Meta Hospitalar · MetaBI — gerado por ${u.nome} em ${quando} · uso interno`,
       );
     } catch (e) {
       this.logger.error(`Falha ao gerar PDF (${pagina}): ${(e as Error).message}`);
@@ -163,7 +163,7 @@ export class ExportService {
     });
     return {
       conteudo,
-      nome: `meta-bi-relatorio-${periodo.de}_${periodo.ate}.pdf`,
+      nome: `metabi-relatorio-${periodo.de}_${periodo.ate}.pdf`,
       tipo: 'application/pdf',
     };
   }
@@ -185,7 +185,7 @@ export class ExportService {
     });
     return {
       conteudo,
-      nome: `meta-bi-faturamento-${periodo.de}_${periodo.ate}.pdf`,
+      nome: `metabi-faturamento-${periodo.de}_${periodo.ate}.pdf`,
       tipo: 'application/pdf',
     };
   }
@@ -207,7 +207,7 @@ export class ExportService {
     });
     return {
       conteudo,
-      nome: `meta-bi-analise-faturamento-${periodo.de}_${periodo.ate}.pdf`,
+      nome: `metabi-analise-faturamento-${periodo.de}_${periodo.ate}.pdf`,
       tipo: 'application/pdf',
     };
   }

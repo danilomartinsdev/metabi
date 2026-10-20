@@ -7,7 +7,7 @@ import {
   representanteUpdateSchema,
   type StatusPdvUpdate,
   statusPdvUpdateSchema,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { FastifyRequest } from 'fastify';
 import type { z } from 'zod';
 import { AuthenticatedOnly, CurrentUser, RequirePermission } from '../../common/auth/decorators.js';

@@ -1,5 +1,5 @@
 // Único lugar com cores de gráfico além de tokens.css (docs/design/design-system.md).
-import type { PaletaGrafico } from '@meta-bi/shared';
+import type { PaletaGrafico } from '@metabi/shared';
 
 export const PALETA_CATEGORICA = [
   '#1D5FA8',

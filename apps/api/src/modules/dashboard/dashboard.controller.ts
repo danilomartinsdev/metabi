@@ -6,7 +6,7 @@ import {
   filtrosSchema,
   type PedidosQuery,
   pedidosQuerySchema,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import { z } from 'zod';
 import { CurrentUser, RequirePermission } from '../../common/auth/decorators.js';
 import type { UsuarioAutenticado } from '../../common/auth/types.js';

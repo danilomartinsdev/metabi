@@ -1,4 +1,4 @@
-import type { EscopoTipo, Permission } from '@meta-bi/shared';
+import type { EscopoTipo, Permission } from '@metabi/shared';
 
 export interface Novidade {
   /** Identificador estável e crescente ("AAAA-MM-DD-n"): o que já foi visto é guardado por ele. */

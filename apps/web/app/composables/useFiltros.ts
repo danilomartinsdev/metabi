@@ -1,4 +1,4 @@
-import { type Filtros, filtrosSchema } from '@meta-bi/shared';
+import { type Filtros, filtrosSchema } from '@metabi/shared';
 
 type Valor = string | string[] | undefined | null;
 const CHAVES = ['de', 'ate', 'regiao', 'uf', 'gestor', 'segmento', 'status', 'q'] as const;

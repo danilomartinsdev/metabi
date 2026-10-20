@@ -39,7 +39,7 @@ const LINHAS = [
             <slot />
           </div>
         </div>
-        <p class="text-xs text-muted-foreground">© {{ ano }} Meta Hospitalar · BI Comercial</p>
+        <p class="text-xs text-muted-foreground">© {{ ano }} Meta Hospitalar · MetaBI</p>
       </section>
 
       <section

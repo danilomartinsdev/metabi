@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PreviaNotas } from '@meta-bi/shared';
+import type { PreviaNotas } from '@metabi/shared';
 import { useConfirmarNotas, usePreviaNotas } from '~/composables/api/useNotasFiscais';
 
 const aberto = defineModel<boolean>('aberto', { required: true });

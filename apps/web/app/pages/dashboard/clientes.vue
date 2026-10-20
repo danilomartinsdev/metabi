@@ -2,7 +2,7 @@
 import { useClientesQuery } from '~/composables/api/useDashboard';
 
 definePageMeta({ titulo: 'Clientes', permissao: 'dashboard.view' });
-useHead({ title: 'Clientes — BI Metahospitalar' });
+useHead({ title: 'Clientes — MetaBI' });
 
 const { qs } = useFiltros();
 const q = useClientesQuery(qs);

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { loginSchema } from '@meta-bi/shared';
+import { loginSchema } from '@metabi/shared';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import type { z } from 'zod';
 import { useAuthStore } from '~/stores/auth';
 import { paginaInicial } from '~/utils/navegacao';
 
 definePageMeta({ layout: 'auth' });
-useHead({ title: 'Entrar — BI Metahospitalar' });
+useHead({ title: 'Entrar — MetaBI' });
 
 const auth = useAuthStore();
 const route = useRoute();

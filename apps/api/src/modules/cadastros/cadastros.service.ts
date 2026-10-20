@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { ClienteUpdate, RepresentanteUpdate, StatusPdvUpdate } from '@meta-bi/shared';
-import { normalizarNome } from '@meta-bi/shared';
+import type { ClienteUpdate, RepresentanteUpdate, StatusPdvUpdate } from '@metabi/shared';
+import { normalizarNome } from '@metabi/shared';
 import { Erros } from '../../common/errors.js';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';
 import { PrismaService } from '../../prisma/prisma.service.js';

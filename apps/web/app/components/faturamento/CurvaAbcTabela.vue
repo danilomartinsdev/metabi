@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AnaliseNotas, ClasseAbc } from '@meta-bi/shared';
+import type { AnaliseNotas, ClasseAbc } from '@metabi/shared';
 import type { TableColumn } from '@nuxt/ui';
 
 type LinhaCliente = AnaliseNotas['abcClientes'][number];

@@ -4,7 +4,7 @@ import {
   type HistoricoMes,
   type HistoricoSalvar,
   historicoSalvarSchema,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { CurrentUser, RequirePermission } from '../../common/auth/decorators.js';

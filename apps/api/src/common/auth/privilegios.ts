@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import type { Permission } from '@meta-bi/shared';
+import type { Permission } from '@metabi/shared';
 import { ApiException } from '../errors.js';
 import type { UsuarioAutenticado } from './types.js';
 
