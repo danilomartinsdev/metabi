@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { type ErroLinha, type LinhaFocco, linhaFoccoSchema, type PreviaImportacao } from '@meta-bi/shared';
+import { type ErroLinha, type LinhaFocco, linhaFoccoSchema, type PreviaImportacao } from '@metabi/shared';
 import { ApiException, Erros } from '../../common/errors.js';
 import { REGIAO_ENUM } from '../../common/regiao.js';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CampoTotalFaturamento, FaturamentoComparativo } from '@meta-bi/shared';
+import type { CampoTotalFaturamento, FaturamentoComparativo } from '@metabi/shared';
 
 /** Comparativo entre dois anos (página de Faturamento e PDF). */
 const props = defineProps<{

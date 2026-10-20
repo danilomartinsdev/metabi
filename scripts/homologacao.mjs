@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Ambiente de homologação: segunda stack Docker (projeto meta-bi-homolog), isolada da produção.
+// Ambiente de homologação: segunda stack Docker (projeto metabi-homolog), isolada da produção.
 // Ver docs/operacao/homologacao.md.
 //
 //   pnpm homolog:preparar [--rede [--ip x]]  1ª vez: clone + .env da homologação (segredos novos);
@@ -9,7 +9,7 @@
 //   pnpm homolog:subir <branch>              põe a branch no ar na homologação (migrations rodam sozinhas)
 //   pnpm homolog:status | homolog:parar
 //
-// Travas: todo comando docker compose daqui usa o projeto meta-bi-homolog e o clone da homologação;
+// Travas: todo comando docker compose daqui usa o projeto metabi-homolog e o clone da homologação;
 // da produção só se lê (pg_dump). Nunca imprime segredos.
 import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -18,13 +18,13 @@ import os from 'node:os';
 import path from 'node:path';
 
 const REPO_DEV = path.resolve(import.meta.dirname, '..').replaceAll('\\', '/');
-const CLONE = 'C:/Users/Danilo/meta-bi-homolog';
-const BACKUPS = 'C:/Users/Danilo/meta-bi-backups';
-const PROJETO = 'meta-bi-homolog';
-const PROD_POSTGRES = 'meta-bi-prod-postgres-1';
+const CLONE = 'C:/Users/Danilo/metabi-homolog';
+const BACKUPS = 'C:/Users/Danilo/metabi-backups';
+const PROJETO = 'metabi-homolog';
+const PROD_POSTGRES = 'metabi-prod-postgres-1';
 // Planilhas das importações (volume storage). Da produção só se lê (montado :ro).
-const PROD_STORAGE = 'meta-bi-prod_storage';
-const HOMOLOG_STORAGE = 'meta-bi-homolog_storage';
+const PROD_STORAGE = 'metabi-prod_storage';
+const HOMOLOG_STORAGE = 'metabi-homolog_storage';
 const IMAGEM_COPIA = 'postgres:16-alpine'; // já baixada (é a do banco); só usa sh/cp
 const MARCADOR = 'AMBIENTE=homologacao';
 const HTTP_PORT = 4337;
@@ -124,7 +124,7 @@ Próximos passos:
   1. pnpm homolog:subir main
   2. pnpm homolog:copiar-prod
   (Só com --rede: liberar a porta no firewall, no PowerShell como administrador, uma vez:
-   netsh advfirewall firewall add rule name="meta-bi-homolog" dir=in action=allow protocol=TCP localport=${HTTP_PORT})`);
+   netsh advfirewall firewall add rule name="metabi-homolog" dir=in action=allow protocol=TCP localport=${HTTP_PORT})`);
 }
 
 function subir() {

@@ -1,18 +1,18 @@
 #!/usr/bin/env node
-// Copia o banco da produção (Docker meta-bi-prod, só leitura) para o Neon da Vercel. Ver docs/operacao/deploy-vercel.md.
+// Copia o banco da produção (Docker metabi-prod, só leitura) para o Neon da Vercel. Ver docs/operacao/deploy-vercel.md.
 //
 //   pnpm vercel:copiar-prod
 //
 // A URL DIRETA do Neon (sem "-pooler") fica num arquivo só seu, fora do repositório:
-//   C:/Users/Danilo/meta-bi-segredos/neon-url-direta.txt   (ou o caminho em NEON_URL_ARQUIVO)
+//   C:/Users/Danilo/metabi-segredos/neon-url-direta.txt   (ou o caminho em NEON_URL_ARQUIVO)
 // O script nunca imprime a URL. Ele SUBSTITUI tudo o que houver no Neon pela cópia da produção.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const PROD_POSTGRES = 'meta-bi-prod-postgres-1';
-const BACKUPS = 'C:/Users/Danilo/meta-bi-backups';
-const ARQUIVO_URL = process.env.NEON_URL_ARQUIVO ?? 'C:/Users/Danilo/meta-bi-segredos/neon-url-direta.txt';
+const PROD_POSTGRES = 'metabi-prod-postgres-1';
+const BACKUPS = 'C:/Users/Danilo/metabi-backups';
+const ARQUIVO_URL = process.env.NEON_URL_ARQUIVO ?? 'C:/Users/Danilo/metabi-segredos/neon-url-direta.txt';
 // Cliente 17: restaura dumps do Postgres 16 (produção) num Neon 16 ou 17.
 const IMAGEM_CLIENTE = 'postgres:17-alpine';
 
@@ -47,7 +47,7 @@ const url = fs
   .trim();
 if (!/^postgres(ql)?:\/\//.test(url)) falhar(`${ARQUIVO_URL} não contém uma URL postgresql://.`);
 if (url.includes('-pooler')) falhar('Use a URL DIRETA do Neon (sem "-pooler" no host).');
-if (/localhost|127\.0\.0\.1|meta-bi-prod/.test(url)) falhar('A URL não parece ser do Neon. Nada foi feito.');
+if (/localhost|127\.0\.0\.1|metabi-prod/.test(url)) falhar('A URL não parece ser do Neon. Nada foi feito.');
 
 const rodando = spawnSync('docker', ['inspect', '-f', '{{.State.Running}}', PROD_POSTGRES], {
   encoding: 'utf8',

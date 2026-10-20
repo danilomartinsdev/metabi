@@ -18,7 +18,7 @@ import {
   PERMISSOES_ADMIN,
   type Permission,
   papelSalvarSchema,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { FastifyRequest } from 'fastify';
 import { CurrentUser, RequirePermission } from '../../common/auth/decorators.js';
 import type { UsuarioAutenticado } from '../../common/auth/types.js';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AnaliseFaturamentoImpressao, ClasseAbc, PaletaGrafico } from '@meta-bi/shared';
+import type { AnaliseFaturamentoImpressao, ClasseAbc, PaletaGrafico } from '@metabi/shared';
 import { corDaDivisao, divisoesOptions } from '~/utils/charts/notas-fiscais';
 import { coresFatias } from '~/utils/charts/palette';
 import { periodoPorExtenso } from '~/utils/periodo';
@@ -7,7 +7,7 @@ import { periodoPorExtenso } from '~/utils/periodo';
 // PDF da Análise de faturamento, aberto pelo Chromium da API (ADR 0004). Sem sessão: o token de uso
 // único na URL é a credencial; a API confere permissão e escopo "todos" de quem pediu o PDF.
 definePageMeta({ layout: 'print' });
-useHead({ title: 'Análise de faturamento — BI Metahospitalar' });
+useHead({ title: 'Análise de faturamento — MetaBI' });
 
 type Janela = Window & { __relatorio?: 'pronto' | 'erro' };
 const route = useRoute();

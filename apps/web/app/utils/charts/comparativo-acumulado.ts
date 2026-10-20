@@ -1,6 +1,6 @@
 // Comparativo com o ano anterior: total do período selecionado × total do mesmo período do ano anterior.
 // (Público/Privado ficam de fora por enquanto — decisão do usuário em 2026-10-05.)
-import type { VisaoGeral } from '@meta-bi/shared';
+import type { VisaoGeral } from '@metabi/shared';
 import type { EChartsOption } from 'echarts';
 import { formatBRL, formatCompact, formatPct } from '../format';
 import { periodoCurto } from '../periodo';

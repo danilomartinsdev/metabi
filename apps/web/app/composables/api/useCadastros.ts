@@ -5,7 +5,7 @@ import type {
   RepresentanteUpdate,
   Segmento,
   StatusPdvUpdate,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import type { MaybeRefOrGetter } from 'vue';
 import { useApi } from './useApi';

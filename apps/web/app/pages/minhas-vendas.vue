@@ -15,7 +15,7 @@ import { periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
 // escolhe o período e, se tiver mais de um representante, quais mostrar (a API intersecta com o escopo).
 // Aparece por permissão (Administração › Papéis), como em MINHAS_VENDAS (utils/navegacao).
 definePageMeta({ titulo: 'Minhas vendas', permissao: 'minhas-vendas.view' });
-useHead({ title: 'Minhas vendas — BI Metahospitalar' });
+useHead({ title: 'Minhas vendas — MetaBI' });
 
 const auth = useAuthStore();
 // Os links "Ver todos" levam a telas com permissão própria; quem só tem Minhas vendas não os vê.

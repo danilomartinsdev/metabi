@@ -1,4 +1,4 @@
-import type { LinhaRanking, VisaoGeral } from '@meta-bi/shared';
+import type { LinhaRanking, VisaoGeral } from '@metabi/shared';
 import { describe, expect, it } from 'vitest';
 import { barrasRankingOptions, donutOptions, evolucaoOptions } from './options';
 import { TEMA_CLARO } from './palette';

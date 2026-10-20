@@ -6,7 +6,7 @@ import {
   faturamentoAnoQuerySchema,
   faturamentoComparativoQuerySchema,
   faturamentoQuerySchema,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { FastifyRequest } from 'fastify';
 import type { z } from 'zod';
 import { CurrentUser, RequirePermission } from '../../common/auth/decorators.js';

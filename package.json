@@ -1,21 +1,21 @@
 {
-  "name": "meta-bi",
+  "name": "metabi",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "BI Executivo — Meta Hospitalar",
+  "description": "MetaBI — Meta Hospitalar",
   "packageManager": "pnpm@12.8.1",
   "engines": {
     "node": ">=24"
   },
   "scripts": {
-    "dev": "pnpm --filter @meta-bi/shared build && pnpm --parallel --filter @meta-bi/shared --filter api --filter web dev",
+    "dev": "pnpm --filter @metabi/shared build && pnpm --parallel --filter @metabi/shared --filter api --filter web dev",
     "build": "pnpm -r build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "typecheck": "pnpm --filter @meta-bi/shared build && pnpm -r typecheck",
-    "test": "pnpm --filter @meta-bi/shared build && pnpm -r test",
+    "typecheck": "pnpm --filter @metabi/shared build && pnpm -r typecheck",
+    "test": "pnpm --filter @metabi/shared build && pnpm -r test",
     "test:e2e": "pnpm --filter web test:e2e",
     "setup:env": "node scripts/setup-env.mjs",
     "db:up": "docker compose up -d --wait postgres mailpit",

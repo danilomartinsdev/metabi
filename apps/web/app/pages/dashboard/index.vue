@@ -5,7 +5,7 @@ import { barrasRankingOptions, donutOptions, evolucaoOptions, fatiasDonut } from
 import { coresFatias } from '~/utils/charts/palette';
 
 definePageMeta({ titulo: 'Visão geral', permissao: 'dashboard.view' });
-useHead({ title: 'Visão geral — BI Metahospitalar' });
+useHead({ title: 'Visão geral — MetaBI' });
 
 const { qs, filtros } = useFiltros();
 const meses = useMesesQuery();

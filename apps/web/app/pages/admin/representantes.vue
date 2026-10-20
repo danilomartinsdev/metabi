@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SEGMENTO_ROTULO, SEGMENTOS, type Segmento } from '@meta-bi/shared';
+import { SEGMENTO_ROTULO, SEGMENTOS, type Segmento } from '@metabi/shared';
 import {
   type Representante,
   useAtualizarRepresentante,
@@ -8,7 +8,7 @@ import {
 
 const aviso = useAviso();
 definePageMeta({ titulo: 'Representantes', permissao: 'cadastros.edit' });
-useHead({ title: 'Representantes — BI Metahospitalar' });
+useHead({ title: 'Representantes — MetaBI' });
 
 const reps = useRepresentantesQuery();
 const atualizar = useAtualizarRepresentante();

@@ -1,4 +1,4 @@
-import { DEFAULT_ROLES, type RoleKey } from '@meta-bi/shared';
+import { DEFAULT_ROLES, type RoleKey } from '@metabi/shared';
 import { Test } from '@nestjs/testing';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import argon2 from 'argon2';

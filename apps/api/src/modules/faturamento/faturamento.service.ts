@@ -13,7 +13,7 @@ import {
   linhaFaturamentoSchema,
   type PreviaFaturamento,
   type TotaisFaturamento,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';
 import { ApiException } from '../../common/errors.js';
 import { Prisma } from '../../generated/prisma/client.js';

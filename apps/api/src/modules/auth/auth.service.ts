@@ -6,7 +6,7 @@ import type {
   RedefinirSenhaInput,
   TrocarSenhaInput,
   UsuarioLogado,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import { ENV, type Env } from '../../config/env.js';
 import { ApiException, Erros } from '../../common/errors.js';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';
@@ -163,7 +163,7 @@ export class AuthService {
     // Sem await: o tempo de resposta não deve depender do envio (não revela se o e-mail existe).
     void this.mail.enviar({
       para: u.email,
-      assunto: 'Redefinição de senha — BI Metahospitalar',
+      assunto: 'Redefinição de senha — MetaBI',
       texto: `Olá, ${u.nome}.\n\nPara definir uma nova senha, acesse:\n${link}\n\nO link vale por 1 hora. Se você não pediu, ignore este e-mail.`,
       html: `<p>Olá, ${escapar(u.nome)}.</p><p>Para definir uma nova senha, clique no link abaixo:</p><p><a href="${link}">Redefinir minha senha</a></p><p>O link vale por 1 hora. Se você não pediu, ignore este e-mail.</p>`,
     });

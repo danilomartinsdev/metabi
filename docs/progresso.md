@@ -32,8 +32,9 @@ Período e busca ficaram na barra de filtros de cada tela (não na topbar).
 - [x] **Usuário no rodapé do menu e aparência centralizada** (2026-10-19, `fase-5g-analise-faturamento`): nome/papel, Trocar senha e Sair no rodapé do menu lateral (topo só com o título); tema claro/escuro e cores, tamanho da letra, cores dos gráficos e Novidades só na barra flutuante (saíram o botão de sol do topo e os itens duplicados do menu do usuário). E2E de login/RBAC ajustados ao grupo Administração recolhido. Em produção (Vercel) desde 2026-10-19 (merge `259fc90`).
 - [x] **Sino de Novidades no menu e guia de Ajuda** (2026-10-20, `fase-5g-analise-faturamento`): layout alinhado ao padrão dos outros projetos (docs/design/padrao-visual.md; cores e fontes da Meta mantidas). Sino ao lado do logo no topo do menu (barra do topo quando recolhido/celular), menu de 240px com topo de 56px, itens 14px/ícone 18px; "?" da barra flutuante abre um tour (driver.js 1.8.0) que pula o que não está na tela. Baselines visuais do login regeneradas (estavam de 02/10). Em produção (Vercel) desde 2026-10-20 (merge `5c5ee73`), sem passar pela homologação.
 - [x] **Celular e notebook sem tela deslizando** (2026-10-20, em produção desde 2026-10-20, merge `7370fcd`): auditoria com Playwright em 16 tamanhos (iPhone SE ao 16 Pro Max, Galaxy S24/S24 Ultra/A55/Z Flip/Z Fold, notebooks 1280–1920) × 18 telas. Antes, 13 telas deslizavam de 100 a 900px no celular (e Metas/Auditoria no notebook): o bloco `mx-auto max-w-*` de cada tela crescia até caber a tabela mais larga. Correção: `*:w-full` no `main` do layout; grades com `grid-cols-1` no celular; títulos de cartão que quebram linha; tabela do Histórico com rolagem própria; campos com 16px no iOS (sem zoom ao focar). Conferido depois em Galaxy S24, iPhone 16 Pro Max e notebook 1366. Possível melhoria: tabelas largas (Pedidos, Auditoria) como lista de cartões no celular.
+- [x] **Nome MetaBI** (2026-10-20): sistema renomeado em tudo — títulos, e-mail, PDF, rodapé e login ("MetaBI"); pacote `@metabi/shared`; Docker `metabi` / `metabi-prod` / `metabi-homolog` (volumes copiados, os `meta-bi-*` antigos ficaram como backup); chaves do navegador `metabi-*` com migração automática das antigas (`plugins/00.migrar-chaves.client.ts`); token de acesso emitido como `metabi` e aceitando o emissor antigo até expirar; pastas externas `C:UsersDanilometabi-segredos|backups|publico|homolog`; GitHub `danilomartinsdev/metabi`. "Meta Hospitalar" segue como nome da empresa. Endereços da Vercel mantidos (`metahospitalar-bi.vercel.app`) por decisão do usuário. Falta: renomear a pasta do projeto (`projetos/metahospitalar-bi` → `projetos/metabi`), com o Claude Code fechado.
 
-- [x] **Produção na Vercel** (virada em 2026-10-19; ADR 0008, docs/operacao/deploy-vercel.md, plano Hobby): https://metahospitalar-bi.vercel.app (site, projeto `metahospitalar-bi`, `apps/web`) e https://metahospitalar-api.vercel.app (API, projeto `metabi-api`, `apps/api`, banco Neon). Base da produção Docker copiada na virada (796 pedidos, 17 usuários); ngrok desligado; stack `meta-bi-prod` parada (não removida) como plano B. Cada push na `main` publica. `pnpm vercel:definir-senha` define senha no Neon; `vercel:copiar-prod` agora exige `--sobrescrever-producao-vercel` (só recuperação).
+- [x] **Produção na Vercel** (virada em 2026-10-19; ADR 0008, docs/operacao/deploy-vercel.md, plano Hobby): https://metahospitalar-bi.vercel.app (site, projeto `metahospitalar-bi`, `apps/web`) e https://metahospitalar-api.vercel.app (API, projeto `metabi-api`, `apps/api`, banco Neon). Base da produção Docker copiada na virada (796 pedidos, 17 usuários); ngrok desligado; stack `metabi-prod` parada (não removida) como plano B. Cada push na `main` publica. `pnpm vercel:definir-senha` define senha no Neon; `vercel:copiar-prod` agora exige `--sobrescrever-producao-vercel` (só recuperação).
 - [ ] **Homologação depois da virada**: `pnpm homolog:copiar-prod` ainda copia do Postgres Docker antigo (parado). Adaptar para copiar do Neon (somente leitura) antes da próxima rodada de testes.
 - [ ] **Planilha real** em `fixtures/focco/ano-todo-ate-agora.xls` (gitignored) — necessária para validar o importador.
 - [ ] Gerar amostra anonimizada em `fixtures/focco/amostras/` a partir da planilha real.
@@ -41,7 +42,7 @@ Período e busca ficaram na barra de filtros de cada tela (não na topbar).
 - [ ] Default branch do GitHub ainda é `fase-0-contexto` (trocar para `main` em Settings ou autenticar o `gh`).
 - [ ] Subir a stack de produção (`docker-compose.prod.yml`) de ponta a ponta — imagens já compilam (Fase 6).
 - [ ] Primeira execução da CI no GitHub.
-- [x] **Ambiente de homologação** (2026-10-07): stack `meta-bi-homolog` isolada da produção, em http://localhost:4337 (Mailpit em :4339), faixa "Homologação", cópia da produção via `pnpm homolog:copiar-prod` (banco e, desde 2026-10-19, as planilhas importadas do volume `storage`) — ver docs/operacao/homologacao.md. Fluxo: validar na homologação, depois produção.
+- [x] **Ambiente de homologação** (2026-10-07): stack `metabi-homolog` isolada da produção, em http://localhost:4337 (Mailpit em :4339), faixa "Homologação", cópia da produção via `pnpm homolog:copiar-prod` (banco e, desde 2026-10-19, as planilhas importadas do volume `storage`) — ver docs/operacao/homologacao.md. Fluxo: validar na homologação, depois produção.
 
 ## Decisões tomadas
 
@@ -124,13 +125,13 @@ Telas: Administração › Usuários, Papéis, Auditoria. Fix da revisão de aut
   `code-review` usa o comando nativo do Claude Code.
 - docs/ completo (produto, dados, arquitetura, ADRs 0001–0005, design, operação em esqueleto).
 - Logos baixados em `apps/web/public/brand/`.
-- docker-compose.yml com Postgres 16 (127.0.0.1:5517, volume `meta-bi_pgdata`).
+- docker-compose.yml com Postgres 16 (127.0.0.1:5517, volume `metabi_pgdata`).
 
 **Como testar**
 
 - `pnpm hooks:test` — testes dos hooks.
 - Pedir ao Claude para escrever em `.env` → deve ser bloqueado pelo hook.
-- `pnpm db:up` → container `meta-bi-postgres` healthy; `pnpm db:down` para parar.
+- `pnpm db:up` → container `metabi-postgres` healthy; `pnpm db:down` para parar.
 - `/memory` → CLAUDE.md raiz, glossário importado, rules `seguranca` e `git` sempre carregadas.
 
 **Observações**

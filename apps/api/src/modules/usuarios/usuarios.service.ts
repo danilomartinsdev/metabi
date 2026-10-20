@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { HttpStatus, Injectable } from '@nestjs/common';
-import type { EscopoTipo, UsuarioAdmin, UsuarioAtualizar, UsuarioCriar } from '@meta-bi/shared';
+import type { EscopoTipo, UsuarioAdmin, UsuarioAtualizar, UsuarioCriar } from '@metabi/shared';
 import { ApiException, Erros } from '../../common/errors.js';
 import { exigirAdmin } from '../../common/auth/privilegios.js';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';

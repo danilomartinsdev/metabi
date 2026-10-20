@@ -19,7 +19,7 @@ const sinoNoMenu = computed(() => telaMedia.value && !recolhido.value);
     Pular para o conteúdo
   </a>
 
-  <UDashboardGroup storage="local" storage-key="meta-bi-sidebar" unit="rem">
+  <UDashboardGroup storage="local" storage-key="metabi-sidebar" unit="rem">
     <UDashboardSidebar
       v-model:collapsed="recolhido"
       collapsible

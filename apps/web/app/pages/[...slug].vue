@@ -4,7 +4,7 @@ import { NAV } from '~/components/layout/nav';
 const route = useRoute();
 const item = computed(() => NAV.flatMap((g) => g.itens).find((i) => route.path.startsWith(i.to) && i.fase));
 definePageMeta({ titulo: '' });
-useHead({ title: () => `${item.value?.label ?? 'Página não encontrada'} — BI Metahospitalar` });
+useHead({ title: () => `${item.value?.label ?? 'Página não encontrada'} — MetaBI` });
 </script>
 
 <template>

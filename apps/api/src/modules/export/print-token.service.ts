@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import { type SolicitacaoImpressao, solicitacaoImpressaoSchema } from '@meta-bi/shared';
+import { type SolicitacaoImpressao, solicitacaoImpressaoSchema } from '@metabi/shared';
 import type { UsuarioAutenticado } from '../../common/auth/types.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { REGIAO_ENUM_ROTULO, type UsuarioAdmin } from '@meta-bi/shared';
+import { REGIAO_ENUM_ROTULO, type UsuarioAdmin } from '@metabi/shared';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { refDebounced } from '@vueuse/core';
 import { useAcaoUsuario, useUsuariosQuery } from '~/composables/api/useAdmin';
@@ -8,7 +8,7 @@ import { useAuthStore } from '~/stores/auth';
 const aviso = useAviso();
 const confirmar = useConfirmacao();
 definePageMeta({ titulo: 'Usuários', permissao: 'users.manage' });
-useHead({ title: 'Usuários — BI Metahospitalar' });
+useHead({ title: 'Usuários — MetaBI' });
 
 const auth = useAuthStore();
 const usuarios = useUsuariosQuery();

@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Req } from '@nestjs/common';
-import { type AnaliseNotasQuery, analiseNotasQuerySchema, confirmarNotasSchema } from '@meta-bi/shared';
+import { type AnaliseNotasQuery, analiseNotasQuerySchema, confirmarNotasSchema } from '@metabi/shared';
 import type { FastifyRequest } from 'fastify';
 import type { z } from 'zod';
 import { CurrentUser, RequirePermission } from '../../common/auth/decorators.js';

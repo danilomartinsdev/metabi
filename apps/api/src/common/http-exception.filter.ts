@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import type { ErroApi } from '@meta-bi/shared';
+import type { ErroApi } from '@metabi/shared';
 import type { FastifyReply } from 'fastify';
 
 const CODIGO_POR_STATUS: Record<number, ErroApi['code']> = {

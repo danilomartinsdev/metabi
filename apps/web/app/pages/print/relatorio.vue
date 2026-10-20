@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { type PaletaGrafico, REGIAO_ENUM_ROTULO, type RelatorioImpressao } from '@meta-bi/shared';
+import { type PaletaGrafico, REGIAO_ENUM_ROTULO, type RelatorioImpressao } from '@metabi/shared';
 import { barrasRankingOptions, donutOptions, evolucaoOptions } from '~/utils/charts/options';
 import { periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
 
 // Relatório executivo em A4, aberto pelo Chromium da API (ADR 0004). Sem sessão: o token de uso
 // único na URL é a credencial; a API aplica o escopo de quem pediu o PDF.
 definePageMeta({ layout: 'print' });
-useHead({ title: 'Relatório executivo — BI Metahospitalar' });
+useHead({ title: 'Relatório executivo — MetaBI' });
 
 type Janela = Window & { __relatorio?: 'pronto' | 'erro' };
 const route = useRoute();

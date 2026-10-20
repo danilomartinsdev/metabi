@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { VisaoGeral } from '@meta-bi/shared';
+import type { VisaoGeral } from '@metabi/shared';
 import {
   buildComparativoAcumuladoOptions,
   nomesPeriodos,

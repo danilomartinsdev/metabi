@@ -30,7 +30,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
 declare module '#app' {
   interface PageMeta {
-    permissao?: import('@meta-bi/shared').Permission;
+    permissao?: import('@metabi/shared').Permission;
     titulo?: string;
   }
 }

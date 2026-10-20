@@ -4,7 +4,7 @@ import type {
   FaturamentoResumo,
   LoteFaturamento,
   PreviaFaturamento,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import type { MaybeRefOrGetter } from 'vue';
 import { useApi } from './useApi';

@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import argon2 from 'argon2';
-import { DEFAULT_ROLES, ROLE_KEYS, type RoleKey } from '@meta-bi/shared';
+import { DEFAULT_ROLES, ROLE_KEYS, type RoleKey } from '@metabi/shared';
 import { PrismaClient, type EscopoTipo } from '../src/generated/prisma/client.js';
 
 const envFile = path.resolve(import.meta.dirname, '../../../.env');

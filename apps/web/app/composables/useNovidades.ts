@@ -6,7 +6,7 @@ import { NOVIDADES, novidadesNaoVistas, novidadesVisiveis } from '~/utils/novida
  */
 export function useNovidades() {
   const auth = useAuthStore();
-  const chave = computed(() => (auth.usuario ? `meta-bi-novidades:${auth.usuario.id}` : null));
+  const chave = computed(() => (auth.usuario ? `metabi-novidades:${auth.usuario.id}` : null));
   const ultimaVista = ref<string | null>(null);
 
   watch(

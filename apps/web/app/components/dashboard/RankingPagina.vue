@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DimensaoRanking } from '@meta-bi/shared';
+import type { DimensaoRanking } from '@metabi/shared';
 import { useRankingQuery } from '~/composables/api/useDashboard';
 import { barrasRankingOptions } from '~/utils/charts/options';
 

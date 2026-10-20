@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { REGIAO_ENUM_ROTULO, REGIOES_ENUM, UFS } from '@meta-bi/shared';
+import { REGIAO_ENUM_ROTULO, REGIOES_ENUM, UFS } from '@metabi/shared';
 import { useDebounceFn } from '@vueuse/core';
 import { useRepresentantesQuery, useStatusQuery } from '~/composables/api/useCadastros';
 import { useMesesQuery } from '~/composables/api/useDashboard';

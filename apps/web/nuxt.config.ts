@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   // Rótulo do ambiente (ex.: "homologacao"), lido de NUXT_PUBLIC_AMBIENTE no build; vazio em produção.
   runtimeConfig: { public: { ambiente: '' } },
   modules: ['@nuxt/ui', '@pinia/nuxt'],
-  colorMode: { storageKey: 'meta-bi-tema', classSuffix: '' },
+  colorMode: { storageKey: 'metabi-tema', classSuffix: '' },
   // Ícones usados no código (i-lucide-*) entram no bundle: nada de buscar na API do Iconify em produção
   // (a CSP só permite conexões ao próprio site).
   // .ts entra na varredura: os ícones do menu ficam em components/layout/nav.ts (o padrão só lê .vue/.tsx/...).
@@ -22,7 +22,7 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/main.css'],
   // Usa o código-fonte do pacote compartilhado (sem depender do build em dist/ durante o dev).
-  alias: { '@meta-bi/shared': fileURLToPath(new URL('../../packages/shared/src/index.ts', import.meta.url)) },
+  alias: { '@metabi/shared': fileURLToPath(new URL('../../packages/shared/src/index.ts', import.meta.url)) },
   vite: {
     plugins: [tailwindcss()],
     // Pré-empacota no início do dev o que o Vite descobriria navegando — senão cada descoberta
@@ -46,7 +46,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'pt-BR' },
-      title: 'BI Metahospitalar',
+      title: 'MetaBI',
       meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
       link: [{ rel: 'icon', type: 'image/png', href: '/brand/icone-meta.png' }],
     },

@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile --filter api... --ignore-scripts
 COPY packages/shared packages/shared
 COPY apps/api apps/api
 RUN pnpm rebuild argon2 \
-  && pnpm --filter @meta-bi/shared build \
+  && pnpm --filter @metabi/shared build \
   && DATABASE_URL=postgresql://build:postgres@localhost:5432/build pnpm --filter api exec prisma generate \
   && pnpm --filter api build \
   && pnpm --filter api deploy --legacy --prod /out \

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { loginSchema } from '@meta-bi/shared';
+import { loginSchema } from '@metabi/shared';
 import type { FormSubmitEvent } from '@nuxt/ui';
 import type { z } from 'zod';
 import { useAuthStore } from '~/stores/auth';
 import { paginaInicial } from '~/utils/navegacao';
 
 definePageMeta({ layout: 'auth' });
-useHead({ title: 'Entrar — BI Metahospitalar' });
+useHead({ title: 'Entrar — MetaBI' });
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -42,7 +42,7 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
 <template>
   <div>
     <div class="text-center">
-      <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">Bem-vindo de volta</h1>
+      <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">MetaBI</h1>
       <p class="mt-2 text-sm text-muted-foreground">Use o e-mail e a senha fornecidos pelo administrador.</p>
     </div>
 

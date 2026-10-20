@@ -11,7 +11,7 @@ import {
   faturamentoPdfQuerySchema,
   filtrosSchema,
   printTokenSchema,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { CurrentUser, Public, RequirePermission } from '../../common/auth/decorators.js';

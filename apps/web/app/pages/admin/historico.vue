@@ -8,7 +8,7 @@ import {
 } from '~/composables/api/useCadastros';
 
 definePageMeta({ titulo: 'Histórico', permissao: 'metas.edit' });
-useHead({ title: 'Histórico — BI Metahospitalar' });
+useHead({ title: 'Histórico — MetaBI' });
 
 const route = useRoute();
 const router = useRouter();

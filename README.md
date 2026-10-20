@@ -1,4 +1,4 @@
-# Meta Hospitalar — BI Executivo
+# MetaBI — Meta Hospitalar
 
 BI comercial interno da Meta Hospitalar (Aparecida de Goiânia/GO). Importa o relatório
 "DASHBOARD_Extrator PDV" do ERP Focco3i e apresenta KPIs, rankings e comparativos,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FaturamentoMensal } from '@meta-bi/shared';
+import type { FaturamentoMensal } from '@metabi/shared';
 
 /** Tabela mês a mês de um ano (página de Faturamento e PDF). */
 defineProps<{

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpStatus, Put, Query, Req } from '@nestjs/common';
 import { exigirEscopoTodos } from '../../common/auth/privilegios.js';
 import { ApiException } from '../../common/errors.js';
-import { type MetasSalvar, metasSalvarSchema } from '@meta-bi/shared';
+import { type MetasSalvar, metasSalvarSchema } from '@metabi/shared';
 import type { FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { CurrentUser, RequirePermission } from '../../common/auth/decorators.js';

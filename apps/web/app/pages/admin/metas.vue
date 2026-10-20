@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { valorMetaSchema } from '@meta-bi/shared';
+import { valorMetaSchema } from '@metabi/shared';
 import { useEventListener } from '@vueuse/core';
 import { useMetasQuery, useRepresentantesQuery, useSalvarMetas } from '~/composables/api/useCadastros';
 
 const aviso = useAviso();
 const confirmar = useConfirmacao();
 definePageMeta({ titulo: 'Metas', permissao: 'metas.edit' });
-useHead({ title: 'Metas — BI Metahospitalar' });
+useHead({ title: 'Metas — MetaBI' });
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const anoAtual = new Date().getFullYear();

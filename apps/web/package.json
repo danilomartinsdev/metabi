@@ -12,7 +12,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@meta-bi/shared": "workspace:*",
+    "@metabi/shared": "workspace:*",
     "@nuxt/ui": "^4.11.3",
     "@pinia/nuxt": "^1.0.2",
     "@tanstack/vue-query": "~5.103.3",

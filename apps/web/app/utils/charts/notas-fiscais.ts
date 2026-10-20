@@ -1,5 +1,5 @@
 // Gráficos da Análise de faturamento (notas fiscais). Funções puras; os componentes só renderizam.
-import type { AnaliseNotas } from '@meta-bi/shared';
+import type { AnaliseNotas } from '@metabi/shared';
 import type { EChartsOption } from 'echarts';
 import { formatBRL, formatPct } from '../format';
 import type { TemaGrafico } from './palette';

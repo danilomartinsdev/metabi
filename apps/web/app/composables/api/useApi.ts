@@ -1,4 +1,4 @@
-import type { ErroApi } from '@meta-bi/shared';
+import type { ErroApi } from '@metabi/shared';
 import { useAuthStore } from '~/stores/auth';
 
 export class ApiError extends Error {
@@ -61,7 +61,7 @@ export function useApi() {
       const body = (await r.json().catch(() => ({}))) as Partial<ErroApi>;
       throw new ApiError(r.status, body);
     }
-    const nome = /filename="([^"]+)"/.exec(r.headers.get('content-disposition') ?? '')?.[1] ?? 'meta-bi';
+    const nome = /filename="([^"]+)"/.exec(r.headers.get('content-disposition') ?? '')?.[1] ?? 'metabi';
     const link = document.createElement('a');
     link.href = URL.createObjectURL(await r.blob());
     link.download = nome;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LinhaRanking } from '@meta-bi/shared';
+import type { LinhaRanking } from '@metabi/shared';
 import type { TableColumn } from '@nuxt/ui';
 
 const props = defineProps<{

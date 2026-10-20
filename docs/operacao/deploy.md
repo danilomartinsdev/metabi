@@ -18,7 +18,7 @@ sudo usermod -aG docker $USER   # saia e entre de novo na sessão
 sudo apt-get install -y git
 
 # Acesso ao GitHub (repositório privado): chave SSH do servidor como "Deploy key" (só leitura)
-ssh-keygen -t ed25519 -C "servidor-meta-bi" -f ~/.ssh/id_ed25519 -N ""
+ssh-keygen -t ed25519 -C "servidor-metabi" -f ~/.ssh/id_ed25519 -N ""
 cat ~/.ssh/id_ed25519.pub   # cole em GitHub › repositório › Settings › Deploy keys
 ```
 
@@ -27,8 +27,8 @@ DNS do domínio apontando para o servidor e portas 80/443 liberadas no firewall 
 ## 2. Baixar o projeto
 
 ```bash
-git clone -b main git@github.com:danilomartinsdev/metahospitalar-bi.git
-cd metahospitalar-bi
+git clone -b main git@github.com:danilomartinsdev/metabi.git
+cd metabi
 ```
 
 ## 3. Criar o `.env` de produção
@@ -97,15 +97,15 @@ O arquivo tem dados de clientes: **nunca** coloque no GitHub; copie direto para 
 
 ```bash
 # No computador de desenvolvimento (gera o backup a partir do container local)
-docker exec meta-bi-postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > meta-bi-base.dump
-scp meta-bi-base.dump usuario@servidor:~/metahospitalar-bi/
+docker exec metabi-postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > metabi-base.dump
+scp metabi-base.dump usuario@servidor:~/metabi/
 
 # No servidor, com a stack já no ar (passo 4)
-cd ~/metahospitalar-bi
+cd ~/metabi
 docker compose -f docker-compose.prod.yml stop api
-docker compose -f docker-compose.prod.yml exec -T postgres   sh -c 'pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < meta-bi-base.dump
+docker compose -f docker-compose.prod.yml exec -T postgres   sh -c 'pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < metabi-base.dump
 docker compose -f docker-compose.prod.yml start api
-rm meta-bi-base.dump
+rm metabi-base.dump
 ```
 
 Depois de restaurar: os usuários de exemplo do desenvolvimento (`admin@`, `gestor@`, `representante@`,
@@ -116,7 +116,7 @@ Depois de restaurar: os usuários de exemplo do desenvolvimento (`admin@`, `gest
 Antes, valide a branch na homologação, sobre uma cópia da base de produção: [homologacao.md](homologacao.md).
 
 ```bash
-cd metahospitalar-bi
+cd metabi
 git pull
 docker compose -f docker-compose.prod.yml --env-file .env up -d --build   # migrations rodam sozinhas
 ```

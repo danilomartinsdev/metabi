@@ -1,4 +1,4 @@
-import type { FaturamentoResumo } from '@meta-bi/shared';
+import type { FaturamentoResumo } from '@metabi/shared';
 import { describe, expect, it } from 'vitest';
 import { barrasFaturamentoOptions, evolucaoFaturamentoOptions } from './faturamento';
 import { TEMA_CLARO } from './palette';

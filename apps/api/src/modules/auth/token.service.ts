@@ -8,8 +8,12 @@ export interface AccessPayload {
   sid: string; // família da sessão
 }
 
-const ISSUER = 'meta-bi';
-const AUDIENCE = 'meta-bi-web';
+const ISSUER = 'metabi';
+const AUDIENCE = 'metabi-web';
+// Nomes de antes da troca para MetaBI (2026-10-20): tokens ainda válidos emitidos com eles continuam
+// aceitos até expirar. Pode sair depois que o TTL do access token passar com folga.
+const ISSUERS_ACEITOS = [ISSUER, 'meta-bi'];
+const AUDIENCES_ACEITAS = [AUDIENCE, 'meta-bi-web'];
 
 @Injectable()
 export class TokenService {
@@ -35,8 +39,8 @@ export class TokenService {
 
   async verificarAccess(token: string): Promise<AccessPayload> {
     const { payload } = await jwtVerify(token, this.secret, {
-      issuer: ISSUER,
-      audience: AUDIENCE,
+      issuer: ISSUERS_ACEITOS,
+      audience: AUDIENCES_ACEITAS,
       algorithms: ['HS256'],
     });
     if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string')

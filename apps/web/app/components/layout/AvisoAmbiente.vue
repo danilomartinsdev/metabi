@@ -3,7 +3,7 @@
 // Produção é gerada sem ele e não muda. Fica fixa (não empurra o layout) e não captura cliques.
 const ambiente = useRuntimeConfig().public.ambiente as string;
 
-useHead(ambiente ? { titleTemplate: (t?: string) => `[HOMOLOG] ${t ?? 'BI Metahospitalar'}` } : {});
+useHead(ambiente ? { titleTemplate: (t?: string) => `[HOMOLOG] ${t ?? 'MetaBI'}` } : {});
 </script>
 
 <template>

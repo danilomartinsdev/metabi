@@ -1,6 +1,6 @@
 # Produção: docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 # Só o Caddy publica portas. Postgres e API ficam na rede interna.
-name: meta-bi-prod
+name: metabi-prod
 
 x-seguranca: &seguranca
   restart: unless-stopped

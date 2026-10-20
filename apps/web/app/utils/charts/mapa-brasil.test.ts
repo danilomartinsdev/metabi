@@ -1,4 +1,4 @@
-import type { LinhaRanking } from '@meta-bi/shared';
+import type { LinhaRanking } from '@metabi/shared';
 import { describe, expect, it } from 'vitest';
 import { buildMapaBrasilOptions } from './mapa-brasil';
 import { TEMA_CLARO } from './palette';

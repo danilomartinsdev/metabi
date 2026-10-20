@@ -5,7 +5,7 @@
 //
 // Usa o mesmo hash da API (argon2id, parâmetros de apps/api/src/modules/auth/senha.service.ts) e a mesma
 // regra de senha (packages/shared). Também desbloqueia o usuário, dispensa a troca obrigatória e encerra as
-// sessões dele. A URL do Neon vem de meta-bi-segredos (igual ao vercel:copiar-prod) e nunca é impressa.
+// sessões dele. A URL do Neon vem de metabi-segredos (igual ao vercel:copiar-prod) e nunca é impressa.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -14,7 +14,7 @@ import path from 'node:path';
 const require = createRequire(path.resolve(import.meta.dirname, '../apps/api/package.json'));
 const argon2 = require('argon2');
 
-const ARQUIVO_URL = process.env.NEON_URL_ARQUIVO ?? 'C:/Users/Danilo/meta-bi-segredos/neon-url-direta.txt';
+const ARQUIVO_URL = process.env.NEON_URL_ARQUIVO ?? 'C:/Users/Danilo/metabi-segredos/neon-url-direta.txt';
 const IMAGEM_CLIENTE = 'postgres:17-alpine';
 // Mesmos parâmetros do SenhaService da API.
 const OPCOES = { type: argon2.argon2id, memoryCost: 19_456, timeCost: 2, parallelism: 1 };

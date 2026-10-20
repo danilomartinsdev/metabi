@@ -11,7 +11,7 @@ import {
   type Ranking,
   type RegiaoEnum,
   type VisaoGeral,
-} from '@meta-bi/shared';
+} from '@metabi/shared';
 import type { UsuarioAutenticado } from '../../common/auth/types.js';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';

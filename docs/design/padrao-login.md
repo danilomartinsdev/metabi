@@ -132,6 +132,7 @@ O painel some (`hidden md:flex`); fica só o cartão com o formulário.
 ## 4. Textos
 
 - Formulário: **"Bem-vindo de volta"** / "Use o e-mail e a senha fornecidos pelo administrador."
+  - BI: o título é o nome do sistema, **"MetaBI"** (decisão de 2026-10-20); o subtítulo é o mesmo.
 - Painel: título curto dizendo **o que o sistema é** + uma frase do que se faz nele. Nada genérico.
   - SAC: "SAC e assistência técnica em um só lugar." / "Registre as reclamações dos clientes,
     acompanhe cada CAT do atendimento à pesquisa de satisfação e cumpra os prazos do PQ-03 com todo

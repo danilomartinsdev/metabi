@@ -22,7 +22,7 @@ function carregarMalha(nivel: NivelMapa) {
 </script>
 
 <script setup lang="ts">
-import type { LinhaRanking } from '@meta-bi/shared';
+import type { LinhaRanking } from '@metabi/shared';
 import { buildMapaBrasilOptions } from '~/utils/charts/mapa-brasil';
 
 const props = defineProps<{

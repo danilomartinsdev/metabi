@@ -1,4 +1,4 @@
-import type { Permission } from '@meta-bi/shared';
+import type { Permission } from '@metabi/shared';
 import { useAuthStore } from '~/stores/auth';
 
 /** Controla o que aparece na UI. Conveniência apenas: a segurança está no backend. */

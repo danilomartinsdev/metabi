@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PreviaImportacao } from '@meta-bi/shared';
+import type { PreviaImportacao } from '@metabi/shared';
 import {
   useConfirmarImportacao,
   useLotesQuery,
@@ -10,7 +10,7 @@ import {
 const aviso = useAviso();
 const confirmarAcao = useConfirmacao();
 definePageMeta({ titulo: 'Importações', permissao: 'import.run' });
-useHead({ title: 'Importações — BI Metahospitalar' });
+useHead({ title: 'Importações — MetaBI' });
 
 const can = useCan();
 const lotes = useLotesQuery();

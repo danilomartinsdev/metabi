@@ -1,5 +1,5 @@
 // Cálculos de KPI puros (sem banco), em Decimal. Fórmulas: docs/dados/metricas-kpis.md.
-import type { LinhaRanking } from '@meta-bi/shared';
+import type { LinhaRanking } from '@metabi/shared';
 import { Prisma } from '../../generated/prisma/client.js';
 
 const D = Prisma.Decimal;

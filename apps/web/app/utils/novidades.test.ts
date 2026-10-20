@@ -1,4 +1,4 @@
-import type { Permission } from '@meta-bi/shared';
+import type { Permission } from '@metabi/shared';
 import { describe, expect, it } from 'vitest';
 import { type Novidade, NOVIDADES, novidadesNaoVistas, novidadesVisiveis } from './novidades';
 

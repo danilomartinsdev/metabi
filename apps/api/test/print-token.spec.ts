@@ -1,4 +1,4 @@
-import { analiseNotasQuerySchema, faturamentoPdfQuerySchema, filtrosSchema } from '@meta-bi/shared';
+import { analiseNotasQuerySchema, faturamentoPdfQuerySchema, filtrosSchema } from '@metabi/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { type Contexto, criarUsuario, iniciarApp, limparBanco, login } from './helpers.js';
 

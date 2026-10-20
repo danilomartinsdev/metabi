@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui';
-import type { AuditoriaLinha } from '@meta-bi/shared';
+import type { AuditoriaLinha } from '@metabi/shared';
 import { useAcoesAuditoriaQuery, useAuditoriaQuery, useUsuariosQuery } from '~/composables/api/useAdmin';
 
 definePageMeta({ titulo: 'Auditoria', permissao: 'audit.view' });
-useHead({ title: 'Auditoria — BI Metahospitalar' });
+useHead({ title: 'Auditoria — MetaBI' });
 
 const route = useRoute();
 const router = useRouter();

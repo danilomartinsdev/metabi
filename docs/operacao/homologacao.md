@@ -5,15 +5,15 @@ uma cópia da base de produção antes do merge na `main` e do deploy.
 
 |                | Produção                          | Homologação                                                                 |
 | -------------- | --------------------------------- | --------------------------------------------------------------------------- |
-| Projeto Docker | `meta-bi-prod`                    | `meta-bi-homolog`                                                           |
-| Pasta (clone)  | `C:\Users\Danilo\meta-bi-publico` | `C:\Users\Danilo\meta-bi-homolog`                                           |
+| Projeto Docker | `metabi-prod`                    | `metabi-homolog`                                                           |
+| Pasta (clone)  | `C:\Users\Danilo\metabi-publico` | `C:\Users\Danilo\metabi-homolog`                                           |
 | `.env`         | o da pasta da produção            | o da pasta da homologação (segredos próprios, linha `AMBIENTE=homologacao`) |
 | Acesso         | ngrok (HTTPS)                     | só nesta máquina: `http://localhost:4337` (opcional: rede local)            |
 | E-mail         | SMTP real                         | Mailpit (`http://127.0.0.1:4339`), nada sai                                 |
 | Identificação  | —                                 | faixa "Homologação" em todas as telas e `[HOMOLOG]` no título da aba        |
 
-Volumes, rede e containers são separados (`meta-bi-homolog_*`). Tudo é feito pelo
-`scripts/homologacao.mjs`, que **sempre** usa o projeto `meta-bi-homolog` e o clone da homologação, e
+Volumes, rede e containers são separados (`metabi-homolog_*`). Tudo é feito pelo
+`scripts/homologacao.mjs`, que **sempre** usa o projeto `metabi-homolog` e o clone da homologação, e
 recusa rodar se o `.env` do clone não for o da homologação. Da produção, o script só **lê** (pg_dump).
 
 ## Primeira vez
@@ -27,7 +27,7 @@ rode `pnpm homolog:preparar --rede` (detecta o IP; ou `--rede --ip 10.1.1.138`) 
 (PowerShell **como administrador**, uma vez):
 
 ```powershell
-netsh advfirewall firewall add rule name="meta-bi-homolog" dir=in action=allow protocol=TCP localport=4337
+netsh advfirewall firewall add rule name="metabi-homolog" dir=in action=allow protocol=TCP localport=4337
 ```
 
 ## Testar uma branch
@@ -42,7 +42,7 @@ da `main` antes disso, faça merge da `main` nela.
 
 `copiar-prod`:
 
-1. `pg_dump` da produção para `C:\Users\Danilo\meta-bi-backups\prod-<data>.dump` (fora do git; serve
+1. `pg_dump` da produção para `C:\Users\Danilo\metabi-backups\prod-<data>.dump` (fora do git; serve
    também de backup).
 2. Para a API da homologação, recria o schema e restaura a cópia.
 3. Apaga sessões, links de redefinição de senha, tokens de impressão e arquivos temporários — nada

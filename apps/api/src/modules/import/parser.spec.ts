@@ -1,4 +1,4 @@
-import { COLUNAS_FATURAMENTO, linhaFaturamentoSchema } from '@meta-bi/shared';
+import { COLUNAS_FATURAMENTO, linhaFaturamentoSchema } from '@metabi/shared';
 import * as XLSX from 'xlsx';
 import { describe, expect, it } from 'vitest';
 import { extrairLinhas, lerMatriz } from './parser.js';

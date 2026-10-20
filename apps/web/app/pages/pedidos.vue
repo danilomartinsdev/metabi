@@ -4,7 +4,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { usePedidosQuery } from '~/composables/api/useDashboard';
 
 definePageMeta({ titulo: 'Pedidos', permissao: 'pedidos.view' });
-useHead({ title: 'Pedidos — BI Metahospitalar' });
+useHead({ title: 'Pedidos — MetaBI' });
 
 const route = useRoute();
 const router = useRouter();
@@ -52,7 +52,7 @@ const COLUNAS = [
   { k: 'ordemCpr', r: 'Ordem CPR' },
   { k: 'valor', r: 'Valor', ordem: 'valor', num: true },
 ] as const;
-const visiveis = useLocalStorage<string[]>('meta-bi-colunas-pedidos', [
+const visiveis = useLocalStorage<string[]>('metabi-colunas-pedidos', [
   'numPedido',
   'dtEmissao',
   'status',

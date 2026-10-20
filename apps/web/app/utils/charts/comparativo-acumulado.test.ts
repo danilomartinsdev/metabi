@@ -1,4 +1,4 @@
-import type { VisaoGeral } from '@meta-bi/shared';
+import type { VisaoGeral } from '@metabi/shared';
 import { describe, expect, it } from 'vitest';
 import { buildComparativoAcumuladoOptions, temComparativo } from './comparativo-acumulado';
 import { TEMA_CLARO } from './palette';

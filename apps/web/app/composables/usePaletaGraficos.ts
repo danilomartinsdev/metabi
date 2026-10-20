@@ -1,4 +1,4 @@
-import type { PaletaGrafico } from '@meta-bi/shared';
+import type { PaletaGrafico } from '@metabi/shared';
 import { useAuthStore } from '~/stores/auth';
 
 /**

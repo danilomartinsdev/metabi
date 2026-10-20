@@ -1,4 +1,4 @@
-# Documentação — BI Executivo Meta Hospitalar
+# Documentação — MetaBI (Meta Hospitalar)
 
 Fonte de verdade do projeto. Leia o documento relevante **antes** de mexer na área.
 

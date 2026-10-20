@@ -1,4 +1,4 @@
-# PRD — BI Executivo Meta Hospitalar
+# PRD — MetaBI (Meta Hospitalar)
 
 ## Visão
 A Meta Hospitalar (fabricante de equipamentos hospitalares, Aparecida de Goiânia/GO) acompanha
