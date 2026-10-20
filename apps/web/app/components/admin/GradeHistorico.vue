@@ -77,44 +77,46 @@ async function onSalvar() {
       :linhas="12"
       @tentar-de-novo="emit('tentarDeNovo')"
     >
-      <table class="w-full text-sm">
-        <thead class="bg-muted/50 text-left text-xs text-muted-foreground">
-          <tr>
-            <th class="px-5 py-3 font-medium">Mês</th>
-            <th class="px-5 py-3 text-right font-medium">{{ rotulo }}</th>
-            <th class="px-5 py-3 font-medium"><span class="sr-only">Situação</span></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y">
-          <tr v-for="(m, i) in MESES" :key="m">
-            <th scope="row" class="px-5 py-2 text-left font-medium">{{ m }}/{{ ano }}</th>
-            <td class="px-5 py-2 text-right">
-              <UInput
-                v-model="grade[i]"
-                inputmode="decimal"
-                placeholder="—"
-                size="sm"
-                class="ml-auto w-48"
-                :ui="{ base: 'num text-right' }"
-                :color="invalida(grade[i]!) ? 'error' : undefined"
-                :highlight="invalida(grade[i]!)"
-                :aria-invalid="invalida(grade[i]!) || undefined"
-                :aria-label="`${rotulo} de ${m}/${ano}`"
-              />
-            </td>
-            <td class="px-5 py-2 text-xs">
-              <UBadge v-if="ignorado(i)" color="neutral" variant="soft" :label="textoIgnorado" />
-            </td>
-          </tr>
-        </tbody>
-        <tfoot class="border-t-2">
-          <tr>
-            <th scope="row" class="px-5 py-3 text-left font-semibold">Total digitado</th>
-            <td class="num px-5 py-3 text-right font-semibold">{{ formatBRL(somaAno) }}</td>
-            <td />
-          </tr>
-        </tfoot>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-muted/50 text-left text-xs text-muted-foreground">
+            <tr>
+              <th class="px-5 py-3 font-medium">Mês</th>
+              <th class="px-5 py-3 text-right font-medium">{{ rotulo }}</th>
+              <th class="px-5 py-3 font-medium"><span class="sr-only">Situação</span></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr v-for="(m, i) in MESES" :key="m">
+              <th scope="row" class="px-5 py-2 text-left font-medium">{{ m }}/{{ ano }}</th>
+              <td class="px-5 py-2 text-right">
+                <UInput
+                  v-model="grade[i]"
+                  inputmode="decimal"
+                  placeholder="—"
+                  size="sm"
+                  class="ml-auto w-48"
+                  :ui="{ base: 'num text-right' }"
+                  :color="invalida(grade[i]!) ? 'error' : undefined"
+                  :highlight="invalida(grade[i]!)"
+                  :aria-invalid="invalida(grade[i]!) || undefined"
+                  :aria-label="`${rotulo} de ${m}/${ano}`"
+                />
+              </td>
+              <td class="px-5 py-2 text-xs">
+                <UBadge v-if="ignorado(i)" color="neutral" variant="soft" :label="textoIgnorado" />
+              </td>
+            </tr>
+          </tbody>
+          <tfoot class="border-t-2">
+            <tr>
+              <th scope="row" class="px-5 py-3 text-left font-semibold">Total digitado</th>
+              <td class="num px-5 py-3 text-right font-semibold">{{ formatBRL(somaAno) }}</td>
+              <td />
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </UiExtraEstadoBloco>
   </section>
 </template>
