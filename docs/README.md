@@ -18,6 +18,7 @@ Fonte de verdade do projeto. Leia o documento relevante **antes** de mexer na á
 | | [arquitetura/adr/](arquitetura/adr/) | Decisões arquiteturais |
 | Design | [design/design-system.md](design/design-system.md) | Antes de criar componente visual |
 | Padrão visual | [design/padrao-visual.md](design/padrao-visual.md) | Layout comum aos outros projetos (menu, sino, barra flutuante) |
+| Padrão de login | [design/padrao-login.md](design/padrao-login.md) | Tela de login e de senha (medidas, painel, miniatura) |
 | Operação | [operacao/deploy.md](operacao/deploy.md) · [backup-restore.md](operacao/backup-restore.md) · [runbook.md](operacao/runbook.md) | Deploy e incidentes |
 
 ## ADRs
