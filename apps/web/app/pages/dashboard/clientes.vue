@@ -32,7 +32,7 @@ watch([filtro, qs, porPagina], () => (pagina.value = 1));
     </div>
     <DashboardFilterBar :periodo="q.data.value?.periodo" />
 
-    <section class="grid gap-4 sm:grid-cols-3">
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <button
         v-for="c in [
           { k: 'todos', r: 'Clientes com compra', n: q.data.value?.total, i: 'i-lucide-users' },

@@ -208,7 +208,7 @@ const COR: Record<string, string> = {
       </section>
     </template>
 
-    <section class="grid gap-4 lg:grid-cols-2 lg:gap-6">
+    <section class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
       <div class="rounded-xl border bg-card">
         <div class="flex items-center justify-between p-5 pb-3">
           <h3 class="text-sm font-medium text-muted-foreground">Top 10 clientes</h3>

@@ -53,9 +53,12 @@ const sinoNoMenu = computed(() => telaMedia.value && !recolhido.value);
         </UDashboardNavbar>
       </template>
 
-      <!-- Conteúdo no #body: um slot default substituiria header/body do painel. -->
+      <!-- Conteúdo no #body: um slot default substituiria header/body do painel.
+           *:w-full: o bloco "mx-auto max-w-*" de cada tela, numa coluna flex, cresceria até caber a
+           tabela mais larga e a tela inteira deslizaria para o lado no celular; com largura fixa, só a
+           tabela rola dentro do próprio cartão. -->
       <template #body>
-        <main id="conteudo" class="flex min-w-0 flex-1 flex-col px-4 pt-6 pb-20 md:px-8 md:pt-8">
+        <main id="conteudo" class="flex min-w-0 flex-1 flex-col px-4 pt-6 pb-20 *:w-full md:px-8 md:pt-8">
           <slot />
         </main>
       </template>
