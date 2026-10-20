@@ -75,7 +75,7 @@ const opcoes = computed(() => ({
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 rounded-xl border bg-card p-3 lg:flex-row lg:items-center">
+  <div data-tour="filtros" class="flex flex-col gap-3 rounded-xl border bg-card p-3 lg:flex-row lg:items-center">
     <div v-if="!semPeriodo" class="flex flex-wrap items-center gap-2">
       <UIcon name="i-lucide-calendar-days" class="size-4 text-muted-foreground" aria-hidden="true" />
       <USelect

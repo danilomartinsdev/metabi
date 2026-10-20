@@ -81,3 +81,74 @@
     scrollbar-color: color-mix(in srgb, var(--sidebar-muted) 35%, transparent) transparent;
   }
 }
+
+/* Altura das barras do topo (página e menu lateral formam uma faixa contínua). */
+:root {
+  --ui-header-height: 3.5rem;
+}
+
+/* Guia de Ajuda (driver.js) com as cores do tema. */
+.driver-popover.tour-meta {
+  font-family: inherit;
+  color: var(--popover-foreground);
+  background-color: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.18);
+  padding: 1rem;
+  max-width: 20rem;
+}
+.tour-meta .driver-popover-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.tour-meta .driver-popover-description {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.tour-meta .driver-popover-close-btn {
+  color: var(--muted-foreground);
+}
+.tour-meta .driver-popover-close-btn:hover,
+.tour-meta .driver-popover-close-btn:focus {
+  color: var(--foreground);
+}
+.tour-meta .driver-popover-progress-text {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.tour-meta .driver-popover-footer-btn {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-shadow: none;
+  padding: 0.3rem 0.65rem;
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--foreground);
+  background-color: var(--card);
+  border: 1px solid var(--border);
+}
+.tour-meta .driver-popover-footer-btn:hover,
+.tour-meta .driver-popover-footer-btn:focus {
+  background-color: var(--muted);
+}
+.tour-meta .driver-popover-next-btn {
+  color: var(--primary-foreground);
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+.tour-meta .driver-popover-next-btn:hover,
+.tour-meta .driver-popover-next-btn:focus {
+  background-color: color-mix(in srgb, var(--primary) 88%, black);
+}
+.tour-meta .driver-popover-arrow-side-left {
+  border-left-color: var(--popover);
+}
+.tour-meta .driver-popover-arrow-side-right {
+  border-right-color: var(--popover);
+}
+.tour-meta .driver-popover-arrow-side-top {
+  border-top-color: var(--popover);
+}
+.tour-meta .driver-popover-arrow-side-bottom {
+  border-bottom-color: var(--popover);
+}

@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { ESCALAS_FONTE, ESCALA_PADRAO, OPCOES_TEMA } from '~/utils/aparencia';
 
-// Barra flutuante (canto inferior direito): Novidades | A− A+ | tema e cores dos gráficos.
+// Barra flutuante (canto inferior direito): Ajuda (guia) | A− A+ | tema e cores dos gráficos.
 // Único lugar de aparência do sistema; fonte, tema e cores ficam neste navegador.
 const { escala, tema, aumentar, diminuir, definirTema } = useAparencia();
 const colorMode = useColorMode();
 const { isDark } = useTheme();
-const novidadesAbertas = useState('novidades-abertas', () => false);
-const { visiveis, naoVistas, marcarVistas } = useNovidades();
-// Abre sozinho uma vez, ao entrar, se houver novidade ainda não vista.
-onMounted(() => {
-  if (naoVistas.value.length) novidadesAbertas.value = true;
-});
+const { iniciar: iniciarTour } = useTourAjuda();
 const temaAberto = ref(false);
 const paletaAberta = ref(false);
 function abrirCoresGraficos() {
@@ -43,18 +38,16 @@ const botao =
     <button
       type="button"
       :class="botao"
-      aria-label="Novidades do sistema"
-      title="Novidades do sistema"
-      :aria-expanded="novidadesAbertas"
-      @click="novidadesAbertas = !novidadesAbertas"
+      data-tour="ajuda"
+      aria-label="Ajuda: guia da tela"
+      title="Ajuda: guia da tela"
+      @click="iniciarTour"
     >
-      <UChip :show="naoVistas.length > 0" color="primary" size="sm" position="top-right" inset>
-        <UIcon name="i-lucide-circle-help" class="size-5" />
-      </UChip>
+      <UIcon name="i-lucide-circle-help" class="size-5" />
     </button>
     <span class="mx-1 h-5 w-px bg-border" aria-hidden="true" />
 
-    <div role="group" aria-label="Tamanho da letra" :title="rotuloFonte" class="flex h-full items-center">
+    <div role="group" data-tour="fonte" aria-label="Tamanho da letra" :title="rotuloFonte" class="flex h-full items-center">
       <button
         type="button"
         :class="[botao, 'text-xs font-semibold']"
@@ -78,7 +71,7 @@ const botao =
     <span class="mx-1 h-5 w-px bg-border" aria-hidden="true" />
 
     <UPopover v-model:open="temaAberto" :content="{ side: 'top', align: 'end', sideOffset: 10 }">
-      <button type="button" :class="[botao, 'text-primary']" aria-label="Aparência" title="Aparência">
+      <button type="button" data-tour="aparencia" :class="[botao, 'text-primary']" aria-label="Aparência" title="Aparência">
         <UIcon name="i-lucide-palette" class="size-5" />
       </button>
 
@@ -126,10 +119,4 @@ const botao =
     </UPopover>
   </div>
   <LayoutPaletaGraficosModal v-model:aberto="paletaAberta" />
-  <LayoutNovidadesCartao
-    v-model:aberto="novidadesAbertas"
-    :novidades="visiveis"
-    :nao-vistas="naoVistas"
-    @vistas="marcarVistas"
-  />
 </template>

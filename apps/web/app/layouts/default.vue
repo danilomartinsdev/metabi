@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core';
+
 const route = useRoute();
 const titulo = computed(() => route.meta.titulo as string | undefined);
 usePresenca();
+
+// Sino de Novidades: no topo do menu quando ele está aberto; recolhido ou no celular, na barra do topo.
+const recolhido = ref(false);
+const telaMedia = useMediaQuery('(min-width: 768px)');
+const sinoNoMenu = computed(() => telaMedia.value && !recolhido.value);
 </script>
 
 <template>
@@ -14,15 +21,16 @@ usePresenca();
 
   <UDashboardGroup storage="local" storage-key="meta-bi-sidebar" unit="rem">
     <UDashboardSidebar
+      v-model:collapsed="recolhido"
       collapsible
-      :default-size="16"
+      :default-size="15"
       :min-size="13"
       :max-size="20"
       :collapsed-size="4.5"
       :ui="{ root: 'hidden md:flex', content: 'md:hidden', overlay: 'md:hidden', body: 'p-0!' }"
     >
       <template #default="{ collapsed }">
-        <LayoutAppSidebar :recolhida="collapsed" />
+        <LayoutAppSidebar :recolhida="collapsed" :com-sino="sinoNoMenu" />
       </template>
     </UDashboardSidebar>
 
@@ -31,9 +39,13 @@ usePresenca();
         <UDashboardNavbar :title="titulo" :toggle="false" class="bg-background/85 backdrop-blur">
           <template #leading>
             <UDashboardSidebarCollapse
+              data-tour="recolher-menu"
               aria-label="Recolher ou expandir menu lateral"
               class="hidden md:inline-flex"
             />
+          </template>
+          <template #right>
+            <LayoutSinoNovidades v-if="!sinoNoMenu" />
           </template>
           <template #toggle>
             <UDashboardSidebarToggle aria-label="Abrir menu" class="md:hidden" />
