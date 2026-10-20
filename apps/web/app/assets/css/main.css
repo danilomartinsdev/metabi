@@ -48,6 +48,9 @@
   --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* O Nuxt UI faz 2xl/3xl = --ui-radius × 4/× 6 (48px/72px com raio 12px); aqui 20px e 24px. */
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
 }
 
 @layer base {

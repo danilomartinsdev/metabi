@@ -82,7 +82,7 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
       type="submit"
       size="lg"
       block
-      class="h-11 justify-center bg-primary-strong hover:bg-primary-strong/90 dark:bg-primary dark:hover:bg-primary/90"
+      class="h-[42px] justify-center rounded-[10px] bg-primary-strong hover:bg-primary-strong/90 dark:bg-primary dark:hover:bg-primary/90"
       label="Entrar"
       loading-auto
     />

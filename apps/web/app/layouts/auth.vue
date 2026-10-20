@@ -19,7 +19,7 @@ const RANKING = [92, 74, 61, 48];
     <div class="absolute top-4 right-4 z-10"><LayoutThemeToggle /></div>
 
     <div
-      class="grid w-full max-w-6xl overflow-hidden rounded-3xl border bg-card shadow-xl lg:min-h-[640px] lg:grid-cols-2 lg:p-3"
+      class="grid w-full max-w-[1224px] overflow-hidden rounded-3xl border bg-card shadow-xl lg:min-h-[668px] lg:grid-cols-2 lg:p-3"
     >
       <!-- Formulário -->
       <div class="flex flex-col px-6 py-10 sm:px-12">
@@ -31,7 +31,7 @@ const RANKING = [92, 74, 61, 48];
             class="h-12 w-auto translate-x-1 dark:brightness-0 dark:invert"
           />
         </div>
-        <div class="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
+        <div class="mx-auto flex w-full max-w-[408px] flex-1 flex-col justify-center py-10 [&_input]:h-[42px] [&_input]:rounded-[10px]">
           <slot />
         </div>
         <p class="text-center text-xs text-muted-foreground">© {{ ano }} Meta Hospitalar · BI Comercial</p>
@@ -41,11 +41,11 @@ const RANKING = [92, 74, 61, 48];
       <aside
         class="relative hidden flex-col overflow-hidden rounded-2xl bg-linear-to-br from-primary-strong to-primary text-primary-foreground lg:flex"
       >
-        <div class="px-10 pt-12">
-          <h2 class="max-w-md text-[2rem] leading-tight font-semibold tracking-tight">
+        <div class="px-11 pt-[52px]">
+          <h2 class="max-w-lg text-[34px] leading-[1.2] font-semibold tracking-tight">
             Vendas, metas e faturamento num só lugar.
           </h2>
-          <p class="mt-4 max-w-md text-sm leading-relaxed text-primary-foreground/80">
+          <p class="mt-5 max-w-md text-[15px] leading-6 text-primary-foreground/80">
             Indicadores, rankings de representantes e curvas ABC a partir dos pedidos e notas do Focco — cada
             pessoa vendo só os dados que lhe cabem.
           </p>
@@ -53,7 +53,7 @@ const RANKING = [92, 74, 61, 48];
 
         <!-- Prévia do sistema (decorativa) -->
         <div
-          class="mt-10 ml-10 flex flex-1 overflow-hidden rounded-tl-2xl border-t-[6px] border-l-[6px] border-primary-foreground/15 bg-background text-foreground"
+          class="mt-9 ml-9 flex flex-1 overflow-hidden rounded-tl-[22px] border-t-8 border-l-8 border-primary-foreground/15 bg-background text-foreground"
           aria-hidden="true"
         >
           <div class="w-24 shrink-0 bg-sidebar px-3 py-4">
