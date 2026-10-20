@@ -3,7 +3,8 @@ import { useAuthStore } from '~/stores/auth';
 import { itemAtivo, paginaInicial } from '~/utils/navegacao';
 import { NAV } from './nav';
 
-defineProps<{ recolhida?: boolean }>();
+/** comSino: o sino de Novidades fica no topo do menu (senão o layout o põe na barra do topo). */
+defineProps<{ recolhida?: boolean; comSino?: boolean }>();
 const emit = defineEmits<{ navegou: [] }>();
 
 const can = useCan();
@@ -38,9 +39,7 @@ onMounted(() => {
     // sem armazenamento: fica tudo fechado
   }
 });
-const grupoAtivo = computed(
-  () => grupos.value.find((g) => g.itens.some((i) => ativo(i.to)))?.titulo,
-);
+const grupoAtivo = computed(() => grupos.value.find((g) => g.itens.some((i) => ativo(i.to)))?.titulo);
 const aberto = (titulo: string) => abertos.value.includes(titulo) || grupoAtivo.value === titulo;
 function alternar(titulo: string) {
   const abrir = !aberto(titulo);
@@ -58,32 +57,36 @@ function alternar(titulo: string) {
     aria-label="Navegação principal"
     class="flex h-full w-full flex-col bg-sidebar text-sidebar-foreground"
   >
-    <NuxtLink
-      :to="inicio"
-      class="flex h-16 shrink-0 items-center justify-center gap-3 border-b border-sidebar-border"
-      :class="recolhida ? 'px-2' : 'px-4'"
-      @click="emit('navegou')"
+    <!-- Mesma altura da barra do topo da página: as duas formam uma faixa contínua. -->
+    <div
+      class="relative flex h-(--ui-header-height) shrink-0 items-center justify-center border-b border-sidebar-border"
+      :class="recolhida ? 'px-2' : 'px-12'"
     >
-      <img
-        v-if="recolhida"
-        src="/brand/icone-meta-recortado.png"
-        alt="Metahospitalar"
-        class="h-3.5 w-auto shrink-0 brightness-0 invert"
-      />
-      <img
-        v-else
-        src="/brand/logo-meta-hospitalar.webp"
-        alt="Metahospitalar"
-        class="h-8 w-auto brightness-0 invert"
-      />
-    </NuxtLink>
+      <NuxtLink :to="inicio" class="flex items-center justify-center rounded-md" @click="emit('navegou')">
+        <img
+          v-if="recolhida"
+          src="/brand/icone-meta-recortado.png"
+          alt="Metahospitalar"
+          class="h-3.5 w-auto shrink-0 brightness-0 invert"
+        />
+        <img
+          v-else
+          src="/brand/logo-meta-hospitalar.webp"
+          alt="Metahospitalar"
+          class="h-8 w-auto brightness-0 invert"
+        />
+      </NuxtLink>
+      <div v-if="comSino && !recolhida" class="absolute top-1/2 right-3 -translate-y-1/2">
+        <LayoutSinoNovidades no-menu />
+      </div>
+    </div>
 
-    <div class="scroll-discreto flex-1 space-y-5 overflow-y-auto px-3 py-4">
+    <div data-tour="menu" class="scroll-discreto flex-1 space-y-5 overflow-y-auto px-3 py-4">
       <div v-for="g in grupos" :key="g.titulo">
         <button
           v-if="!recolhida && g.recolhivel"
           type="button"
-          class="mb-1.5 flex w-full items-center justify-between rounded-md px-3 py-1 text-[10.5px] font-medium uppercase tracking-[0.08em] text-sidebar-muted/80 transition-colors hover:text-sidebar-foreground"
+          class="mb-1.5 flex w-full items-center justify-between rounded-md px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted/80 transition-colors hover:text-sidebar-foreground"
           :aria-expanded="aberto(g.titulo)"
           :aria-controls="`menu-grupo-${g.titulo}`"
           @click="alternar(g.titulo)"
@@ -98,7 +101,7 @@ function alternar(titulo: string) {
         </button>
         <p
           v-else-if="!recolhida"
-          class="mb-1.5 px-3 text-[10.5px] font-medium uppercase tracking-[0.08em] text-sidebar-muted/80"
+          class="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted/80"
         >
           {{ g.titulo }}
         </p>
@@ -117,7 +120,7 @@ function alternar(titulo: string) {
               <NuxtLink
                 :to="item.to"
                 :aria-current="ativo(item.to) ? 'page' : undefined"
-                class="relative flex h-9 items-center gap-2.5 rounded-md px-3 text-[13px] transition-colors duration-150 hover:bg-sidebar-active/60 hover:text-sidebar-foreground"
+                class="relative flex h-9 items-center gap-3 rounded-md px-3 text-sm transition-colors duration-150 hover:bg-sidebar-active/60 hover:text-sidebar-foreground"
                 :class="[
                   ativo(item.to)
                     ? 'bg-sidebar-active font-medium text-sidebar-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-sidebar-foreground/70'
@@ -128,7 +131,7 @@ function alternar(titulo: string) {
               >
                 <UIcon
                   :name="item.icon"
-                  class="size-4 shrink-0"
+                  class="size-[18px] shrink-0"
                   :class="ativo(item.to) ? 'opacity-100' : 'opacity-75'"
                   aria-hidden="true"
                 />
@@ -146,7 +149,7 @@ function alternar(titulo: string) {
       </div>
     </div>
 
-    <div class="shrink-0 border-t border-sidebar-border px-3 py-2">
+    <div data-tour="usuario" class="shrink-0 border-t border-sidebar-border px-3 py-2">
       <LayoutUserMenu :recolhida="recolhida" />
     </div>
   </nav>

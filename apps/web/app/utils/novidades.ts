@@ -16,6 +16,13 @@ export interface Novidade {
 /** Novidades do sistema, a mais recente primeiro. Acrescente no topo a cada entrega. */
 export const NOVIDADES: Novidade[] = [
   {
+    id: '2026-10-20-1',
+    data: '2026-10-20',
+    titulo: 'Sino de novidades e guia de ajuda',
+    texto:
+      'As novidades agora ficam no sino, no topo do menu (com o menu recolhido, ele vai para a barra do topo). O ? da barra no canto da tela abre um guia rápido pelas partes da tela.',
+  },
+  {
     id: '2026-10-19-1',
     data: '2026-10-19',
     titulo: 'Menu mais limpo e aparência num lugar só',
