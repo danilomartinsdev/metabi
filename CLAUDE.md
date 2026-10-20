@@ -34,6 +34,7 @@ NestJS (Fastify) + Prisma + PostgreSQL · Zod compartilhado em packages/shared.
 ## Onde está o contexto (leia quando relevante)
 
 - Regras de negócio: docs/produto/regras-de-negocio.md
+- Padrão visual (layout comum aos outros projetos; cores/fontes seguem o design system): docs/design/padrao-visual.md
 - Fórmulas de KPI: docs/dados/metricas-kpis.md
 - Importação Focco: docs/dados/importacao-focco.md
 - Segurança e RBAC: docs/arquitetura/seguranca-rbac.md

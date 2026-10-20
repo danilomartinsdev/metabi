@@ -24,7 +24,7 @@ via `@theme`. Componentes **nunca** usam hex.
 
 Dark mode por classe `.dark` no `<html>` (preferência salva; padrão = sistema).
 
-**Aparência por navegador** (barra flutuante no canto inferior direito, `LayoutAparenciaFlutuante`: ? abre Novidades | A− A+ | paleta com o menu "Tema", cujas opções em `OPCOES_TEMA` combinam cor e modo claro/escuro; localStorage `meta-bi-fonte` e `meta-bi-tema-cores`): tamanho da fonte em 90–130% no `font-size` do `<html>` (tudo em rem acompanha) e temas de cores Azul (padrão), Esmeralda, Grafite, Vinho, Oceano e Violeta. Os temas ficam em `tokens.css` (`[data-tema]`, versão clara e escura) e trocam só a cor da marca: `--primary`, `--primary-strong`, `--primary-soft`, `--accent`, `--ring` e `--sidebar`. Gráficos com a paleta Padrão seguem o `--primary` do tema.
+**Aparência por navegador** (barra flutuante no canto inferior direito, `LayoutAparenciaFlutuante`: ? abre o guia de Ajuda (tour com driver.js, passos em `useTourAjuda`, alvos marcados com `data-tour`) | A− A+ | paleta com o menu "Tema", cujas opções em `OPCOES_TEMA` combinam cor e modo claro/escuro; localStorage `meta-bi-fonte` e `meta-bi-tema-cores`): tamanho da fonte em 90–130% no `font-size` do `<html>` (tudo em rem acompanha) e temas de cores Azul (padrão), Esmeralda, Grafite, Vinho, Oceano e Violeta. Os temas ficam em `tokens.css` (`[data-tema]`, versão clara e escura) e trocam só a cor da marca: `--primary`, `--primary-strong`, `--primary-soft`, `--accent`, `--ring` e `--sidebar`. Gráficos com a paleta Padrão seguem o `--primary` do tema.
 Contraste mínimo AA (4.5:1 texto, 3:1 elementos gráficos) — validar ao criar combinações novas.
 
 ## Gráficos
@@ -54,7 +54,8 @@ Espaçamento na escala de 4px do Tailwind; gap padrão entre cards 16px (24px �
 - **FilterBar:** chips removíveis; em celular vira sheet.
 
 ## Layout
-- Sidebar recolhível, fundo `--primary-strong`, logo branco (`public/brand/`), ícones lucide.
+- Sidebar recolhível de 240px (15rem), fundo `--sidebar`, logo branco (`public/brand/`) centralizado no topo, com o **sino de Novidades** à direita (`LayoutSinoNovidades`; com o menu recolhido e no celular o sino vai para a barra do topo). Topo do menu e barra da página com a mesma altura (`--ui-header-height` = 3.5rem). Itens `h-9`, letra 14px, ícone 18px; usuário (Trocar senha, Sair) no rodapé.
+- Layout segue o padrão dos outros projetos (ver [padrao-visual.md](padrao-visual.md)); cores, fontes e temas são os deste arquivo.
 - Topbar: seletor de período, busca global, alternância de tema, menu do usuário.
 - Breakpoints Tailwind; < md: sidebar vira drawer, grids de KPI em 2 colunas, tabelas com scroll horizontal próprio.
 - Foco visível (anel `--primary`) e navegação completa por teclado.
