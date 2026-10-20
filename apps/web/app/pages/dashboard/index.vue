@@ -136,7 +136,7 @@ const ABAS_DONUT = [
         </span>
       </section>
 
-      <section class="grid gap-4 lg:grid-cols-3 lg:gap-6">
+      <section class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         <div class="rounded-xl border bg-card p-5 lg:col-span-2">
           <h3 class="text-sm font-medium text-muted-foreground">
             Evolução mensal {{ v?.evolucao.ano }} — real × ano anterior{{
@@ -187,7 +187,7 @@ const ABAS_DONUT = [
           </p>
         </div>
         <div class="rounded-xl border bg-card p-5">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <h3 class="text-sm font-medium text-muted-foreground">Participação</h3>
             <UTabs
               v-model="donut"
@@ -213,7 +213,8 @@ const ABAS_DONUT = [
               altura="200px"
               :rotulo="`Participação das vendas por ${donut === 'regiao' ? 'região' : 'segmento'}`"
               :opcoes="
-                (t) => donutOptions(donut === 'regiao' ? v!.porRegiao : v!.porSegmento, t, { semLegenda: true })
+                (t) =>
+                  donutOptions(donut === 'regiao' ? v!.porRegiao : v!.porSegmento, t, { semLegenda: true })
               "
             />
             <ul class="mt-4 space-y-1.5 text-sm">
@@ -238,9 +239,9 @@ const ABAS_DONUT = [
         </div>
       </section>
 
-      <section class="grid gap-4 lg:grid-cols-3 lg:gap-6">
+      <section class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         <div class="rounded-xl border bg-card p-5 lg:col-span-2">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
             <h3 class="text-sm font-medium text-muted-foreground">Top 10 representantes</h3>
             <NuxtLink
               :to="{ path: '/dashboard/gestores', query: $route.query }"

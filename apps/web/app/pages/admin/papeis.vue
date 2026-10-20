@@ -86,7 +86,7 @@ async function apagar(p: PapelAdmin) {
       :erro="papeis.error.value"
       @tentar-de-novo="papeis.refetch()"
     >
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <section
           v-for="p in papeis.data.value"
           :key="p.id"

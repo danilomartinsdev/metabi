@@ -39,7 +39,7 @@ async function escolher(chave: PaletaGrafico) {
     description="Vale só para você, em qualquer computador. Os PDFs que você gerar saem com estas cores."
   >
     <template #body>
-      <div class="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Paleta dos gráficos">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Paleta dos gráficos">
         <button
           v-for="o in opcoes"
           :key="o.chave"

@@ -152,3 +152,17 @@
 .tour-meta .driver-popover-arrow-side-bottom {
   border-bottom-color: var(--popover);
 }
+
+/*
+ * iPhone/iPad: o Safari dá zoom na página ao focar campo com letra < 16px (busca, login, filtros).
+ * Só no iOS (-webkit-touch-callout) com toque; no resto os campos seguem o tamanho do design.
+ */
+@supports (-webkit-touch-callout: none) {
+  @media (pointer: coarse) {
+    input:not([type='checkbox'], [type='radio'], [type='file'], [type='range']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
