@@ -1,17 +1,22 @@
 <script setup lang="ts">
-// Login e telas de senha: cartão em duas colunas — formulário à esquerda, painel da marca à
-// direita (só a partir de lg; no celular fica só o formulário).
+// Login e telas de senha, no padrão de login dos sistemas da Meta (docs/design/padrao-login.md):
+// formulário à esquerda e painel da marca à direita (a partir de 768px; no celular só o formulário).
 const ano = new Date().getFullYear();
 
-// Prévia ilustrativa do BI no painel (valores fictícios, só decoração).
-const KPIS = [
-  { rotulo: 'Total vendido', valor: 'R$ 6,0 mi' },
-  { rotulo: 'Pedidos', valor: '65' },
-  { rotulo: 'Ticket médio', valor: 'R$ 93 mil' },
-  { rotulo: 'Meta', valor: '87%', destaque: true },
+// Miniatura ilustrativa do BI: formas e números fixos, sem dado real (a tela é pública).
+const INDICADORES = [
+  { rotulo: 'Vendido', valor: '6,0 mi', cor: '' },
+  { rotulo: 'Pedidos', valor: '65', cor: '' },
+  { rotulo: 'Ticket médio', valor: '93 mil', cor: '' },
+  { rotulo: 'Meta', valor: '87%', cor: 'text-success' },
 ];
-const BARRAS = [42, 55, 38, 61, 50, 72, 58, 80, 66, 70, 54, 76];
-const RANKING = [92, 74, 61, 48];
+const BARRAS = [42, 58, 36, 64, 50, 72, 55, 80, 61, 68, 47, 76];
+const MENU = [42, 36, 48, 30];
+const LINHAS = [
+  { largura: 'w-24', status: 'bg-success', barra: 'w-14 bg-success' },
+  { largura: 'w-32', status: 'bg-primary', barra: 'w-10 bg-warning' },
+  { largura: 'w-20', status: 'bg-success', barra: 'w-16 bg-success' },
+];
 </script>
 
 <template>
@@ -19,87 +24,92 @@ const RANKING = [92, 74, 61, 48];
     <div class="absolute top-4 right-4 z-10"><LayoutThemeToggle /></div>
 
     <div
-      class="grid w-full max-w-6xl overflow-hidden rounded-3xl border bg-card shadow-xl lg:min-h-[640px] lg:grid-cols-2 lg:p-3"
+      class="grid w-full max-w-6xl gap-3 rounded-3xl bg-card p-3 shadow-xl md:min-h-[640px] md:grid-cols-2"
     >
-      <!-- Formulário -->
-      <div class="flex flex-col px-6 py-10 sm:px-12">
-        <div class="flex justify-center">
-          <!-- translate-x-1: ajuste óptico; o "meta" escuro pesa mais e a logo parecia puxada para a esquerda. -->
-          <img
-            src="/brand/logo-meta-hospitalar.webp"
-            alt="Metahospitalar"
-            class="h-12 w-auto translate-x-1 dark:brightness-0 dark:invert"
-          />
-        </div>
-        <div class="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
+      <section class="flex flex-col items-center px-4 pt-10 pb-6 sm:px-10">
+        <!-- translate-x-1: ajuste óptico; o "meta" escuro pesa mais e a logo parecia puxada para a esquerda. -->
+        <img
+          src="/brand/logo-meta-hospitalar.webp"
+          alt="Metahospitalar"
+          class="h-12 w-auto translate-x-1 dark:brightness-0 dark:invert"
+        />
+        <div class="flex w-full max-w-sm flex-1 flex-col justify-center py-10 [&_input]:rounded-lg">
           <slot />
         </div>
-        <p class="text-center text-xs text-muted-foreground">© {{ ano }} Meta Hospitalar · BI Comercial</p>
-      </div>
+        <p class="text-xs text-muted-foreground">© {{ ano }} Meta Hospitalar · BI Comercial</p>
+      </section>
 
-      <!-- Painel da marca -->
-      <aside
-        class="relative hidden flex-col overflow-hidden rounded-2xl bg-linear-to-br from-primary-strong to-primary text-primary-foreground lg:flex"
+      <section
+        aria-hidden="true"
+        class="painel-login relative hidden flex-col overflow-hidden rounded-2xl px-10 pt-12 text-white md:flex"
       >
-        <div class="px-10 pt-12">
-          <h2 class="max-w-md text-[2rem] leading-tight font-semibold tracking-tight">
-            Vendas, metas e faturamento num só lugar.
-          </h2>
-          <p class="mt-4 max-w-md text-sm leading-relaxed text-primary-foreground/80">
-            Indicadores, rankings de representantes e curvas ABC a partir dos pedidos e notas do Focco — cada
-            pessoa vendo só os dados que lhe cabem.
-          </p>
-        </div>
-
-        <!-- Prévia do sistema (decorativa) -->
+        <!-- Brilho decorativo no canto: azul-claro do logo a 25%. -->
         <div
-          class="mt-10 ml-10 flex flex-1 overflow-hidden rounded-tl-2xl border-t-[6px] border-l-[6px] border-primary-foreground/15 bg-background text-foreground"
-          aria-hidden="true"
+          class="pointer-events-none absolute -top-24 -right-24 size-72 rounded-full bg-sidebar-destaque/25 blur-3xl"
+        />
+        <h2 class="relative max-w-md text-3xl leading-tight font-semibold tracking-tight">
+          Vendas, metas e faturamento num só lugar.
+        </h2>
+        <p class="relative mt-4 max-w-md text-sm leading-relaxed text-white/75">
+          Indicadores, rankings de representantes e curvas ABC a partir dos pedidos e notas do Focco — cada
+          pessoa vendo só os dados que lhe cabem.
+        </p>
+
+        <!-- Miniatura do sistema -->
+        <div
+          class="relative mt-10 -mr-16 flex flex-1 overflow-hidden rounded-t-xl bg-card text-foreground shadow-2xl ring-8 ring-white/15"
         >
-          <div class="w-24 shrink-0 bg-sidebar px-3 py-4">
+          <div class="flex w-24 shrink-0 flex-col gap-2.5 bg-sidebar p-3">
             <img
               src="/brand/logo-meta-hospitalar.webp"
               alt=""
-              class="mx-auto h-4 w-auto brightness-0 invert"
+              class="mb-2 h-4 w-auto self-center brightness-0 invert"
             />
-            <div class="mt-5 h-5 rounded-md bg-sidebar-active" />
-            <div v-for="n in 4" :key="n" class="mt-3 flex items-center gap-1.5">
-              <span class="size-2 rounded-sm bg-sidebar-foreground/40" />
-              <span class="h-1.5 rounded-full bg-sidebar-foreground/30" :class="n % 2 ? 'w-10' : 'w-7'" />
-            </div>
+            <span class="h-5 rounded-md bg-sidebar-active" />
+            <span v-for="w in MENU" :key="w" class="flex items-center gap-1.5 px-1.5">
+              <span class="size-2 rounded-xs bg-sidebar-muted/60" />
+              <span class="h-1.5 rounded-full bg-sidebar-muted/40" :style="{ width: `${w}px` }" />
+            </span>
           </div>
-          <div class="min-w-0 flex-1 p-4">
-            <p class="text-[9px] text-muted-foreground">Análise</p>
-            <p class="text-sm font-semibold">Visão geral</p>
-            <div class="mt-3 grid grid-cols-4 gap-2">
-              <div v-for="k in KPIS" :key="k.rotulo" class="rounded-lg border bg-card px-2 py-1.5">
+          <div class="flex min-w-0 flex-1 flex-col gap-3 bg-background p-4">
+            <div>
+              <p class="text-[9px] text-muted-foreground">Análise</p>
+              <p class="text-sm font-semibold">Visão geral</p>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              <div v-for="k in INDICADORES" :key="k.rotulo" class="rounded-md border bg-card px-2 py-1.5">
                 <p class="truncate text-[8px] text-muted-foreground">{{ k.rotulo }}</p>
-                <p class="num truncate text-xs font-semibold" :class="k.destaque && 'text-success'">
-                  {{ k.valor }}
-                </p>
+                <p class="num truncate text-base font-semibold" :class="k.cor">{{ k.valor }}</p>
               </div>
             </div>
-            <div class="mt-2 rounded-lg border bg-card p-2.5">
-              <p class="text-[8px] font-medium">Evolução mensal</p>
-              <div class="mt-2 flex h-20 items-end gap-1.5">
+            <div class="rounded-md border bg-card p-2.5">
+              <p class="text-[9px] font-semibold">Vendas por mês</p>
+              <div class="mt-2 flex h-16 items-end gap-1.5">
                 <span
                   v-for="(h, i) in BARRAS"
                   :key="i"
-                  class="flex-1 rounded-t-sm bg-primary"
+                  class="flex-1 rounded-t-[2px] bg-primary"
                   :style="{ height: `${h}%` }"
                 />
               </div>
             </div>
-            <div class="mt-2 space-y-1.5 rounded-lg border bg-card p-2.5">
-              <p class="text-[8px] font-medium">Top representantes</p>
-              <div v-for="(w, i) in RANKING" :key="i" class="flex items-center gap-2">
-                <span class="h-1.5 w-8 shrink-0 rounded-full bg-muted-foreground/40" />
-                <span class="h-1.5 rounded-full bg-primary/70" :style="{ width: `${w}%` }" />
+            <div class="flex flex-col rounded-md border bg-card">
+              <div
+                v-for="(l, i) in LINHAS"
+                :key="i"
+                class="flex items-center gap-3 border-b px-2.5 py-2 last:border-b-0"
+              >
+                <span class="flex flex-col gap-1">
+                  <span class="h-1.5 w-12 rounded-full bg-foreground/70" />
+                  <span class="h-1.5 rounded-full bg-muted-foreground/35" :class="l.largura" />
+                </span>
+                <span class="ml-auto size-1.5 rounded-full" :class="l.status" />
+                <span class="h-1 rounded-full" :class="l.barra" />
               </div>
             </div>
           </div>
         </div>
-      </aside>
+      </section>
     </div>
   </div>
 </template>

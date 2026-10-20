@@ -33,6 +33,7 @@ const tipo = computed(() => (ehSenha.value && mostrar.value ? 'text' : (attrs.ty
           :icon="mostrar ? 'i-lucide-eye-off' : 'i-lucide-eye'"
           :aria-label="mostrar ? 'Ocultar senha' : 'Mostrar senha'"
           :aria-pressed="mostrar"
+          :title="mostrar ? 'Ocultar senha' : 'Mostrar senha'"
           @click="mostrar = !mostrar"
         />
       </template>

@@ -40,51 +40,49 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
 </script>
 
 <template>
-  <UForm :schema="loginSchema" :state="estado" class="space-y-5" @submit="entrar">
-    <div class="mb-8 text-center">
-      <h1 class="text-3xl font-semibold tracking-tight">Bem-vindo de volta</h1>
+  <div>
+    <div class="text-center">
+      <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">Bem-vindo de volta</h1>
       <p class="mt-2 text-sm text-muted-foreground">Use o e-mail e a senha fornecidos pelo administrador.</p>
     </div>
 
-    <p
-      v-if="erroGeral"
-      class="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger"
-      role="alert"
-    >
-      {{ erroGeral }}
-    </p>
+    <UForm :schema="loginSchema" :state="estado" class="mt-8 space-y-4" @submit="entrar">
+      <UiExtraFormField
+        v-model="estado.email"
+        name="email"
+        label="E-mail"
+        type="email"
+        autocomplete="username"
+        inputmode="email"
+        placeholder="Seu e-mail"
+      />
+      <UiExtraFormField
+        v-model="estado.senha"
+        name="senha"
+        label="Senha"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Sua senha"
+      >
+        <template #acao>
+          <NuxtLink to="/esqueci-senha" class="text-xs font-medium text-primary hover:underline"
+            >Esqueci minha senha</NuxtLink
+          >
+        </template>
+      </UiExtraFormField>
 
-    <UiExtraFormField
-      v-model="estado.email"
-      name="email"
-      label="E-mail"
-      type="email"
-      autocomplete="username"
-      inputmode="email"
-      placeholder="Seu e-mail"
-    />
-    <UiExtraFormField
-      v-model="estado.senha"
-      name="senha"
-      label="Senha"
-      type="password"
-      autocomplete="current-password"
-      placeholder="Sua senha"
-    >
-      <template #acao>
-        <NuxtLink to="/esqueci-senha" class="text-xs font-medium text-primary hover:underline"
-          >Esqueci minha senha</NuxtLink
-        >
-      </template>
-    </UiExtraFormField>
+      <p v-if="erroGeral" class="rounded-md bg-destructive/15 px-3 py-2 text-sm text-destructive" role="alert">
+        {{ erroGeral }}
+      </p>
 
-    <UButton
-      type="submit"
-      size="lg"
-      block
-      class="h-11 justify-center bg-primary-strong hover:bg-primary-strong/90 dark:bg-primary dark:hover:bg-primary/90"
-      label="Entrar"
-      loading-auto
-    />
-  </UForm>
+      <UButton
+        type="submit"
+        size="lg"
+        block
+        class="h-10 justify-center rounded-lg text-sm font-medium"
+        label="Entrar"
+        loading-auto
+      />
+    </UForm>
+  </div>
 </template>
