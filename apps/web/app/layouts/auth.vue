@@ -34,7 +34,7 @@ const LINHAS = [
           <!-- Símbolo MM em cima (metade da altura da letra; branco no modo escuro), 4px acima do nome. -->
           <p
             aria-hidden="true"
-            class="flex flex-col items-center gap-1 text-5xl leading-none font-bold tracking-tight select-none sm:text-6xl"
+            class="flex flex-col items-center gap-1 font-display text-5xl leading-none font-semibold tracking-tight select-none sm:text-6xl"
           >
             <img src="/brand/simbolo.png" alt="" class="h-[0.375em] w-auto dark:hidden" />
             <img src="/brand/simbolo-branco.png" alt="" class="hidden h-[0.375em] w-auto dark:block" />

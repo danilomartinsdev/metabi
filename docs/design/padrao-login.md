@@ -8,7 +8,8 @@
 > ("meta" em `--marca-escuro` #113176, branco no escuro; "bi" em `--sidebar-destaque`), sem subtítulo;
 > logo branco no alto do painel; logo colorido acima do rodapé só no celular. A miniatura fica
 > posicionada dentro da área que sobra (`absolute`), para não esticar o cartão além de 640px.
-> Diferenças deliberadas: fonte **Inter** (não Manrope/Sora, ver [padrao-visual.md](padrao-visual.md));
+> Diferenças deliberadas: fonte **Inter** (não Manrope/Sora, ver [padrao-visual.md](padrao-visual.md)),
+> exceto o nome "metabi", que usa **Sora 600** (`font-display`, carregada pelo `@nuxt/fonts`) desde 2026-10-22;
 > letra base 100% (não 106,25%); link "Esqueci minha senha" retirado do login em 2026-10-22 a
 > pedido do usuário (a página `/esqueci-senha` continua existindo); botão
 > "Entrar" na cor `--primary` do tema. Stack aqui é Nuxt UI v4, não shadcn.
