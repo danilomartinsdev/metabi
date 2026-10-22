@@ -8,7 +8,8 @@
 > logo branco no alto do painel; logo colorido acima do rodapé só no celular. A miniatura fica
 > posicionada dentro da área que sobra (`absolute`), para não esticar o cartão além de 640px.
 > Diferenças deliberadas: fonte **Inter** (não Manrope/Sora, ver [padrao-visual.md](padrao-visual.md));
-> letra base 100% (não 106,25%); **"Esqueci minha senha" fica**, porque aqui a função existe; botão
+> letra base 100% (não 106,25%); link "Esqueci minha senha" retirado do login em 2026-10-22 a
+> pedido do usuário (a página `/esqueci-senha` continua existindo); botão
 > "Entrar" na cor `--primary` do tema. Stack aqui é Nuxt UI v4, não shadcn.
 
 Extraído da tela de login do Metahospitalar SAC em 2026-10-20

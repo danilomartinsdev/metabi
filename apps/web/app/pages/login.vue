@@ -61,13 +61,7 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
         type="password"
         autocomplete="current-password"
         placeholder="Sua senha"
-      >
-        <template #acao>
-          <NuxtLink to="/esqueci-senha" class="text-xs font-medium text-primary hover:underline"
-            >Esqueci minha senha</NuxtLink
-          >
-        </template>
-      </UiExtraFormField>
+      />
 
       <p
         v-if="erroGeral"
