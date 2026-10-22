@@ -3,8 +3,9 @@
 > **Como vale neste projeto (2026-10-20):** a tela de login e as de senha (`layouts/auth.vue`,
 > `pages/login.vue`) seguem este padrão — medidas, cartão, painel com degradê a partir do
 > `--sidebar`, brilho com `--sidebar-destaque` (#01AFEF, azul-claro do logo) e miniatura desenhada.
-> Atualizado em 2026-10-22 (versão nova do SAC): título do formulário = nome "metabi" em duas cores
-> ("meta" em `--primary-strong`, branco no escuro; "bi" em `--sidebar-destaque`), sem subtítulo;
+> Atualizado em 2026-10-22 (versão nova do SAC): título do formulário = símbolo MM (`simbolo.png` /
+> `simbolo-branco.png`, copiados do SAC, altura 0,375em, 4px acima) + nome "metabi" em duas cores
+> ("meta" em `--marca-escuro` #113176, branco no escuro; "bi" em `--sidebar-destaque`), sem subtítulo;
 > logo branco no alto do painel; logo colorido acima do rodapé só no celular. A miniatura fica
 > posicionada dentro da área que sobra (`absolute`), para não esticar o cartão além de 640px.
 > Diferenças deliberadas: fonte **Inter** (não Manrope/Sora, ver [padrao-visual.md](padrao-visual.md));
