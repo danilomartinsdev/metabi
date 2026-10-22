@@ -31,12 +31,17 @@ const LINHAS = [
         <div class="flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           <!-- Nome do sistema no estilo do logo, sem o símbolo (padrão "metasac"): "meta" escuro
                (branco no modo escuro) + "bi" no azul-claro do logo. O h1 de cada tela vem no slot. -->
+          <!-- Símbolo MM em cima (metade da altura da letra; branco no modo escuro), 4px acima do nome. -->
           <p
             aria-hidden="true"
-            class="text-center text-5xl leading-none font-bold tracking-tight select-none sm:text-6xl"
+            class="flex flex-col items-center gap-1 text-5xl leading-none font-bold tracking-tight select-none sm:text-6xl"
           >
-            <span class="text-primary-strong dark:text-white">meta</span
-            ><span class="text-sidebar-destaque">bi</span>
+            <img src="/brand/simbolo.png" alt="" class="h-[0.375em] w-auto dark:hidden" />
+            <img src="/brand/simbolo-branco.png" alt="" class="hidden h-[0.375em] w-auto dark:block" />
+            <span
+              ><span class="text-marca-escuro dark:text-white">meta</span
+              ><span class="text-sidebar-destaque">bi</span></span
+            >
           </p>
           <div class="mt-8 w-full [&_input]:rounded-lg">
             <slot />

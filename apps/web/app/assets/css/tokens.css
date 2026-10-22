@@ -41,6 +41,8 @@
   --sidebar-border: rgb(255 255 255 / 0.08);
   /* Azul-claro do logo da Meta (brilho do painel do login); igual em todos os temas. */
   --sidebar-destaque: #01afef;
+  /* Azul-escuro do logo da Meta ("meta" no nome do sistema do login); igual em todos os temas. */
+  --marca-escuro: #113176;
 
   --radius: 12px;
 

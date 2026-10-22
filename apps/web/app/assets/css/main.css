@@ -44,6 +44,7 @@
   --color-sidebar-active: var(--sidebar-active);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-destaque: var(--sidebar-destaque);
+  --color-marca-escuro: var(--marca-escuro);
 
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 4px);
@@ -177,5 +178,9 @@
  */
 .painel-login {
   background: var(--sidebar);
-  background: linear-gradient(150deg, oklch(from var(--sidebar) calc(l + 0.2) calc(c * 1.6) h), var(--sidebar));
+  background: linear-gradient(
+    150deg,
+    oklch(from var(--sidebar) calc(l + 0.2) calc(c * 1.6) h),
+    var(--sidebar)
+  );
 }
