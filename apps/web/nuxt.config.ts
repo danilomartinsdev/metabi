@@ -42,7 +42,13 @@ export default defineNuxtConfig({
     // O servidor do E2E (outro buildDir) usa cache próprio para não invalidar o do dev.
     ...(process.env.NUXT_BUILD_DIR ? { cacheDir: 'node_modules/.cache/vite-e2e' } : {}),
   },
-  fonts: { families: [{ name: 'Inter', provider: 'google', weights: [400, 500, 600] }] },
+  fonts: {
+    families: [
+      { name: 'Inter', provider: 'google', weights: [400, 500, 600] },
+      // Sora só no nome "metabi" do login (padrão da marca dos sistemas da Meta); 600 porque o 700 ficou grosso demais.
+      { name: 'Sora', provider: 'google', weights: [600] },
+    ],
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'pt-BR' },
