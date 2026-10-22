@@ -4,7 +4,7 @@
 > lateral de 240px com topo de 56px alinhado à barra da página, sino de Novidades no topo do menu
 > (vai para a barra do topo com o menu recolhido e no celular), itens do menu com letra de 14px e
 > ícone de 18px, usuário no rodapé do menu, barra flutuante `? | A− A+ | paleta` com o **?** abrindo
-> um guia (tour). **Cores, fontes e temas continuam os da Meta Hospitalar** (azul `#1D5FA8`, Inter,
+> um guia (tour). **Cores, fontes e temas continuam os da Metahospitalar** (azul `#1D5FA8`, Inter,
 > temas de `tokens.css`) — ver [design-system.md](design-system.md), que prevalece em caso de conflito.
 > A stack de referência abaixo é React/Next; aqui o equivalente é Nuxt UI v4 + UIcon (i-lucide-*).
 

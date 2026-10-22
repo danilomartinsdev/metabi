@@ -1,7 +1,7 @@
-# PRD — MetaBI (Meta Hospitalar)
+# PRD — MetaBI (Metahospitalar)
 
 ## Visão
-A Meta Hospitalar (fabricante de equipamentos hospitalares, Aparecida de Goiânia/GO) acompanha
+A Metahospitalar (fabricante de equipamentos hospitalares, Aparecida de Goiânia/GO) acompanha
 vendas por um protótipo HTML alimentado manualmente pelo relatório "DASHBOARD_Extrator PDV" do
 Focco3i. Queremos uma aplicação real: login, banco de dados, importação/exportação de planilhas,
 dashboards confiáveis e controle de acesso por papel e escopo de dados.
