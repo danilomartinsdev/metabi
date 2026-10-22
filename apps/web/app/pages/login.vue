@@ -41,12 +41,10 @@ async function entrar({ data: dados }: FormSubmitEvent<z.output<typeof loginSche
 
 <template>
   <div>
-    <div class="text-center">
-      <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">MetaBI</h1>
-      <p class="mt-2 text-sm text-muted-foreground">Use o e-mail e a senha fornecidos pelo administrador.</p>
-    </div>
+    <!-- O nome "metabi" do layout faz as vezes de título; o h1 fica só para leitores de tela. -->
+    <h1 class="sr-only">Entrar no MetaBI</h1>
 
-    <UForm :schema="loginSchema" :state="estado" class="mt-6 space-y-4" @submit="entrar">
+    <UForm :schema="loginSchema" :state="estado" class="space-y-4" @submit="entrar">
       <UiExtraFormField
         v-model="estado.email"
         name="email"
