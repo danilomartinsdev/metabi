@@ -1,4 +1,4 @@
-# MetaBI — Meta Hospitalar
+# MetaBI — Metahospitalar
 
 BI comercial interno: importa o relatório de pedidos do ERP Focco3i e
 apresenta KPIs, rankings e comparativos com controle de acesso por papel.

@@ -1,4 +1,4 @@
-# Tutorial — subir o BI Meta Hospitalar no servidor
+# Tutorial — subir o BI Metahospitalar no servidor
 
 Passo a passo para colocar o sistema no ar num servidor Linux (Ubuntu/Debian) com Docker,
 baixando o código do GitHub e levando junto a base de dados atual.

@@ -1,6 +1,6 @@
 # Glossário
 
-- **Focco3i** — ERP da Meta Hospitalar; origem dos pedidos.
+- **Focco3i** — ERP da Metahospitalar; origem dos pedidos.
 - **PDV** — Pedido de Venda no Focco. "Extrator PDV" é o relatório exportado.
 - **POS PDV** — posição/status do pedido (A, PE, AC); significado configurável (pendente).
 - **CPR / Ordem CPR** — ordem de compra do cliente; texto livre (ex.: `163625`, `2026NE124`).

@@ -1,4 +1,4 @@
-# Documentação — MetaBI (Meta Hospitalar)
+# Documentação — MetaBI (Metahospitalar)
 
 Fonte de verdade do projeto. Leia o documento relevante **antes** de mexer na área.
 
