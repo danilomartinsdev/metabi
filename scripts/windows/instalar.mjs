@@ -12,6 +12,7 @@ import path from 'node:path';
 import {
   ARQUIVO_ENV,
   DADOS,
+  NODE_EXE,
   FERRAMENTAS,
   PASTAS,
   PORTA_API,
@@ -21,6 +22,7 @@ import {
   baixar,
   caminhoChrome,
   envPostgres,
+  exigirNode24,
   exigirWindowsAdmin,
   falhar,
   lerEnv,
@@ -46,7 +48,7 @@ import {
 } from './etapas.mjs';
 
 exigirWindowsAdmin();
-if (Number(process.versions.node.split('.')[0]) < 24) falhar('Instale o Node 24 (LTS).');
+exigirNode24();
 
 passo('Conferindo pré-requisitos');
 const pgBin = pastaPostgres();
@@ -243,7 +245,7 @@ const definicoes = {
   <id>${SERVICO_API}</id>
   <name>MetaBI API</name>
   <description>API do MetaBI (NestJS). Instalado por pnpm windows:instalar.</description>
-  <executable>${xml(process.execPath)}</executable>
+  <executable>${xml(NODE_EXE)}</executable>
   <arguments>--env-file="${xml(ARQUIVO_ENV)}" dist\\main.js</arguments>
   <workingdirectory>${xml(path.join(path.dirname(ARQUIVO_ENV), 'apps', 'api'))}</workingdirectory>
   <depend>${xml(pgServico)}</depend>
@@ -319,7 +321,7 @@ rodar(
     '/RU',
     'SYSTEM',
     '/TR',
-    `"${process.execPath}" "${path.join(import.meta.dirname, 'backup.mjs')}"`,
+    `"${NODE_EXE}" "${path.join(import.meta.dirname, 'backup.mjs')}"`,
   ],
   { silencioso: true },
 );

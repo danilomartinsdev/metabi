@@ -22,6 +22,17 @@ export const PASTAS = {
   site: path.join(DADOS, 'site'),
 };
 
+/**
+ * node.exe real (sem atalhos). Com gerenciador de versões (nvm-windows), process.execPath aponta para um atalho
+ * que muda ao trocar de versão; o serviço e o backup ficam presos à versão usada na instalação.
+ */
+export const NODE_EXE = fs.realpathSync(process.execPath);
+
+export function exigirNode24() {
+  const major = Number(process.versions.node.split('.')[0]);
+  if (major < 24) falhar(`Este projeto usa Node 24 (agora: ${process.version}). Com nvm-windows: nvm use 24`);
+}
+
 export const SERVICO_API = 'metabi-api';
 export const SERVICO_WEB = 'metabi-web';
 export const PORTA_API = 4318;

@@ -11,6 +11,7 @@ import {
   SERVICO_API,
   SERVICO_WEB,
   backupLocal,
+  exigirNode24,
   exigirWindowsAdmin,
   falhar,
   lerEnv,
@@ -21,6 +22,7 @@ import {
 import { compilar, gerarCaddyfile, instalarDependencias, migrar, publicarSite } from './etapas.mjs';
 
 exigirWindowsAdmin();
+exigirNode24();
 const env = lerEnv();
 const git = (args, opts) => rodar('git', args, { cwd: REPO, ...opts });
 const versaoAnterior = git(['rev-parse', '--short', 'HEAD'], { silencioso: true }).stdout.trim();
