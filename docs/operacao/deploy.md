@@ -1,5 +1,7 @@
 # Deploy em produção
 
+> Windows Server (ex.: AWS EC2 com Windows Server 2019), sem Docker: [TUTORIAL-SERVIDOR-WINDOWS.md](../../TUTORIAL-SERVIDOR-WINDOWS.md).
+
 Um servidor Linux com Docker. O `docker-compose.prod.yml` sobe quatro serviços:
 
 | Serviço    | O que faz                                                                                    |
