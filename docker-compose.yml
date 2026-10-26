@@ -4,10 +4,8 @@ services:
     ports:
       - "3789:3789"
     environment:
-      NUXT_HOST: 0.0.0.0
-      NUXT_PORT: 3789
-      JWT_SECRET: ${JWT_SECRET:-troque-esta-chave-em-producao}
-      DATA_FILE: /app/data/orders.json
+      NUXT_JWT_SECRET: ${JWT_SECRET:-troque-esta-chave-em-producao}
+      NUXT_COOKIE_SECURE: ${COOKIE_SECURE:-false}
     volumes:
       - meta-bi-data:/app/data
     restart: unless-stopped

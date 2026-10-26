@@ -1,0 +1,32 @@
+# escape=`
+# Imagem para Windows Server 2019 (containers Windows, build 1809 / ltsc2019).
+# A tag da imagem base precisa casar com a versão do host.
+ARG WINDOWS_TAG=ltsc2019
+
+FROM mcr.microsoft.com/windows/servercore:${WINDOWS_TAG} AS base
+ARG NODE_VERSION=24.19.0
+SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
+    Invoke-WebRequest -UseBasicParsing -Uri "https://nodejs.org/dist/v$env:NODE_VERSION/node-v$env:NODE_VERSION-win-x64.zip" -OutFile node.zip; `
+    Expand-Archive node.zip -DestinationPath C:\; `
+    Rename-Item "C:\node-v$env:NODE_VERSION-win-x64" C:\nodejs; `
+    Remove-Item node.zip; `
+    setx /M PATH $('C:\nodejs;' + $env:PATH); `
+    node --version
+
+FROM base AS build
+WORKDIR C:\app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY . .
+RUN npm run build
+
+FROM base AS runtime
+WORKDIR C:\app
+COPY --from=build C:\app\.output C:\app\.output
+ENV NODE_ENV=production `
+    HOST=0.0.0.0 `
+    PORT=3789 `
+    NUXT_DATA_FILE=C:\app\data\orders.json
+EXPOSE 3789
+CMD ["node", ".output\server\index.mjs"]
