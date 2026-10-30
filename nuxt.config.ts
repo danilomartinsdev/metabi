@@ -4,9 +4,12 @@ export default defineNuxtConfig({
   devServer: { port: 3789 },
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
-    jwtSecret: process.env.JWT_SECRET || 'meta-bi-development-secret',
-    dataFile: process.env.DATA_FILE || 'data/orders.json',
-    // Em produção, sobrescreva em runtime com NUXT_JWT_SECRET, NUXT_DATA_FILE e NUXT_COOKIE_SECURE
+    // Valores sensíveis vêm só de variáveis de ambiente em runtime (nunca ficam no build):
+    // NUXT_JWT_SECRET, NUXT_ADMIN_EMAIL, NUXT_ADMIN_PASSWORD_HASH, NUXT_DATA_FILE e NUXT_COOKIE_SECURE
+    jwtSecret: '',
+    adminEmail: '',
+    adminPasswordHash: '',
+    dataFile: 'data/orders.json',
     cookieSecure: false,
     public: {
       appName: 'Meta Hospitalar BI',

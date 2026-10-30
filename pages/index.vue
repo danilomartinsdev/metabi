@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
-const email = ref('admin@metahospitalar.com.br')
-const password = ref('admin123')
+const email = ref('')
+const password = ref('')
 const loading = ref(false)
 const error = ref('')
 const router = useRouter()
@@ -25,7 +25,6 @@ async function login() {
         <p v-if="error" class="error">{{ error }}</p>
         <button class="primary-button" :disabled="loading">{{ loading ? 'Entrando...' : 'Entrar no painel' }}</button>
       </form>
-      <small>Acesso inicial: admin@metahospitalar.com.br / admin123</small>
     </section>
   </main>
 </template>
