@@ -12,9 +12,9 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3",
-    "nuxt": "^3.21.11",
-    "vue": "^3.5.43",
-    "xlsx": "^0.18.5"
+    "nuxt": "^4.6.3",
+    "vue": "^3.5.44",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "typescript": "^7.0.2"
