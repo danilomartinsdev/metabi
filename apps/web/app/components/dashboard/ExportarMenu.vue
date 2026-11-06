@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { type ExportFormato, type ExportXlsxTipo, type RelatorioExport, SECOES_EXPORT } from '@metabi/shared';
+import {
+  type AbcProdutosModo,
+  type ExportFormato,
+  type ExportXlsxTipo,
+  type RelatorioExport,
+  SECOES_EXPORT,
+} from '@metabi/shared';
 import { useApi } from '~/composables/api/useApi';
 
 /**
@@ -41,10 +47,51 @@ const formatos = computed(() => {
 });
 const formato = ref<ExportFormato>('pdf');
 const marcadas = ref<string[]>([]);
+/** Curva ABC de produtos (só na Análise de faturamento): pelo valor, pela quantidade ou as duas. */
+const abcProdutos = ref<AbcProdutosModo>('valor');
+const MODOS_ABC: { label: string; value: AbcProdutosModo }[] = [
+  { label: 'Por valor', value: 'valor' },
+  { label: 'Por quantidade', value: 'quantidade' },
+  { label: 'Os dois', value: 'ambos' },
+];
+const escolheAbc = computed(
+  () =>
+    props.relatorio === 'analise-faturamento' && formato.value === 'pdf' && marcadas.value.includes('abcProdutos'),
+);
+
+// Última escolha (formato + seções) lembrada neste navegador, por pessoa e por relatório. É só
+// conveniência: se o armazenamento falhar ou estiver vazio, vale o padrão (primeiro formato, tudo marcado).
+const auth = useAuthStore();
+const chaveEscolha = computed(() => `metabi-exportar:${auth.usuario?.id ?? 'anon'}:${props.relatorio}`);
+
+function lerEscolha(): { formato?: ExportFormato; secoes?: string[]; abcProdutos?: AbcProdutosModo } {
+  try {
+    const bruto = localStorage.getItem(chaveEscolha.value);
+    return bruto
+      ? (JSON.parse(bruto) as { formato?: ExportFormato; secoes?: string[]; abcProdutos?: AbcProdutosModo })
+      : {};
+  } catch {
+    return {};
+  }
+}
+function guardarEscolha() {
+  try {
+    localStorage.setItem(chaveEscolha.value, JSON.stringify({ formato: formato.value, secoes: marcadas.value, abcProdutos: abcProdutos.value }));
+  } catch {
+    // Sem armazenamento (janela privada etc.): a escolha só vale desta vez.
+  }
+}
 
 function abrir() {
-  formato.value = formatos.value[0]?.value ?? 'pdf';
-  marcadas.value = secoes.value.map((s) => s.id);
+  const salva = lerEscolha();
+  const ids = secoes.value.map((s) => s.id);
+  formato.value = formatos.value.some((f) => f.value === salva.formato)
+    ? salva.formato!
+    : (formatos.value[0]?.value ?? 'pdf');
+  // Só as seções que ainda existem; se nada sobrou (ou nunca houve escolha), tudo marcado.
+  const validas = Array.isArray(salva.secoes) ? ids.filter((id) => salva.secoes!.includes(id)) : [];
+  marcadas.value = validas.length ? validas : ids;
+  abcProdutos.value = MODOS_ABC.some((m) => m.value === salva.abcProdutos) ? salva.abcProdutos! : 'valor';
   aberto.value = true;
 }
 
@@ -64,6 +111,7 @@ function montarUrl(): string {
   if (props.relatorio !== 'vendas') {
     const p = new URLSearchParams(props.consulta ?? '');
     if (sel) p.set('secoes', sel);
+    if (escolheAbc.value) p.set('abcProdutos', abcProdutos.value);
     return `/export/pdf/${props.relatorio}?${p}`;
   }
   const p = new URLSearchParams({ ...query.value });
@@ -85,6 +133,7 @@ async function exportar() {
   gerando.value = true;
   try {
     await baixar(montarUrl());
+    guardarEscolha();
     aviso.sucesso(formato.value === 'pdf' ? 'PDF gerado.' : 'Arquivo gerado.');
     aberto.value = false;
   } catch (e) {
@@ -138,6 +187,10 @@ async function exportar() {
                 :label="s.rotulo"
                 @update:model-value="(v) => alternar(s.id, v)"
               />
+            </div>
+            <div v-if="escolheAbc" class="space-y-1.5 rounded-lg border p-3">
+              <p class="text-sm font-medium">Curva ABC de produtos</p>
+              <URadioGroup v-model="abcProdutos" :items="MODOS_ABC" orientation="horizontal" size="sm" />
             </div>
             <p v-if="formato !== 'pdf'" class="text-xs text-muted-foreground">
               Em Excel/CSV os gráficos saem como tabela com os mesmos dados.

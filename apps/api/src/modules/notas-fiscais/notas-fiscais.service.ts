@@ -11,6 +11,10 @@ import {
   type LinhaNota,
   type LoteNotas,
   linhaNotaSchema,
+  REGIAO_ENUM_ROTULO,
+  regiaoDaUf,
+  UF_REGIAO,
+  UFS,
   type PreviaNotas,
 } from '@metabi/shared';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';
@@ -228,7 +232,13 @@ export class NotasFiscaisService {
       q.ate ?? ultimo?.dataEmissao.toISOString().slice(0, 7) ?? new Date().toISOString().slice(0, 7);
     const de0 = q.de ?? `${ate.slice(0, 4)}-01`;
     const de = de0 > ate ? ate : de0;
-    const where = { dataEmissao: { gte: dataMes(de), lte: fimMes(ate) } };
+    // `periodoWhere` alimenta o mapa (todas as regiões, para dar para somar/trocar a seleção);
+    // `where` = período + regiões filtradas, e vale para todo o resto da análise.
+    const periodoWhere = { dataEmissao: { gte: dataMes(de), lte: fimMes(ate) } };
+    const ufsFiltradas = (q.regiao ?? []).flatMap((reg) =>
+      UFS.filter((u) => UF_REGIAO[u] === REGIAO_ENUM_ROTULO[reg]),
+    );
+    const where = ufsFiltradas.length ? { ...periodoWhere, cliUf: { in: ufsFiltradas } } : periodoWhere;
 
     const [
       porDivisao,
@@ -244,6 +254,8 @@ export class NotasFiscaisService {
       porDivRep,
       notasDivRep,
       clientesDivRep,
+      porUf,
+      notasUf,
     ] = await Promise.all([
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao'], where, _sum: { valorTotal: true } }),
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'notaId'], where }),
@@ -262,6 +274,8 @@ export class NotasFiscaisService {
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo'], where, _sum: { valorTotal: true } }),
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo', 'notaId'], where }),
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo', 'cliCodigo'], where }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['cliUf'], where: periodoWhere, _sum: { valorTotal: true } }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['cliUf', 'notaId'], where: periodoWhere }),
     ]);
 
     const total = porDivisao.reduce((t, d) => t.plus(d._sum.valorTotal ?? 0), new D(0));
@@ -301,6 +315,30 @@ export class NotasFiscaisService {
       nomesProd.map((p) => [p.produtoAgrupado, descricaoProdutoAgrupada(p.produtoDescricao)]),
     );
     const nDivisao = contar(notasDivisao, 'divisao');
+    // Região = região da UF do cliente (EX = Exterior); UF desconhecida fica fora do mapa.
+    const regioes = new Map<string, { total: Decimal; notas: number }>();
+    for (const u of porUf) {
+      const reg = regiaoDaUf(u.cliUf);
+      if (!reg) continue;
+      const atual = regioes.get(reg) ?? { total: new D(0), notas: 0 };
+      atual.total = atual.total.plus(valor(u._sum));
+      regioes.set(reg, atual);
+    }
+    for (const n of notasUf) {
+      const reg = regiaoDaUf(n.cliUf);
+      const atual = reg ? regioes.get(reg) : undefined;
+      if (atual) atual.notas += 1;
+    }
+    const porRegiao = [...regioes.entries()]
+      .sort(([, a], [, b]) => b.total.cmp(a.total))
+      .map(([reg, v]) => ({
+        chave: reg.toUpperCase().replace('-', '_'),
+        rotulo: reg,
+        total: v.total.toFixed(2),
+        qtd: v.notas,
+        ticket: null,
+        participacao: fracao(v.total, total),
+      }));
     const nRep = contar(notasRep, 'repCodigo');
     const cRep = contar(clientesRep, 'repCodigo');
     const nCli = contar(notasCliente, 'cliCodigo');
@@ -377,6 +415,7 @@ export class NotasFiscaisService {
       total: totalTxt,
       notas: notas.length,
       clientes: clientes.length,
+      porRegiao,
       divisoes: decrescente(porDivisao).map((d) => ({
         divisao: d.divisao,
         total: valor(d._sum).toFixed(2),

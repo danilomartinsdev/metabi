@@ -42,6 +42,7 @@ export const SECOES_EXPORT = {
   'analise-faturamento': [
     { id: 'kpis', rotulo: 'Indicadores de faturamento' },
     { id: 'divisao', rotulo: 'Faturamento por divisão de venda' },
+    { id: 'regiao', rotulo: 'Faturamento por região (mapa)' },
     { id: 'ranking', rotulo: 'Ranking por representante' },
     { id: 'abcClientes', rotulo: 'Curva ABC por cliente' },
     { id: 'abcProdutos', rotulo: 'Curva ABC por produto' },
@@ -61,6 +62,11 @@ export const secoesSchema = z
     v === undefined ? undefined : (Array.isArray(v) ? v : v.split(',')).map((x) => x.trim()).filter(Boolean),
   )
   .pipe(z.array(ID_SECAO).max(20).optional());
+
+/** Curva ABC de produtos no PDF da Análise: pelo valor vendido, pela quantidade ou as duas. */
+export const ABC_PRODUTOS_MODOS = ['valor', 'quantidade', 'ambos'] as const;
+export type AbcProdutosModo = (typeof ABC_PRODUTOS_MODOS)[number];
+export const abcProdutosModoSchema = z.enum(ABC_PRODUTOS_MODOS).optional();
 
 /** PDF das vendas: filtros globais + seções marcadas. */
 export const exportPdfQuerySchema = z.intersection(filtrosSchema, z.object({ secoes: secoesSchema }));
@@ -91,7 +97,12 @@ export const printTokenSchema = z.object({ token: z.string().regex(/^[\w-]{43}$/
 export const solicitacaoImpressaoSchema = z.discriminatedUnion('tipo', [
   z.object({ tipo: z.literal('vendas'), filtros: filtrosSchema, secoes: z.array(ID_SECAO).optional() }),
   z.object({ tipo: z.literal('faturamento'), params: faturamentoPdfQuerySchema, secoes: z.array(ID_SECAO).optional() }),
-  z.object({ tipo: z.literal('analise-faturamento'), params: analiseNotasQuerySchema, secoes: z.array(ID_SECAO).optional() }),
+  z.object({
+    tipo: z.literal('analise-faturamento'),
+    params: analiseNotasQuerySchema,
+    secoes: z.array(ID_SECAO).optional(),
+    abcProdutos: abcProdutosModoSchema,
+  }),
 ]);
 export type SolicitacaoImpressao = z.output<typeof solicitacaoImpressaoSchema>;
 
@@ -112,6 +123,8 @@ export interface FaturamentoImpressao {
 export interface AnaliseFaturamentoImpressao {
   geradoPor: string;
   secoes?: string[];
+  /** Curva ABC de produtos escolhida no diálogo (ausente = por valor). */
+  abcProdutos?: AbcProdutosModo;
   geradoEm: string;
   paletaGraficos: PaletaGrafico | null;
   params: AnaliseNotasQuery;

@@ -19,9 +19,25 @@ const mesValido = (v: unknown) =>
   typeof v === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(v) ? v : undefined;
 const de = computed(() => mesValido(route.query.de));
 const ate = computed(() => mesValido(route.query.ate));
+// Regiões filtradas (clique no mapa ou na lista); ficam na URL junto com o período.
+const REGIOES_VALIDAS = ['NORTE', 'NORDESTE', 'CENTRO_OESTE', 'SUDESTE', 'SUL', 'EXTERIOR'];
+const regioesSel = computed(() =>
+  String(route.query.regiao ?? '')
+    .split(',')
+    .filter((x) => REGIOES_VALIDAS.includes(x)),
+);
+function alternarRegiao(chave: string) {
+  const atual = regioesSel.value;
+  const novo = atual.includes(chave) ? atual.filter((x) => x !== chave) : [...atual, chave];
+  void router.replace({ query: { ...route.query, regiao: novo.length ? novo.join(',') : undefined } });
+}
 const qs = computed(() =>
   new URLSearchParams(
-    Object.entries({ de: de.value, ate: ate.value }).filter(([, v]) => v) as [string, string][],
+    Object.entries({
+      de: de.value,
+      ate: ate.value,
+      regiao: regioesSel.value.join(','),
+    }).filter(([, v]) => v) as [string, string][],
   ).toString(),
 );
 const q = useAnaliseNotasQuery(qs);
@@ -316,6 +332,56 @@ const cards = computed(() => [
               </tfoot>
             </table>
           </div>
+        </div>
+      </section>
+
+      <section v-if="r?.porRegiao.length" class="rounded-xl border bg-card p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-medium text-muted-foreground">Faturamento por região</h3>
+            <p class="text-xs text-muted-foreground">
+              Clique numa região (no mapa ou na lista) para filtrar toda a análise
+            </p>
+          </div>
+          <UButton
+            v-if="regioesSel.length"
+            color="neutral"
+            variant="outline"
+            size="xs"
+            icon="i-lucide-x"
+            label="Limpar filtro de região"
+            @click="router.replace({ query: { ...route.query, regiao: undefined } })"
+          />
+        </div>
+        <div class="mt-3 grid grid-cols-1 items-center gap-6 lg:grid-cols-5">
+          <div class="lg:col-span-2">
+            <ChartsMapaBrasilChart
+              nivel="regiao"
+              :linhas="r.porRegiao"
+              :selecao="regioesSel"
+              altura="300px"
+              @alternar="alternarRegiao"
+            />
+          </div>
+          <ul class="divide-y text-sm lg:col-span-3">
+            <li v-for="l in r.porRegiao" :key="l.chave">
+              <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted/40"
+                :class="regioesSel.includes(l.chave) ? 'bg-primary-soft text-primary' : ''"
+                :aria-pressed="regioesSel.includes(l.chave)"
+                @click="alternarRegiao(l.chave)"
+              >
+                <span class="font-medium">{{ l.rotulo }}</span>
+                <span class="num shrink-0 text-right">
+                  {{ formatBRL(l.total) }}
+                  <span class="ml-2 inline-block w-14 text-xs text-muted-foreground">{{
+                    formatPct(l.participacao)
+                  }}</span>
+                </span>
+              </button>
+            </li>
+          </ul>
         </div>
       </section>
 

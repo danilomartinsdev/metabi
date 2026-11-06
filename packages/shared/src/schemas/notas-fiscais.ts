@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { type LinhaRanking, REGIOES_ENUM } from './dashboard.js';
 import { dataBR, decimalBR, type ErroLinha } from './importacao.js';
 
 /**
@@ -105,7 +106,18 @@ export type LinhaNota = z.output<typeof linhaNotaSchema>;
 
 const mes = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: 'Mês no formato AAAA-MM' });
 export const analiseNotasQuerySchema = z
-  .object({ de: mes.optional(), ate: mes.optional() })
+  .object({
+    de: mes.optional(),
+    ate: mes.optional(),
+    /** Regiões do cliente (NORTE, CENTRO_OESTE…): "a,b" ou repetida. Vazio = todas. */
+    regiao: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .transform((v) =>
+        v === undefined ? [] : (Array.isArray(v) ? v : v.split(',')).map((s) => s.trim()).filter(Boolean),
+      )
+      .pipe(z.array(z.enum(REGIOES_ENUM)).max(6)),
+  })
   .refine((f) => !f.de || !f.ate || f.de <= f.ate, { error: 'Período inválido', path: ['ate'] });
 export type AnaliseNotasQuery = z.output<typeof analiseNotasQuerySchema>;
 
@@ -183,6 +195,8 @@ export interface AnaliseNotas {
   /** Fatias do gráfico de pizza (maior primeiro); participacao em fração (0–1). */
   divisoes: { divisao: string; total: string; notas: number; participacao: number }[];
   representantes: LinhaRepresentanteNotas[];
+  /** Faturamento por região (UF do cliente → região), maior primeiro; `chave` no formato do mapa (NORTE, CENTRO_OESTE…). */
+  porRegiao: LinhaRanking[];
   /** Ranking de representantes dentro de cada divisão (clique na fatia); participacao = fração da divisão. */
   representantesPorDivisao: { divisao: string; total: string; representantes: LinhaRepresentanteNotas[] }[];
   abcClientes: {

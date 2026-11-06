@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AnaliseFaturamentoImpressao, ClasseAbc, PaletaGrafico } from '@metabi/shared';
+import { type AnaliseFaturamentoImpressao, type ClasseAbc, type PaletaGrafico, REGIAO_ENUM_ROTULO } from '@metabi/shared';
 import { corDaDivisao, divisoesOptions } from '~/utils/charts/notas-fiscais';
 import { coresFatias } from '~/utils/charts/palette';
 import { periodoPorExtenso } from '~/utils/periodo';
@@ -23,7 +23,8 @@ onMounted(async () => {
     paletaImpressao.value = dados.value.paletaGraficos;
     // Espera o Vue desenhar e as animações curtas do ECharts terminarem antes de liberar o PDF.
     await nextTick();
-    setTimeout(() => ((window as Janela).__relatorio = 'pronto'), 1200);
+    // O mapa baixa a malha do IBGE antes de desenhar: com ele no relatório, espera um pouco mais.
+    setTimeout(() => ((window as Janela).__relatorio = 'pronto'), mostra('regiao') ? 2500 : 1200);
   } catch {
     erro.value = true;
     (window as Janela).__relatorio = 'erro';
@@ -34,9 +35,26 @@ const a = computed(() => dados.value?.analise);
 /** Seções marcadas no diálogo de exportação (sem lista = relatório completo). */
 const mostra = (id: string) => !dados.value?.secoes || dados.value.secoes.includes(id);
 const cores = computed(() => coresFatias(dados.value?.paletaGraficos));
+/** Curva ABC de produtos: pelo valor (padrão), pela quantidade ou as duas, conforme o diálogo. */
+const abcModo = computed(() => dados.value?.abcProdutos ?? 'valor');
+const abcPorValor = computed(() => mostra('abcProdutos') && abcModo.value !== 'quantidade');
+const abcPorQuantidade = computed(() => mostra('abcProdutos') && abcModo.value !== 'valor');
+/** Quantidade por unidade (UN, KG…): resumo por classe + os maiores, sem somar unidades diferentes. */
+const gruposQuantidade = computed(() =>
+  (a.value?.abcProdutosQuantidade ?? []).map((g) => ({
+    ...g,
+    resumo: CLASSES.map((c) => {
+      const ls = g.produtos.filter((l) => l.classe === c);
+      return {
+        classe: c,
+        qtd: ls.length,
+        quantidade: ls.reduce((s, l) => s + Number(l.quantidade), 0),
+        participacao: ls.reduce((s, l) => s + l.participacao, 0),
+      };
+    }),
+  })),
+);
 
-/** Nas curvas ABC o PDF traz o resumo por classe e só os maiores (a lista inteira pode ter centenas). */
-const TOP_ABC = 30;
 const CLASSES: ClasseAbc[] = ['A', 'B', 'C'];
 const DESCRICAO: Record<ClasseAbc, string> = { A: 'até 80%', B: 'de 80% a 95%', C: 'últimos 5%' };
 function resumoAbc(linhas: { classe: ClasseAbc; total: string; participacao: number }[]) {
@@ -67,6 +85,9 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         <p class="text-muted-foreground">
           {{ periodoPorExtenso(a.periodo.de, a.periodo.ate) }} · notas fiscais do Focco
         </p>
+        <p v-if="dados.params.regiao?.length" class="text-xs text-muted-foreground">
+          Regiões: {{ dados.params.regiao.map((x) => REGIAO_ENUM_ROTULO[x]).join(', ') }}
+        </p>
       </div>
       <div class="text-right text-xs text-muted-foreground">
         <p>Gerado por {{ dados.geradoPor }}</p>
@@ -76,7 +97,12 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
 
     <p v-if="!a.temDados" class="py-16 text-center text-muted-foreground">Nenhuma nota fiscal importada.</p>
     <template v-else>
-      <section v-if="mostra('kpis')" class="grid grid-cols-4 gap-3" aria-label="Indicadores de faturamento">
+      <!-- A 1ª coluna é mais larga: o valor em R$ (ex.: R$ 63.866.373,72) não cabe numa coluna igual às outras. -->
+      <section
+        v-if="mostra('kpis')"
+        class="grid grid-cols-[1.7fr_1fr_1fr_1fr] gap-3"
+        aria-label="Indicadores de faturamento"
+      >
         <DashboardKpiCard
           rotulo="Faturamento no período"
           icone="i-lucide-dollar-sign"
@@ -135,6 +161,24 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         </div>
       </section>
 
+      <section v-if="mostra('regiao') && a.porRegiao.length" class="break-inside-avoid rounded-xl border p-4">
+        <h2 class="text-sm font-medium text-muted-foreground">Faturamento por região</h2>
+        <div class="mt-2 flex items-center gap-6">
+          <div class="w-72 shrink-0">
+            <ChartsMapaBrasilChart nivel="regiao" :linhas="a.porRegiao" :interativo="false" altura="240px" />
+          </div>
+          <table class="w-full text-xs">
+            <tbody class="divide-y">
+              <tr v-for="l in a.porRegiao" :key="l.chave">
+                <td class="py-1 pr-2">{{ l.rotulo }}</td>
+                <td class="num py-1 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+                <td class="num w-14 py-1 text-right text-muted-foreground">{{ formatPct(l.participacao) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section v-if="mostra('ranking')" class="rounded-xl border">
         <h2 class="px-4 pt-4 pb-2 text-sm font-medium text-muted-foreground">Ranking por representante</h2>
         <table class="w-full text-xs">
@@ -173,16 +217,16 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
 
       <section
         v-for="curva in [
-          { id: 'abcClientes', titulo: 'Curva ABC de faturamento por cliente', resumo: resumoClientes, rotulo: 'clientes' },
-          { id: 'abcProdutos', titulo: 'Curva ABC por produto (valor vendido)', resumo: resumoProdutos, rotulo: 'produtos' },
-        ].filter((c) => mostra(c.id))"
+          { id: 'abcClientes', titulo: 'Curva ABC de faturamento por cliente', resumo: resumoClientes, rotulo: 'clientes', total: a.abcClientes.length },
+          { id: 'abcProdutos', titulo: 'Curva ABC por produto (valor vendido)', resumo: resumoProdutos, rotulo: 'produtos', total: a.abcProdutos.length },
+        ].filter((c) => (c.id === 'abcProdutos' ? abcPorValor : mostra(c.id)))"
         :key="curva.rotulo"
         class="rounded-xl border"
       >
         <div class="px-4 pt-4 pb-2">
           <h2 class="text-sm font-medium text-muted-foreground">{{ curva.titulo }}</h2>
           <p class="text-xs text-muted-foreground">
-            Resumo por classe e os {{ TOP_ABC }} maiores {{ curva.rotulo }}
+            Resumo por classe e a lista completa de {{ curva.rotulo }} ({{ formatInt(curva.total) }})
           </p>
         </div>
         <div class="grid grid-cols-3 gap-3 px-4 pb-3">
@@ -211,7 +255,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
           <tbody class="divide-y">
             <template v-if="curva.rotulo === 'clientes'">
               <tr
-                v-for="(l, i) in a.abcClientes.slice(0, TOP_ABC)"
+                v-for="(l, i) in a.abcClientes"
                 :key="l.codigo"
                 class="break-inside-avoid"
               >
@@ -226,7 +270,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
             </template>
             <template v-else>
               <tr
-                v-for="(l, i) in a.abcProdutos.slice(0, TOP_ABC)"
+                v-for="(l, i) in a.abcProdutos"
                 :key="l.codigo"
                 class="break-inside-avoid"
               >
@@ -239,6 +283,56 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
                 <td class="px-3 py-1.5 text-center font-semibold">{{ l.classe }}</td>
               </tr>
             </template>
+          </tbody>
+        </table>
+      </section>
+      <section
+        v-for="g in abcPorQuantidade ? gruposQuantidade : []"
+        :key="g.unidade"
+        class="rounded-xl border"
+      >
+        <div class="px-4 pt-4 pb-2">
+          <h2 class="text-sm font-medium text-muted-foreground">
+            Curva ABC por produto (quantidade vendida) — {{ g.unidade }}
+          </h2>
+          <p class="text-xs text-muted-foreground">
+            Resumo por classe e a lista completa · {{ formatInt(g.quantidadeTotal) }}
+            {{ g.unidade }} no total
+          </p>
+        </div>
+        <div class="grid grid-cols-3 gap-3 px-4 pb-3">
+          <div v-for="c in g.resumo" :key="c.classe" class="rounded-lg border px-3 py-2">
+            <p class="text-xs text-muted-foreground">Classe {{ c.classe }} · {{ DESCRICAO[c.classe] }}</p>
+            <p class="num font-semibold">{{ formatInt(c.quantidade) }} {{ g.unidade }}</p>
+            <p class="num text-xs text-muted-foreground">
+              {{ formatInt(c.qtd) }} produtos · {{ formatPct(c.participacao) }}
+            </p>
+          </div>
+        </div>
+        <table class="w-full text-xs">
+          <thead class="bg-muted/50 text-muted-foreground">
+            <tr>
+              <th class="w-8 px-3 py-1.5 text-left font-medium">#</th>
+              <th class="px-3 py-1.5 text-left font-medium">Código</th>
+              <th class="px-3 py-1.5 text-left font-medium">Descrição</th>
+              <th class="px-3 py-1.5 text-right font-medium">Quantidade</th>
+              <th class="px-3 py-1.5 text-right font-medium">Valor</th>
+              <th class="px-3 py-1.5 text-right font-medium">% Part.</th>
+              <th class="px-3 py-1.5 text-right font-medium">% Acum.</th>
+              <th class="px-3 py-1.5 text-center font-medium">Classe</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr v-for="(l, i) in g.produtos" :key="l.codigo" class="break-inside-avoid">
+              <td class="num px-3 py-1.5 text-muted-foreground">{{ i + 1 }}</td>
+              <td class="num px-3 py-1.5">{{ l.codigo }}</td>
+              <td class="px-3 py-1.5">{{ l.descricao }}</td>
+              <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatInt(l.quantidade) }}</td>
+              <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+              <td class="num px-3 py-1.5 text-right">{{ formatPct(l.participacao) }}</td>
+              <td class="num px-3 py-1.5 text-right">{{ formatPct(l.acumulado) }}</td>
+              <td class="px-3 py-1.5 text-center font-semibold">{{ l.classe }}</td>
+            </tr>
           </tbody>
         </table>
       </section>
