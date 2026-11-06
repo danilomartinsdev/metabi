@@ -198,13 +198,14 @@ export class ExportService {
     f: Filtros,
     ctx: ContextoRequisicao,
     secoes?: string[],
+    quebra?: boolean,
   ): Promise<Arquivo> {
     const periodo = await this.dashboard.periodo(u, f);
-    const conteudo = await this.gerarPdf(u, { tipo: 'vendas', filtros: f, secoes }, 'relatorio');
+    const conteudo = await this.gerarPdf(u, { tipo: 'vendas', filtros: f, secoes, quebra }, 'relatorio');
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
-      detalhes: { secoes: secoes ?? 'todas', filtros: filtrosParaAuditoria({ ...f, ...periodo }) },
+      detalhes: { secoes: secoes ?? 'todas', quebra, filtros: filtrosParaAuditoria({ ...f, ...periodo }) },
       ctx,
     });
     return {
@@ -220,14 +221,15 @@ export class ExportService {
     p: FaturamentoPdfQuery,
     ctx: ContextoRequisicao,
     secoes?: string[],
+    quebra?: boolean,
   ): Promise<Arquivo> {
     exigirFaturamento(u);
     const { periodo } = await this.faturamento.resumo({ de: p.de, ate: p.ate });
-    const conteudo = await this.gerarPdf(u, { tipo: 'faturamento', params: p, secoes }, 'faturamento');
+    const conteudo = await this.gerarPdf(u, { tipo: 'faturamento', params: p, secoes, quebra }, 'faturamento');
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
-      detalhes: { relatorio: 'faturamento', secoes: secoes ?? 'todas', ...periodo, ...p },
+      detalhes: { relatorio: 'faturamento', secoes: secoes ?? 'todas', quebra, ...periodo, ...p },
       ctx,
     });
     return {
@@ -244,18 +246,19 @@ export class ExportService {
     ctx: ContextoRequisicao,
     secoes?: string[],
     abcProdutos?: AbcProdutosModo,
+    quebra?: boolean,
   ): Promise<Arquivo> {
     exigirAnaliseFaturamento(u);
     const { periodo } = await this.notas.analise(p);
     const conteudo = await this.gerarPdf(
       u,
-      { tipo: 'analise-faturamento', params: p, secoes, abcProdutos },
+      { tipo: 'analise-faturamento', params: p, secoes, abcProdutos, quebra },
       'analise-faturamento',
     );
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
-      detalhes: { relatorio: 'analise-faturamento', secoes: secoes ?? 'todas', abcProdutos, ...periodo },
+      detalhes: { relatorio: 'analise-faturamento', secoes: secoes ?? 'todas', abcProdutos, quebra, ...periodo },
       ctx,
     });
     return {
@@ -272,6 +275,7 @@ export class ExportService {
     const { usuario: u } = e;
     const f = e.solicitacao.filtros;
     const secoes = e.solicitacao.secoes;
+    const quebra = e.solicitacao.quebra;
     const [visaoGeral, gestores, estados, regioes] = await Promise.all([
       this.dashboard.visaoGeral(u, f),
       this.dashboard.ranking(u, f, 'gestores'),
@@ -283,6 +287,7 @@ export class ExportService {
       geradoEm: new Date().toISOString(),
       paletaGraficos: u.paletaGraficos,
       secoes,
+      quebra,
       filtros: f,
       visaoGeral,
       rankings: { gestores, estados, regioes },
@@ -308,6 +313,7 @@ export class ExportService {
       geradoEm: new Date().toISOString(),
       paletaGraficos: u.paletaGraficos,
       secoes: solicitacao.secoes,
+      quebra: solicitacao.quebra,
       params: p,
       resumo,
       mensal,
@@ -327,6 +333,7 @@ export class ExportService {
       paletaGraficos: u.paletaGraficos,
       secoes: solicitacao.secoes,
       abcProdutos: solicitacao.abcProdutos,
+      quebra: solicitacao.quebra,
       params: solicitacao.params,
       analise: await this.notas.analise(solicitacao.params),
     };

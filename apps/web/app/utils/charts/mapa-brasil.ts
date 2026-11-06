@@ -81,11 +81,18 @@ export function buildMapaBrasilOptions(
           show: true,
           fontSize: nivel === 'uf' ? 9 : 11,
           fontWeight: 600,
+          // Altura de linha explícita: sem ela o nome e o % se sobrepõem em alguns tamanhos de tela.
+          lineHeight: nivel === 'uf' ? 11 : 15,
+          rich: {
+            n: { fontSize: 11, fontWeight: 700, lineHeight: 15 },
+            p: { fontSize: 11, fontWeight: 500, lineHeight: 15 },
+          },
           // Por UF só a sigla (os estados pequenos não comportam mais); o % fica no tooltip.
           formatter: (p) => {
             const d = dadoDe(p);
             const n = rotulo(nivel, d.name);
-            return nivel === 'regiao' && d.linha ? `${n}\n${formatPct(d.linha.participacao)}` : n;
+            if (nivel !== 'regiao') return n;
+            return d.linha ? `{n|${n}}\n{p|${formatPct(d.linha.participacao)}}` : `{n|${n}}`;
           },
         },
         emphasis: {

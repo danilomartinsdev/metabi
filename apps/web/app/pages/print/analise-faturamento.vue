@@ -77,7 +77,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
     Link de impressão inválido ou expirado.
   </div>
   <div v-else-if="!dados || !a" class="py-24 text-center text-sm text-muted-foreground">Carregando…</div>
-  <article v-else class="space-y-5 text-sm">
+  <article v-else class="space-y-5 text-sm" :class="dados.quebra ? '[&>section:nth-of-type(n+2)]:break-before-page' : ''">
     <header class="flex items-end justify-between border-b pb-3">
       <div>
         <img src="/brand/logo-meta-hospitalar.webp" alt="Metahospitalar" class="h-9 w-auto" />
@@ -138,7 +138,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
             rotulo="Faturamento por divisão de venda"
             :opcoes="(t) => divisoesOptions(a!.divisoes, t)"
           />
-          <table class="w-full text-xs">
+          <table class="w-full text-[10px] leading-tight">
             <tbody class="divide-y">
               <tr v-for="(d, i) in a.divisoes" :key="d.divisao">
                 <td class="py-1 pr-2">
@@ -167,7 +167,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
           <div class="w-72 shrink-0">
             <ChartsMapaBrasilChart nivel="regiao" :linhas="a.porRegiao" :interativo="false" altura="240px" />
           </div>
-          <table class="w-full text-xs">
+          <table class="w-full text-[10px] leading-tight">
             <tbody class="divide-y">
               <tr v-for="l in a.porRegiao" :key="l.chave">
                 <td class="py-1 pr-2">{{ l.rotulo }}</td>
@@ -181,35 +181,35 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
 
       <section v-if="mostra('ranking')" class="rounded-xl border">
         <h2 class="px-4 pt-4 pb-2 text-sm font-medium text-muted-foreground">Ranking por representante</h2>
-        <table class="w-full text-xs">
+        <table class="w-full text-[10px] leading-tight">
           <thead class="bg-muted/50 text-muted-foreground">
             <tr>
-              <th class="w-8 px-3 py-1.5 text-left font-medium">#</th>
-              <th class="px-3 py-1.5 text-left font-medium">Representante</th>
-              <th class="px-3 py-1.5 text-right font-medium">Notas</th>
-              <th class="px-3 py-1.5 text-right font-medium">Clientes</th>
-              <th class="px-3 py-1.5 text-right font-medium">Valor</th>
-              <th class="px-3 py-1.5 text-right font-medium">% Part.</th>
+              <th class="w-8 px-2 py-0.5 text-left font-medium">#</th>
+              <th class="px-2 py-0.5 text-left font-medium">Representante</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Notas</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Clientes</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Valor</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Part.</th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-for="(l, i) in a.representantes" :key="l.codigo" class="break-inside-avoid">
-              <td class="num px-3 py-1.5 text-muted-foreground">{{ i + 1 }}</td>
-              <td class="px-3 py-1.5 font-medium">{{ l.nome }}</td>
-              <td class="num px-3 py-1.5 text-right">{{ formatInt(l.notas) }}</td>
-              <td class="num px-3 py-1.5 text-right">{{ formatInt(l.clientes) }}</td>
-              <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
-              <td class="num px-3 py-1.5 text-right">{{ formatPct(l.participacao) }}</td>
+              <td class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
+              <td class="px-2 py-0.5 font-medium">{{ l.nome }}</td>
+              <td class="num px-2 py-0.5 text-right">{{ formatInt(l.notas) }}</td>
+              <td class="num px-2 py-0.5 text-right">{{ formatInt(l.clientes) }}</td>
+              <td class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+              <td class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
             </tr>
           </tbody>
           <tfoot class="border-t-2 font-semibold">
             <tr>
-              <td class="px-3 py-1.5" />
-              <td class="px-3 py-1.5">Total</td>
-              <td class="num px-3 py-1.5 text-right">{{ formatInt(a.notas) }}</td>
-              <td class="num px-3 py-1.5 text-right">{{ formatInt(a.clientes) }}</td>
-              <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatBRL(a.total) }}</td>
-              <td class="num px-3 py-1.5 text-right">100,0%</td>
+              <td class="px-2 py-0.5" />
+              <td class="px-2 py-0.5">Total</td>
+              <td class="num px-2 py-0.5 text-right">{{ formatInt(a.notas) }}</td>
+              <td class="num px-2 py-0.5 text-right">{{ formatInt(a.clientes) }}</td>
+              <td class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(a.total) }}</td>
+              <td class="num px-2 py-0.5 text-right">100,0%</td>
             </tr>
           </tfoot>
         </table>
@@ -238,18 +238,18 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
             </p>
           </div>
         </div>
-        <table class="w-full text-xs">
+        <table class="w-full text-[10px] leading-tight">
           <thead class="bg-muted/50 text-muted-foreground">
             <tr>
-              <th class="w-8 px-3 py-1.5 text-left font-medium">#</th>
-              <th class="px-3 py-1.5 text-left font-medium">Código</th>
-              <th class="px-3 py-1.5 text-left font-medium">
+              <th class="w-8 px-2 py-0.5 text-left font-medium">#</th>
+              <th class="px-2 py-0.5 text-left font-medium">Código</th>
+              <th class="px-2 py-0.5 text-left font-medium">
                 {{ curva.rotulo === 'clientes' ? 'Cliente' : 'Descrição' }}
               </th>
-              <th class="px-3 py-1.5 text-right font-medium">Valor</th>
-              <th class="px-3 py-1.5 text-right font-medium">% Part.</th>
-              <th class="px-3 py-1.5 text-right font-medium">% Acum.</th>
-              <th class="px-3 py-1.5 text-center font-medium">Classe</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Valor</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Part.</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Acum.</th>
+              <th class="px-2 py-0.5 text-center font-medium">Classe</th>
             </tr>
           </thead>
           <tbody class="divide-y">
@@ -259,13 +259,13 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
                 :key="l.codigo"
                 class="break-inside-avoid"
               >
-                <td class="num px-3 py-1.5 text-muted-foreground">{{ i + 1 }}</td>
-                <td class="num px-3 py-1.5">{{ l.codigo }}</td>
-                <td class="px-3 py-1.5">{{ l.nomeFantasia || l.razaoSocial }} · {{ l.uf }}</td>
-                <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
-                <td class="num px-3 py-1.5 text-right">{{ formatPct(l.participacao) }}</td>
-                <td class="num px-3 py-1.5 text-right">{{ formatPct(l.acumulado) }}</td>
-                <td class="px-3 py-1.5 text-center font-semibold">{{ l.classe }}</td>
+                <td class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
+                <td class="num px-2 py-0.5">{{ l.codigo }}</td>
+                <td class="px-2 py-0.5">{{ l.nomeFantasia || l.razaoSocial }} · {{ l.uf }}</td>
+                <td class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+                <td class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
+                <td class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
+                <td class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
               </tr>
             </template>
             <template v-else>
@@ -274,13 +274,13 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
                 :key="l.codigo"
                 class="break-inside-avoid"
               >
-                <td class="num px-3 py-1.5 text-muted-foreground">{{ i + 1 }}</td>
-                <td class="num px-3 py-1.5">{{ l.codigo }}</td>
-                <td class="px-3 py-1.5">{{ l.descricao }}</td>
-                <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
-                <td class="num px-3 py-1.5 text-right">{{ formatPct(l.participacao) }}</td>
-                <td class="num px-3 py-1.5 text-right">{{ formatPct(l.acumulado) }}</td>
-                <td class="px-3 py-1.5 text-center font-semibold">{{ l.classe }}</td>
+                <td class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
+                <td class="num px-2 py-0.5">{{ l.codigo }}</td>
+                <td class="px-2 py-0.5">{{ l.descricao }}</td>
+                <td class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+                <td class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
+                <td class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
+                <td class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
               </tr>
             </template>
           </tbody>
@@ -309,29 +309,29 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
             </p>
           </div>
         </div>
-        <table class="w-full text-xs">
+        <table class="w-full text-[10px] leading-tight">
           <thead class="bg-muted/50 text-muted-foreground">
             <tr>
-              <th class="w-8 px-3 py-1.5 text-left font-medium">#</th>
-              <th class="px-3 py-1.5 text-left font-medium">Código</th>
-              <th class="px-3 py-1.5 text-left font-medium">Descrição</th>
-              <th class="px-3 py-1.5 text-right font-medium">Quantidade</th>
-              <th class="px-3 py-1.5 text-right font-medium">Valor</th>
-              <th class="px-3 py-1.5 text-right font-medium">% Part.</th>
-              <th class="px-3 py-1.5 text-right font-medium">% Acum.</th>
-              <th class="px-3 py-1.5 text-center font-medium">Classe</th>
+              <th class="w-8 px-2 py-0.5 text-left font-medium">#</th>
+              <th class="px-2 py-0.5 text-left font-medium">Código</th>
+              <th class="px-2 py-0.5 text-left font-medium">Descrição</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Quantidade</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Valor</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Part.</th>
+              <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Acum.</th>
+              <th class="px-2 py-0.5 text-center font-medium">Classe</th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-for="(l, i) in g.produtos" :key="l.codigo" class="break-inside-avoid">
-              <td class="num px-3 py-1.5 text-muted-foreground">{{ i + 1 }}</td>
-              <td class="num px-3 py-1.5">{{ l.codigo }}</td>
-              <td class="px-3 py-1.5">{{ l.descricao }}</td>
-              <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatInt(l.quantidade) }}</td>
-              <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
-              <td class="num px-3 py-1.5 text-right">{{ formatPct(l.participacao) }}</td>
-              <td class="num px-3 py-1.5 text-right">{{ formatPct(l.acumulado) }}</td>
-              <td class="px-3 py-1.5 text-center font-semibold">{{ l.classe }}</td>
+              <td class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
+              <td class="num px-2 py-0.5">{{ l.codigo }}</td>
+              <td class="px-2 py-0.5">{{ l.descricao }}</td>
+              <td class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatInt(l.quantidade) }}</td>
+              <td class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+              <td class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
+              <td class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
+              <td class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
             </tr>
           </tbody>
         </table>
