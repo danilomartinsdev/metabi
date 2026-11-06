@@ -8,6 +8,7 @@ import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { ArquivosTemporariosService } from '../arquivos/arquivos-temporarios.service.js';
 import { AuditService } from '../audit/audit.service.js';
+import { ManutencaoService } from '../manutencao/manutencao.service.js';
 import { PedidosEscritaRepository } from '../pedidos/scoped-pedidos.repository.js';
 import { ArquivoInvalidoError, type Formato, lerRelatorio } from './parser.js';
 
@@ -29,6 +30,7 @@ export class ImportService {
     private readonly pedidos: PedidosEscritaRepository,
     private readonly audit: AuditService,
     private readonly arquivos: ArquivosTemporariosService,
+    private readonly manutencao: ManutencaoService,
   ) {}
 
   /** Etapas 2 e 3: parse, validação e prévia. Guarda o arquivo original no banco até o confirmar. */
@@ -239,6 +241,8 @@ export class ImportService {
       },
       ctx,
     });
+    // Importações antigas não precisam ficar guardadas: só as últimas permitem desfazer.
+    await this.manutencao.limparSemFalhar();
     return {
       loteId: lote.id,
       novos: novas.length,

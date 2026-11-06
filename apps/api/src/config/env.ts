@@ -39,6 +39,8 @@ export const envSchema = z.object({
   // em produção (Alpine), o Chromium do sistema.
   PRINT_BASE_URL: z.url().optional(),
   PDF_CHROMIUM_PATH: z.string().optional(),
+  // Segredo do Vercel Cron (limpeza diária). Sem ele a rota /api/manutencao/limpeza fica desativada.
+  CRON_SECRET: z.string().min(16).optional(),
   EXPORT_MAX_LINHAS: z.coerce.number().int().positive().max(200_000).default(50_000),
 });
 

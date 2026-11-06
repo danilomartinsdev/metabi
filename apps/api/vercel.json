@@ -11,6 +11,7 @@
       "includeFiles": "dist/**"
     }
   },
+  "crons": [{ "path": "/api/manutencao/limpeza", "schedule": "0 6 * * *" }],
   "rewrites": [
     {
       "source": "/api/(.*)",
