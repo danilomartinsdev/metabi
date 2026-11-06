@@ -351,6 +351,17 @@ export class ImportService {
           tx,
           lote.itens.filter((i) => i.acao === 'CRIADO').map((i) => i.focoId),
         );
+        // O lote anterior guardado no snapshot pode já ter sido apagado pela limpeza; nesse caso volta nulo
+        // (senão a restauração viola a chave estrangeira de ultimoLoteId).
+        const anteriores = lote.itens
+          .filter((i) => i.acao === 'ATUALIZADO')
+          .map((i) => (i.snapshotAnterior as Record<string, string | null>).ultimoLoteId)
+          .filter((id): id is string => !!id);
+        const lotesExistentes = new Set(
+          (await tx.importLote.findMany({ where: { id: { in: anteriores } }, select: { id: true } })).map(
+            (l) => l.id,
+          ),
+        );
         for (const i of lote.itens.filter((i) => i.acao === 'ATUALIZADO')) {
           const s = i.snapshotAnterior as Record<string, string | null>;
           await this.pedidos.atualizar(tx, i.focoId, {
@@ -365,7 +376,7 @@ export class ImportService {
             uf: s.uf!,
             regiao: s.regiao as PedidoExistente['regiao'],
             valor: new Prisma.Decimal(s.valor!),
-            ultimoLoteId: s.ultimoLoteId,
+            ultimoLoteId: s.ultimoLoteId && lotesExistentes.has(s.ultimoLoteId) ? s.ultimoLoteId : null,
           });
         }
         await tx.importLote.update({
