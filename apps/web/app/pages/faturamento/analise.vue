@@ -397,31 +397,39 @@ const cards = computed(() => [
             />
           </div>
         </div>
-        <div class="mt-3 grid grid-cols-1 items-center gap-6 lg:grid-cols-5">
-          <div class="lg:col-span-2">
+        <div class="mt-4 grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
+          <div class="mx-auto w-full max-w-lg">
             <ChartsMapaBrasilChart
               :nivel="nivelMapa"
               :linhas="linhasMapa"
               :selecao="selMapa"
-              altura="300px"
+              altura="380px"
               @alternar="alternarMapa"
             />
           </div>
-          <ul class="max-h-80 divide-y overflow-y-auto text-sm lg:col-span-3">
+          <ul class="mx-auto flex max-h-[26rem] w-full max-w-xl flex-col gap-1 overflow-y-auto pr-1">
             <li v-for="l in linhasMapa" :key="l.chave">
               <button
                 type="button"
-                class="flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted/40"
-                :class="selMapa.includes(l.chave) ? 'bg-primary-soft text-primary' : ''"
+                class="block w-full rounded-lg border border-transparent px-3 py-2 text-left transition-colors hover:bg-muted/50"
+                :class="selMapa.includes(l.chave) ? 'border-primary/40 bg-primary-soft' : ''"
                 :aria-pressed="selMapa.includes(l.chave)"
                 @click="alternarMapa(l.chave)"
               >
-                <span class="font-medium">{{ l.rotulo }}</span>
-                <span class="num shrink-0 text-right">
-                  {{ formatBRL(l.total) }}
-                  <span class="ml-2 inline-block w-14 text-xs text-muted-foreground">{{
-                    formatPct(l.participacao)
-                  }}</span>
+                <span class="flex items-baseline justify-between gap-4">
+                  <span class="truncate text-sm font-medium">{{ l.rotulo }}</span>
+                  <span class="num shrink-0 text-sm">
+                    {{ formatBRL(l.total) }}
+                    <span class="ml-1.5 inline-block w-12 text-right text-xs text-muted-foreground">{{
+                      formatPct(l.participacao)
+                    }}</span>
+                  </span>
+                </span>
+                <span class="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-muted">
+                  <span
+                    class="block h-full rounded-full bg-primary"
+                    :style="{ width: `${Math.max(2, (l.participacao / (linhasMapa[0]?.participacao || 1)) * 100)}%` }"
+                  />
                 </span>
               </button>
             </li>
