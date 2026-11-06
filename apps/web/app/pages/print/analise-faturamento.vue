@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AnaliseFaturamentoImpressao, ClasseAbc, PaletaGrafico } from '@metabi/shared';
+import { type AnaliseFaturamentoImpressao, type ClasseAbc, type PaletaGrafico, REGIAO_ENUM_ROTULO } from '@metabi/shared';
 import { corDaDivisao, divisoesOptions } from '~/utils/charts/notas-fiscais';
 import { coresFatias } from '~/utils/charts/palette';
 import { periodoPorExtenso } from '~/utils/periodo';
@@ -84,6 +84,9 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         <h1 class="mt-2 text-xl font-semibold">Análise de faturamento</h1>
         <p class="text-muted-foreground">
           {{ periodoPorExtenso(a.periodo.de, a.periodo.ate) }} · notas fiscais do Focco
+        </p>
+        <p v-if="dados.params.regiao?.length" class="text-xs text-muted-foreground">
+          Regiões: {{ dados.params.regiao.map((x) => REGIAO_ENUM_ROTULO[x]).join(', ') }}
         </p>
       </div>
       <div class="text-right text-xs text-muted-foreground">

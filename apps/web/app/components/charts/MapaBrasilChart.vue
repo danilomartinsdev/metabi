@@ -32,7 +32,10 @@ const props = defineProps<{
   altura?: string;
   /** false = só exibe (sem filtrar ao clicar): telas que não usam os filtros globais de vendas. */
   interativo?: boolean;
+  /** Seleção própria da tela (em vez dos filtros globais de vendas): o clique emite `alternar`. */
+  selecao?: string[];
 }>();
+const emit = defineEmits<{ alternar: [chave: string] }>();
 
 const pronto = ref(false);
 const falhou = ref(false);
@@ -52,12 +55,15 @@ watch(
 
 const { filtros, definir } = useFiltros();
 const campo = computed(() => (props.nivel === 'regiao' ? 'regiao' : 'uf'));
-const selecionados = computed(() => (props.interativo === false ? [] : (filtros.value[campo.value] as string[])));
+const selecionados = computed(
+  () => props.selecao ?? (props.interativo === false ? [] : (filtros.value[campo.value] as string[])),
+);
 
 /** Clique liga/desliga o filtro daquela região/UF (soma aos já selecionados). */
 function alternar(p: { name?: string }) {
   const c = p.name;
   if (props.interativo === false || !c || !MAPAS[props.nivel].chaves.includes(c)) return;
+  if (props.selecao) return emit('alternar', c);
   const atual = selecionados.value;
   definir({ [campo.value]: atual.includes(c) ? atual.filter((x) => x !== c) : [...atual, c] });
 }

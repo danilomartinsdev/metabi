@@ -11,7 +11,10 @@ import {
   type LinhaNota,
   type LoteNotas,
   linhaNotaSchema,
+  REGIAO_ENUM_ROTULO,
   regiaoDaUf,
+  UF_REGIAO,
+  UFS,
   type PreviaNotas,
 } from '@metabi/shared';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';
@@ -229,7 +232,13 @@ export class NotasFiscaisService {
       q.ate ?? ultimo?.dataEmissao.toISOString().slice(0, 7) ?? new Date().toISOString().slice(0, 7);
     const de0 = q.de ?? `${ate.slice(0, 4)}-01`;
     const de = de0 > ate ? ate : de0;
-    const where = { dataEmissao: { gte: dataMes(de), lte: fimMes(ate) } };
+    // `periodoWhere` alimenta o mapa (todas as regiões, para dar para somar/trocar a seleção);
+    // `where` = período + regiões filtradas, e vale para todo o resto da análise.
+    const periodoWhere = { dataEmissao: { gte: dataMes(de), lte: fimMes(ate) } };
+    const ufsFiltradas = (q.regiao ?? []).flatMap((reg) =>
+      UFS.filter((u) => UF_REGIAO[u] === REGIAO_ENUM_ROTULO[reg]),
+    );
+    const where = ufsFiltradas.length ? { ...periodoWhere, cliUf: { in: ufsFiltradas } } : periodoWhere;
 
     const [
       porDivisao,
@@ -265,8 +274,8 @@ export class NotasFiscaisService {
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo'], where, _sum: { valorTotal: true } }),
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo', 'notaId'], where }),
       this.prisma.notaFiscalItem.groupBy({ by: ['divisao', 'repCodigo', 'cliCodigo'], where }),
-      this.prisma.notaFiscalItem.groupBy({ by: ['cliUf'], where, _sum: { valorTotal: true } }),
-      this.prisma.notaFiscalItem.groupBy({ by: ['cliUf', 'notaId'], where }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['cliUf'], where: periodoWhere, _sum: { valorTotal: true } }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['cliUf', 'notaId'], where: periodoWhere }),
     ]);
 
     const total = porDivisao.reduce((t, d) => t.plus(d._sum.valorTotal ?? 0), new D(0));
