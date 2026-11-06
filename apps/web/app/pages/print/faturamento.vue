@@ -30,6 +30,8 @@ onMounted(async () => {
 });
 
 const r = computed(() => dados.value?.resumo);
+/** Seções marcadas no diálogo de exportação (sem lista = relatório completo). */
+const mostra = (id: string) => !dados.value?.secoes || dados.value.secoes.includes(id);
 const NOMES_MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const rotuloMes = (m: string) => `${NOMES_MES[Number(m.slice(5)) - 1]}/${m.slice(0, 4)}`;
 const periodo = computed(() => {
@@ -95,7 +97,7 @@ const mesesEscolhidos = computed(() => dados.value?.params.meses ?? []);
 
     <p v-if="!r.temDados" class="py-16 text-center text-muted-foreground">Nenhum faturamento importado.</p>
     <template v-else>
-      <section class="grid grid-cols-2 gap-3" aria-label="Indicadores de faturamento">
+      <section v-if="mostra('kpis')" class="grid grid-cols-2 gap-3" aria-label="Indicadores de faturamento">
         <DashboardKpiCard
           v-for="c in CARDS"
           :key="c.k"
@@ -107,7 +109,7 @@ const mesesEscolhidos = computed(() => dados.value?.params.meses ?? []);
         />
       </section>
 
-      <section class="break-inside-avoid rounded-xl border p-4">
+      <section v-if="mostra('grafico')" class="break-inside-avoid rounded-xl border p-4">
         <h2 class="text-sm font-medium text-muted-foreground">
           Fatura DRE mês a mês {{ r.mensal.ano }} — comparada ao ano anterior
         </h2>
@@ -119,7 +121,7 @@ const mesesEscolhidos = computed(() => dados.value?.params.meses ?? []);
         />
       </section>
 
-      <section class="break-inside-avoid rounded-xl border">
+      <section v-if="mostra('mensal')" class="break-inside-avoid rounded-xl border">
         <h2 class="px-4 pt-4 pb-2 text-sm font-medium text-muted-foreground">
           Faturamento mês a mês — {{ dados.mensal.ano }}
         </h2>
@@ -129,7 +131,7 @@ const mesesEscolhidos = computed(() => dados.value?.params.meses ?? []);
         <FaturamentoTabelaMensal v-else :mensal="dados.mensal" compacto />
       </section>
 
-      <section v-if="dados.comparativo" class="break-inside-avoid rounded-xl border">
+      <section v-if="dados.comparativo && mostra('comparativo')" class="break-inside-avoid rounded-xl border">
         <div class="px-4 pt-4 pb-2">
           <h2 class="text-sm font-medium text-muted-foreground">
             Comparativo entre anos — {{ INDICADOR[dados.params.indicador] }} de

@@ -14,10 +14,70 @@ import { type AnaliseNotas, type AnaliseNotasQuery, analiseNotasQuerySchema } fr
 export const EXPORT_XLSX_TIPOS = ['pedidos', 'gestores', 'estados', 'regioes', 'clientes'] as const;
 export type ExportXlsxTipo = (typeof EXPORT_XLSX_TIPOS)[number];
 
-/** Filtros globais + ordenação (usada só na exportação de pedidos). */
+/** Formatos de arquivo oferecidos no diálogo de exportação. */
+export const EXPORT_FORMATOS = ['pdf', 'xlsx', 'csv'] as const;
+export type ExportFormato = (typeof EXPORT_FORMATOS)[number];
+export const EXPORT_FORMATOS_PLANILHA = ['xlsx', 'csv'] as const;
+export type ExportFormatoPlanilha = (typeof EXPORT_FORMATOS_PLANILHA)[number];
+
+/** Blocos que o usuário marca/desmarca antes de exportar (ids estáveis: vão na URL e no token de impressão). */
+export const SECOES_EXPORT = {
+  vendas: [
+    { id: 'kpis', rotulo: 'Indicadores (total, pedidos, ticket médio, % público)' },
+    { id: 'evolucao', rotulo: 'Evolução mensal — real × ano anterior' },
+    { id: 'participacao', rotulo: 'Participação por região e Público × Privado' },
+    { id: 'topGestores', rotulo: 'Top 10 representantes' },
+    { id: 'comparativo', rotulo: 'Comparativo com o ano anterior' },
+    { id: 'detalhamento', rotulo: 'Detalhamento mês a mês' },
+    { id: 'rankGestores', rotulo: 'Ranking de representantes' },
+    { id: 'rankEstados', rotulo: 'Ranking de estados' },
+    { id: 'rankRegioes', rotulo: 'Ranking de regiões' },
+  ],
+  faturamento: [
+    { id: 'kpis', rotulo: 'Indicadores de faturamento' },
+    { id: 'grafico', rotulo: 'Gráfico mês a mês' },
+    { id: 'mensal', rotulo: 'Tabela mês a mês' },
+    { id: 'comparativo', rotulo: 'Comparativo entre anos' },
+  ],
+  'analise-faturamento': [
+    { id: 'kpis', rotulo: 'Indicadores de faturamento' },
+    { id: 'divisao', rotulo: 'Faturamento por divisão de venda' },
+    { id: 'ranking', rotulo: 'Ranking por representante' },
+    { id: 'abcClientes', rotulo: 'Curva ABC por cliente' },
+    { id: 'abcProdutos', rotulo: 'Curva ABC por produto' },
+  ],
+} as const;
+export type RelatorioExport = keyof typeof SECOES_EXPORT;
+
+const ID_SECAO = z.enum([
+  ...new Set(Object.values(SECOES_EXPORT).flatMap((l) => l.map((x) => x.id))),
+] as [string, ...string[]]);
+
+/** Lista de seções na query ("a,b" ou repetida). Ausente = relatório completo (undefined). */
+export const secoesSchema = z
+  .union([z.string(), z.array(z.string())])
+  .optional()
+  .transform((v) =>
+    v === undefined ? undefined : (Array.isArray(v) ? v : v.split(',')).map((x) => x.trim()).filter(Boolean),
+  )
+  .pipe(z.array(ID_SECAO).max(20).optional());
+
+/** PDF das vendas: filtros globais + seções marcadas. */
+export const exportPdfQuerySchema = z.intersection(filtrosSchema, z.object({ secoes: secoesSchema }));
+export type ExportPdfQuery = z.output<typeof exportPdfQuerySchema>;
+
+/** Planilha/CSV da Visão geral: filtros + formato + seções marcadas. */
+export const exportVisaoGeralQuerySchema = z.intersection(
+  filtrosSchema,
+  z.object({ formato: z.enum(EXPORT_FORMATOS_PLANILHA).default('xlsx'), secoes: secoesSchema }),
+);
+export type ExportVisaoGeralQuery = z.output<typeof exportVisaoGeralQuerySchema>;
+
+/** Filtros globais + ordenação (usada só na exportação de pedidos) + formato do arquivo. */
 export const exportXlsxQuerySchema = z.intersection(
   filtrosSchema,
   z.object({
+    formato: z.enum(EXPORT_FORMATOS_PLANILHA).default('xlsx'),
     sort: z.enum(['dtEmissao', 'valor', 'numPedido', 'cliente', 'uf', 'representante']).default('dtEmissao'),
     dir: z.enum(['asc', 'desc']).default('desc'),
   }),
@@ -29,15 +89,17 @@ export const printTokenSchema = z.object({ token: z.string().regex(/^[\w-]{43}$/
 
 /** O que um token de impressão autoriza: qual relatório e com quais parâmetros (guardado no token). */
 export const solicitacaoImpressaoSchema = z.discriminatedUnion('tipo', [
-  z.object({ tipo: z.literal('vendas'), filtros: filtrosSchema }),
-  z.object({ tipo: z.literal('faturamento'), params: faturamentoPdfQuerySchema }),
-  z.object({ tipo: z.literal('analise-faturamento'), params: analiseNotasQuerySchema }),
+  z.object({ tipo: z.literal('vendas'), filtros: filtrosSchema, secoes: z.array(ID_SECAO).optional() }),
+  z.object({ tipo: z.literal('faturamento'), params: faturamentoPdfQuerySchema, secoes: z.array(ID_SECAO).optional() }),
+  z.object({ tipo: z.literal('analise-faturamento'), params: analiseNotasQuerySchema, secoes: z.array(ID_SECAO).optional() }),
 ]);
 export type SolicitacaoImpressao = z.output<typeof solicitacaoImpressaoSchema>;
 
 /** Dados do PDF de faturamento (rota /print/faturamento da SPA). */
 export interface FaturamentoImpressao {
   geradoPor: string;
+  /** Seções marcadas pelo usuário; ausente = tudo. */
+  secoes?: string[];
   geradoEm: string;
   paletaGraficos: PaletaGrafico | null;
   params: FaturamentoPdfQuery;
@@ -49,6 +111,7 @@ export interface FaturamentoImpressao {
 /** Dados do PDF da Análise de faturamento (rota /print/analise-faturamento da SPA). */
 export interface AnaliseFaturamentoImpressao {
   geradoPor: string;
+  secoes?: string[];
   geradoEm: string;
   paletaGraficos: PaletaGrafico | null;
   params: AnaliseNotasQuery;
@@ -58,6 +121,7 @@ export interface AnaliseFaturamentoImpressao {
 /** Dados do relatório executivo em PDF (rota /print/relatorio da SPA). */
 export interface RelatorioImpressao {
   geradoPor: string;
+  secoes?: string[];
   geradoEm: string;
   /** Paleta de quem pediu o PDF (o relatório sai com as cores dele). */
   paletaGraficos: PaletaGrafico | null;

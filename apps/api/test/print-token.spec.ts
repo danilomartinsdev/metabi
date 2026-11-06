@@ -43,7 +43,7 @@ async function tokenAnalise(id = usuarioId) {
 beforeAll(async () => {
   ctx = await iniciarApp();
   await limparBanco(ctx.prisma);
-  usuarioId = (await criarUsuario(ctx.prisma, { email: 'gestor@meta.com', papel: 'gestor-comercial' })).id;
+  usuarioId = (await criarUsuario(ctx.prisma, { email: 'gestor@meta.com', papel: 'admin' })).id;
   tokens = ctx.app.get(PrintTokenService);
 });
 

@@ -204,6 +204,31 @@ watch(
 // Meses do comparativo (vazio = todos os meses com dado em algum dos dois anos).
 const mesesSel = ref<number[]>([]);
 watch([anoA, anoB], () => (mesesSel.value = []));
+
+// O comparativo acompanha o período escolhido no topo: anos = ano final do período × anterior e meses = os
+// do período (se ele cruza anos ou cobre o ano todo, ficam todos os meses). Depois dá para ajustar à mão.
+watch(
+  () => (periodo.value ? `${periodo.value.de}|${periodo.value.ate}|${anos.value.length}` : ''),
+  () => {
+    const p = periodo.value;
+    if (!p) return;
+    const anoFim = Number(p.ate.slice(0, 4));
+    if (anos.value.includes(anoFim) && anos.value.includes(anoFim - 1)) {
+      anoA.value = anoFim - 1;
+      anoB.value = anoFim;
+    }
+    const mesIni = Number(p.de.slice(5));
+    const mesFim = Number(p.ate.slice(5));
+    // Depois do reset que o watch acima faz ao trocar de ano.
+    void nextTick(() => {
+      mesesSel.value =
+        p.de.slice(0, 4) === p.ate.slice(0, 4) && !(mesIni === 1 && mesFim === 12)
+          ? Array.from({ length: mesFim - mesIni + 1 }, (_, i) => mesIni + i)
+          : [];
+    });
+  },
+  { immediate: true },
+);
 const compQ = useFaturamentoComparativoQuery(anoA, anoB, mesesSel);
 const comp = computed(() => compQ.data.value);
 const filtrandoMeses = computed(() => mesesSel.value.length > 0);
@@ -259,11 +284,8 @@ const INDICADORES: { label: string; value: CampoTotalFaturamento }[] = [
 const indicador = ref<CampoTotalFaturamento>('dre');
 const nomeIndicador = computed(() => INDICADORES.find((i) => i.value === indicador.value)?.label ?? '');
 
-// PDF: o que está na tela — período, ano da tabela e o comparativo (anos, meses e indicador).
-const { baixar } = useApi();
-const aviso = useAviso();
-const gerandoPdf = ref(false);
-async function exportarPdf() {
+// Exportação: o que está na tela — período, ano da tabela e o comparativo (anos, meses e indicador).
+const consultaExportar = computed(() => {
   const p = new URLSearchParams();
   if (periodo.value) {
     p.set('de', periodo.value.de);
@@ -276,16 +298,8 @@ async function exportarPdf() {
     p.set('indicador', indicador.value);
     if (mesesSel.value.length) p.set('meses', mesesSel.value.join(','));
   }
-  gerandoPdf.value = true;
-  try {
-    await baixar(`/export/pdf/faturamento?${p.toString()}`);
-    aviso.sucesso('PDF gerado.');
-  } catch (e) {
-    aviso.erro(e, 'Não foi possível gerar o PDF.');
-  } finally {
-    gerandoPdf.value = false;
-  }
-}
+  return p.toString();
+});
 
 const atalho = (tipo: 'ano' | 'mes') => {
   const fim = r.value?.periodo.ate;
@@ -305,14 +319,10 @@ const atalho = (tipo: 'ano' | 'mes') => {
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <UButton
-          v-if="can('export.pdf') && r?.temDados"
-          color="neutral"
-          variant="outline"
-          icon="i-lucide-file-text"
-          :label="gerandoPdf ? 'Gerando PDF…' : 'Exportar PDF'"
-          :loading="gerandoPdf"
-          @click="exportarPdf"
+        <DashboardExportarMenu
+          v-if="r?.temDados"
+          relatorio="faturamento"
+          :consulta="consultaExportar"
         />
         <UButton
           v-if="can('faturamento.import')"

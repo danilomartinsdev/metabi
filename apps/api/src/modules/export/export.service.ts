@@ -2,6 +2,7 @@ import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import type {
   AnaliseFaturamentoImpressao,
   AnaliseNotasQuery,
+  ExportVisaoGeralQuery,
   ExportXlsxQuery,
   ExportXlsxTipo,
   FaturamentoImpressao,
@@ -20,7 +21,14 @@ import { DashboardService } from '../dashboard/dashboard.service.js';
 import { FaturamentoService } from '../faturamento/faturamento.service.js';
 import { NotasFiscaisService } from '../notas-fiscais/notas-fiscais.service.js';
 import { PdfRenderer } from './pdf-renderer.service.js';
-import { type InfoExportacao, planilhaClientes, planilhaPedidos, planilhaRanking } from './planilhas.js';
+import {
+  blocosVisaoGeral,
+  type InfoExportacao,
+  planilhaClientes,
+  planilhaPedidos,
+  planilhaRanking,
+  planilhaVisaoGeral,
+} from './planilhas.js';
 import { PrintTokenService } from './print-token.service.js';
 
 // Map (e não objeto literal) porque a regra de escopo do ESLint trata qualquer chave "pedidos" como relação.
@@ -100,30 +108,62 @@ export class ExportService {
       const r = await this.dashboard.pedidosParaExportar(u, q, this.env.EXPORT_MAX_LINHAS);
       periodo = r.periodo;
       linhas = r.data.length;
-      conteudo = planilhaPedidos(r.data, info(periodo, linhas, r.total > linhas), rotulos);
+      conteudo = planilhaPedidos(r.data, info(periodo, linhas, r.total > linhas), rotulos, q.formato);
     } else if (tipo === 'clientes') {
       const r = await this.dashboard.clientes(u, q);
       periodo = r.periodo;
       linhas = r.ranking.length;
-      conteudo = planilhaClientes(r, info(periodo, linhas), rotulos);
+      conteudo = planilhaClientes(r, info(periodo, linhas), rotulos, q.formato);
     } else {
       const r = await this.dashboard.ranking(u, q, tipo);
       periodo = r.periodo;
       linhas = r.linhas.length;
-      conteudo = planilhaRanking(r, COLUNA[tipo], info(periodo, linhas), rotulos);
+      conteudo = planilhaRanking(r, COLUNA[tipo], info(periodo, linhas), rotulos, q.formato);
     }
 
     await this.audit.registrar({
       acao: 'export.xlsx',
       usuarioId: u.id,
-      detalhes: { tipo, linhas, filtros: filtrosParaAuditoria({ ...q, ...periodo }) },
+      detalhes: { tipo, formato: q.formato, linhas, filtros: filtrosParaAuditoria({ ...q, ...periodo }) },
       ctx,
     });
-    return {
-      conteudo,
-      nome: `metabi-${tipo}-${periodo.de}_${periodo.ate}.xlsx`,
-      tipo: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    return arquivoPlanilha(`metabi-${tipo}-${periodo.de}_${periodo.ate}`, q.formato, conteudo);
+  }
+
+  /** Visão geral em planilha/CSV: só as seções marcadas (sem "secoes" = todas), no escopo de quem pediu. */
+  async visaoGeral(u: UsuarioAutenticado, q: ExportVisaoGeralQuery, ctx: ContextoRequisicao): Promise<Arquivo> {
+    const ativa = (id: string) => !q.secoes || q.secoes.includes(id);
+    const v = await this.dashboard.visaoGeral(u, q);
+    const rank = (dim: 'gestores' | 'estados' | 'regioes', id: string) =>
+      ativa(id) ? this.dashboard.ranking(u, q, dim) : Promise.resolve(undefined);
+    const [gestores, estados, regioes] = await Promise.all([
+      rank('gestores', 'rankGestores'),
+      rank('estados', 'rankEstados'),
+      rank('regioes', 'rankRegioes'),
+    ]);
+    const blocos = blocosVisaoGeral(v, { gestores, estados, regioes }, ativa);
+    if (!blocos.length) throw new ApiException(HttpStatus.BAD_REQUEST, 'VALIDATION', 'Marque ao menos uma seção para exportar.');
+    const info: InfoExportacao = {
+      titulo: 'Visão geral',
+      periodo: v.periodo,
+      filtros: q,
+      geradoPor: u.nome,
+      geradoEm: new Date(),
+      linhas: blocos.reduce((t, b) => t + b.linhas.length, 0),
     };
+    const conteudo = planilhaVisaoGeral(blocos, info, await this.rotulosGestor(u, q), q.formato);
+    await this.audit.registrar({
+      acao: 'export.xlsx',
+      usuarioId: u.id,
+      detalhes: {
+        tipo: 'visao-geral',
+        formato: q.formato,
+        secoes: q.secoes ?? 'todas',
+        filtros: filtrosParaAuditoria({ ...q, ...v.periodo }),
+      },
+      ctx,
+    });
+    return arquivoPlanilha(`metabi-visao-geral-${v.periodo.de}_${v.periodo.ate}`, q.formato, conteudo);
   }
 
   /**
@@ -152,13 +192,18 @@ export class ExportService {
     }
   }
 
-  async pdf(u: UsuarioAutenticado, f: Filtros, ctx: ContextoRequisicao): Promise<Arquivo> {
+  async pdf(
+    u: UsuarioAutenticado,
+    f: Filtros,
+    ctx: ContextoRequisicao,
+    secoes?: string[],
+  ): Promise<Arquivo> {
     const periodo = await this.dashboard.periodo(u, f);
-    const conteudo = await this.gerarPdf(u, { tipo: 'vendas', filtros: f }, 'relatorio');
+    const conteudo = await this.gerarPdf(u, { tipo: 'vendas', filtros: f, secoes }, 'relatorio');
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
-      detalhes: { filtros: filtrosParaAuditoria({ ...f, ...periodo }) },
+      detalhes: { secoes: secoes ?? 'todas', filtros: filtrosParaAuditoria({ ...f, ...periodo }) },
       ctx,
     });
     return {
@@ -173,14 +218,15 @@ export class ExportService {
     u: UsuarioAutenticado,
     p: FaturamentoPdfQuery,
     ctx: ContextoRequisicao,
+    secoes?: string[],
   ): Promise<Arquivo> {
     exigirFaturamento(u);
     const { periodo } = await this.faturamento.resumo({ de: p.de, ate: p.ate });
-    const conteudo = await this.gerarPdf(u, { tipo: 'faturamento', params: p }, 'faturamento');
+    const conteudo = await this.gerarPdf(u, { tipo: 'faturamento', params: p, secoes }, 'faturamento');
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
-      detalhes: { relatorio: 'faturamento', ...periodo, ...p },
+      detalhes: { relatorio: 'faturamento', secoes: secoes ?? 'todas', ...periodo, ...p },
       ctx,
     });
     return {
@@ -195,14 +241,19 @@ export class ExportService {
     u: UsuarioAutenticado,
     p: AnaliseNotasQuery,
     ctx: ContextoRequisicao,
+    secoes?: string[],
   ): Promise<Arquivo> {
     exigirAnaliseFaturamento(u);
     const { periodo } = await this.notas.analise(p);
-    const conteudo = await this.gerarPdf(u, { tipo: 'analise-faturamento', params: p }, 'analise-faturamento');
+    const conteudo = await this.gerarPdf(
+      u,
+      { tipo: 'analise-faturamento', params: p, secoes },
+      'analise-faturamento',
+    );
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
-      detalhes: { relatorio: 'analise-faturamento', ...periodo },
+      detalhes: { relatorio: 'analise-faturamento', secoes: secoes ?? 'todas', ...periodo },
       ctx,
     });
     return {
@@ -218,6 +269,7 @@ export class ExportService {
     if (!e) throw Erros.naoAutenticado();
     const { usuario: u } = e;
     const f = e.solicitacao.filtros;
+    const secoes = e.solicitacao.secoes;
     const [visaoGeral, gestores, estados, regioes] = await Promise.all([
       this.dashboard.visaoGeral(u, f),
       this.dashboard.ranking(u, f, 'gestores'),
@@ -228,6 +280,7 @@ export class ExportService {
       geradoPor: u.nome,
       geradoEm: new Date().toISOString(),
       paletaGraficos: u.paletaGraficos,
+      secoes,
       filtros: f,
       visaoGeral,
       rankings: { gestores, estados, regioes },
@@ -252,6 +305,7 @@ export class ExportService {
       geradoPor: u.nome,
       geradoEm: new Date().toISOString(),
       paletaGraficos: u.paletaGraficos,
+      secoes: solicitacao.secoes,
       params: p,
       resumo,
       mensal,
@@ -269,10 +323,21 @@ export class ExportService {
       geradoPor: u.nome,
       geradoEm: new Date().toISOString(),
       paletaGraficos: u.paletaGraficos,
+      secoes: solicitacao.secoes,
       params: solicitacao.params,
       analise: await this.notas.analise(solicitacao.params),
     };
   }
+}
+
+function arquivoPlanilha(base: string, formato: 'xlsx' | 'csv', conteudo: Buffer): Arquivo {
+  return formato === 'csv'
+    ? { conteudo, nome: base + '.csv', tipo: 'text/csv; charset=utf-8' }
+    : {
+        conteudo,
+        nome: base + '.xlsx',
+        tipo: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      };
 }
 
 /** Só os filtros preenchidos (sem ordenação), para o log de auditoria. */

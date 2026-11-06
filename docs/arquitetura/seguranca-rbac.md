@@ -23,8 +23,8 @@
 | pedidos.view             |   ✔   |        ✔         |       ✔       |      ✔       |
 | import.run               |   ✔   |        ✔         |               |              |
 | import.rollback          |   ✔   |        ✔         |               |              |
-| export.xlsx              |   ✔   |        ✔         |       ✔       | configurável |
-| export.pdf               |   ✔   |        ✔         |       ✔       | configurável |
+| export.xlsx              |   ✔   |                  |               | configurável |
+| export.pdf               |   ✔   |                  |               | configurável |
 | metas.edit               |   ✔   |        ✔         |               |              |
 | faturamento.view         |   ✔   |        ✔         |               |              |
 | faturamento-analise.view |   ✔   |        ✔         |               |              |
@@ -32,6 +32,10 @@
 | cadastros.edit           |   ✔   |                  |               |              |
 | users.manage             |   ✔   |                  |               |              |
 | audit.view               |   ✔   |                  |               |              |
+
+**Exportação** (2026-11): exclusiva de Admin e Diretoria. Só o Admin a tem por padrão; a Diretoria (papel
+criado em Papéis) marca `export.xlsx`/`export.pdf`. Todo "Exportar" abre um diálogo para escolher o formato
+(PDF, Excel ou CSV) e as seções incluídas.
 
 `import.rollback` para Gestor e `cadastros.edit` só para Admin são **propostas** a confirmar.
 Escopo padrão: Admin/Gestor comercial = todos; Representante = representantes vinculados;

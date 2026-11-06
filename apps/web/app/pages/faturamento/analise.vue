@@ -49,21 +49,6 @@ function atalho(tipo: 'mes' | 'ano') {
   });
 }
 
-// PDF: o período da tela (o mesmo filtro de/até da URL).
-const { baixar } = useApi();
-const aviso = useAviso();
-const gerandoPdf = ref(false);
-async function exportarPdf() {
-  gerandoPdf.value = true;
-  try {
-    await baixar(`/export/pdf/analise-faturamento${qs.value ? `?${qs.value}` : ''}`);
-    aviso.sucesso('PDF gerado.');
-  } catch (e) {
-    aviso.erro(e, 'Não foi possível gerar o PDF.');
-  } finally {
-    gerandoPdf.value = false;
-  }
-}
 
 const NOMES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const opcoesMes = computed(() => {
@@ -129,15 +114,8 @@ const cards = computed(() => [
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <UButton
-          v-if="can('export.pdf') && r?.temDados"
-          color="neutral"
-          variant="outline"
-          icon="i-lucide-file-text"
-          :label="gerandoPdf ? 'Gerando PDF…' : 'Exportar PDF'"
-          :loading="gerandoPdf"
-          @click="exportarPdf"
-        />
+        <!-- Exportação: o período da tela (o mesmo filtro de/até da URL). -->
+        <DashboardExportarMenu v-if="r?.temDados" relatorio="analise-faturamento" :consulta="qs" />
         <UButton
           v-if="can('faturamento.import')"
           icon="i-lucide-file-up"
