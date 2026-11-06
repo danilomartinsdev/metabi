@@ -42,6 +42,7 @@ export const SECOES_EXPORT = {
   'analise-faturamento': [
     { id: 'kpis', rotulo: 'Indicadores de faturamento' },
     { id: 'divisao', rotulo: 'Faturamento por divisão de venda' },
+    { id: 'regiao', rotulo: 'Faturamento por região (mapa)' },
     { id: 'ranking', rotulo: 'Ranking por representante' },
     { id: 'abcClientes', rotulo: 'Curva ABC por cliente' },
     { id: 'abcProdutos', rotulo: 'Curva ABC por produto' },

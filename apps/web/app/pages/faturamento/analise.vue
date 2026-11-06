@@ -319,6 +319,22 @@ const cards = computed(() => [
         </div>
       </section>
 
+      <section v-if="r?.porRegiao.length" class="rounded-xl border bg-card p-5">
+        <h3 class="text-sm font-medium text-muted-foreground">Faturamento por região</h3>
+        <div class="mt-3 grid grid-cols-1 items-center gap-4 lg:grid-cols-2">
+          <ChartsMapaBrasilChart nivel="regiao" :linhas="r.porRegiao" :interativo="false" altura="300px" />
+          <table class="w-full text-sm">
+            <tbody class="divide-y">
+              <tr v-for="l in r.porRegiao" :key="l.chave">
+                <td class="py-1.5 pr-2">{{ l.rotulo }}</td>
+                <td class="num py-1.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+                <td class="num w-16 py-1.5 text-right text-muted-foreground">{{ formatPct(l.participacao) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="rounded-xl border bg-card" aria-labelledby="titulo-abc-cli">
         <div class="px-5 pt-5 pb-3">
           <h3 id="titulo-abc-cli" class="text-sm font-medium text-muted-foreground">

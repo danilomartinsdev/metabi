@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { LinhaRanking } from './dashboard.js';
 import { dataBR, decimalBR, type ErroLinha } from './importacao.js';
 
 /**
@@ -183,6 +184,8 @@ export interface AnaliseNotas {
   /** Fatias do gráfico de pizza (maior primeiro); participacao em fração (0–1). */
   divisoes: { divisao: string; total: string; notas: number; participacao: number }[];
   representantes: LinhaRepresentanteNotas[];
+  /** Faturamento por região (UF do cliente → região), maior primeiro; `chave` no formato do mapa (NORTE, CENTRO_OESTE…). */
+  porRegiao: LinhaRanking[];
   /** Ranking de representantes dentro de cada divisão (clique na fatia); participacao = fração da divisão. */
   representantesPorDivisao: { divisao: string; total: string; representantes: LinhaRepresentanteNotas[] }[];
   abcClientes: {

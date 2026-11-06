@@ -30,6 +30,8 @@ const props = defineProps<{
   linhas?: LinhaRanking[];
   carregando?: boolean;
   altura?: string;
+  /** false = só exibe (sem filtrar ao clicar): telas que não usam os filtros globais de vendas. */
+  interativo?: boolean;
 }>();
 
 const pronto = ref(false);
@@ -50,12 +52,12 @@ watch(
 
 const { filtros, definir } = useFiltros();
 const campo = computed(() => (props.nivel === 'regiao' ? 'regiao' : 'uf'));
-const selecionados = computed(() => filtros.value[campo.value] as string[]);
+const selecionados = computed(() => (props.interativo === false ? [] : (filtros.value[campo.value] as string[])));
 
 /** Clique liga/desliga o filtro daquela região/UF (soma aos já selecionados). */
 function alternar(p: { name?: string }) {
   const c = p.name;
-  if (!c || !MAPAS[props.nivel].chaves.includes(c)) return;
+  if (props.interativo === false || !c || !MAPAS[props.nivel].chaves.includes(c)) return;
   const atual = selecionados.value;
   definir({ [campo.value]: atual.includes(c) ? atual.filter((x) => x !== c) : [...atual, c] });
 }
@@ -72,7 +74,9 @@ const resumo = computed(() =>
 );
 const nomeNivel = computed(() => (props.nivel === 'regiao' ? 'região' : 'estado'));
 const dica = computed(() =>
-  selecionados.value.length
+  props.interativo === false
+    ? ''
+    : selecionados.value.length
     ? 'Clique de novo para tirar do filtro.'
     : props.nivel === 'regiao'
       ? 'Clique numa região para filtrar.'
@@ -91,13 +95,13 @@ const dica = computed(() =>
   <template v-else>
     <ChartsBaseChart
       :altura="altura ?? '300px'"
-      class="cursor-pointer"
-      :rotulo="`Mapa de vendas por ${nomeNivel}${resumo ? `: ${resumo}` : ''}. Clique para filtrar.`"
+      :class="interativo === false ? '' : 'cursor-pointer'"
+      :rotulo="`Mapa de vendas por ${nomeNivel}${resumo ? `: ${resumo}` : ''}.${interativo === false ? '' : ' Clique para filtrar.'}`"
       :opcoes="(t) => buildMapaBrasilOptions(nivel, linhas ?? [], selecionados, t)"
       @clique="alternar"
     />
     <p class="mt-1 flex flex-wrap justify-center gap-x-4 text-center text-xs text-muted-foreground">
-      <span>{{ dica }}</span>
+      <span v-if="dica">{{ dica }}</span>
       <span v-if="foraDoMapa"
         >Exterior: {{ formatBRL(foraDoMapa.total) }} ({{ formatPct(foraDoMapa.participacao) }})</span
       >

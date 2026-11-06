@@ -23,7 +23,8 @@ onMounted(async () => {
     paletaImpressao.value = dados.value.paletaGraficos;
     // Espera o Vue desenhar e as animações curtas do ECharts terminarem antes de liberar o PDF.
     await nextTick();
-    setTimeout(() => ((window as Janela).__relatorio = 'pronto'), 1200);
+    // O mapa baixa a malha do IBGE antes de desenhar: com ele no relatório, espera um pouco mais.
+    setTimeout(() => ((window as Janela).__relatorio = 'pronto'), mostra('regiao') ? 2500 : 1200);
   } catch {
     erro.value = true;
     (window as Janela).__relatorio = 'erro';
@@ -134,6 +135,24 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
                 <td class="num w-14 py-1 text-right text-muted-foreground">
                   {{ formatPct(d.participacao) }}
                 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section v-if="mostra('regiao') && a.porRegiao.length" class="break-inside-avoid rounded-xl border p-4">
+        <h2 class="text-sm font-medium text-muted-foreground">Faturamento por região</h2>
+        <div class="mt-2 flex items-center gap-6">
+          <div class="w-72 shrink-0">
+            <ChartsMapaBrasilChart nivel="regiao" :linhas="a.porRegiao" :interativo="false" altura="240px" />
+          </div>
+          <table class="w-full text-xs">
+            <tbody class="divide-y">
+              <tr v-for="l in a.porRegiao" :key="l.chave">
+                <td class="py-1 pr-2">{{ l.rotulo }}</td>
+                <td class="num py-1 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+                <td class="num w-14 py-1 text-right text-muted-foreground">{{ formatPct(l.participacao) }}</td>
               </tr>
             </tbody>
           </table>
