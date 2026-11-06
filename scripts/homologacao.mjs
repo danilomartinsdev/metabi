@@ -4,8 +4,8 @@
 //
 //   pnpm homolog:preparar [--rede [--ip x]]  1ª vez: clone + .env da homologação (segredos novos);
 //                                            padrão http://localhost:4337, --rede = rede local
-//   pnpm homolog:copiar-prod                 copia o banco (pg_dump) e as planilhas importadas da produção
-//                                            (só leitura) para a homologação
+//   pnpm homolog:copiar-prod                 copia o banco da produção (Neon, pg_dump só leitura) para a
+//                                            homologação; sem a URL do Neon, usa o Postgres Docker antigo
 //   pnpm homolog:subir <branch>              põe a branch no ar na homologação (migrations rodam sozinhas)
 //   pnpm homolog:status | homolog:parar
 //
@@ -22,6 +22,9 @@ const CLONE = 'C:/Users/Danilo/metabi-homolog';
 const BACKUPS = 'C:/Users/Danilo/metabi-backups';
 const PROJETO = 'metabi-homolog';
 const PROD_POSTGRES = 'metabi-prod-postgres-1';
+// Produção na Vercel: banco no Neon. A URL direta fica fora do repositório e nunca é impressa.
+const ARQUIVO_URL_NEON = process.env.NEON_URL_ARQUIVO ?? 'C:/Users/Danilo/metabi-segredos/neon-url-direta.txt';
+const IMAGEM_CLIENTE_PG = 'postgres:18-alpine'; // pg_dump >= versão do servidor do Neon (18.x)
 // Planilhas das importações (volume storage). Da produção só se lê (montado :ro).
 const PROD_STORAGE = 'metabi-prod_storage';
 const HOMOLOG_STORAGE = 'metabi-homolog_storage';
@@ -143,25 +146,42 @@ function subir() {
 
 function copiarProd() {
   exigirClone();
+  const urlNeon = fs.existsSync(ARQUIVO_URL_NEON)
+    ? fs
+        .readFileSync(ARQUIVO_URL_NEON, 'utf8')
+        .split(/\r?\n/)
+        // Aceita a URL pura ou no formato do .env da Vercel (CHAVE="postgres://...").
+        .map((l) => l.trim().replace(/^[A-Za-z_]+=/, '').replace(/^["']|["']$/g, ''))
+        .find((l) => l.startsWith('postgres://') || l.startsWith('postgresql://'))
+    : undefined;
   const rodando = saida('docker', ['inspect', '-f', '{{.State.Running}}', PROD_POSTGRES]);
-  if (rodando !== 'true') falhar(`${PROD_POSTGRES} não está rodando.`);
+  if (!urlNeon && rodando !== 'true') falhar(`Sem a URL do Neon (${ARQUIVO_URL_NEON}) e ${PROD_POSTGRES} não está rodando.`);
 
-  // 1. Produção: só leitura. A senha fica dentro do container (variável de ambiente dele).
+  // 1. Produção: só leitura (pg_dump). Neon: a URL vai por variável de ambiente, nunca na linha de comando.
   fs.mkdirSync(BACKUPS, { recursive: true });
   const carimbo = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
   const arquivo = path.posix.join(BACKUPS, `prod-${carimbo}.dump`);
   const fd = fs.openSync(arquivo, 'w', 0o600);
-  rodar(
-    'docker',
-    [
-      'exec',
-      PROD_POSTGRES,
-      'sh',
-      '-c',
-      'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc',
-    ],
-    { stdio: ['ignore', fd, 'inherit'] },
-  );
+  if (urlNeon) {
+    rodar(
+      'docker',
+      ['run', '--rm', '-e', 'NEON_URL', IMAGEM_CLIENTE_PG, 'sh', '-c', 'pg_dump "$NEON_URL" -Fc --no-owner --no-acl'],
+      { stdio: ['ignore', fd, 'inherit'], env: { ...process.env, NEON_URL: urlNeon } },
+    );
+  } else {
+    // Produção antiga em Docker: a senha fica dentro do container (variável de ambiente dele).
+    rodar(
+      'docker',
+      [
+        'exec',
+        PROD_POSTGRES,
+        'sh',
+        '-c',
+        'PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc',
+      ],
+      { stdio: ['ignore', fd, 'inherit'] },
+    );
+  }
   fs.closeSync(fd);
   console.log(`Cópia da produção salva em ${arquivo} (${(fs.statSync(arquivo).size / 1e6).toFixed(1)} MB).`);
 
@@ -179,25 +199,58 @@ function copiarProd() {
     ]);
   psql('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
   const entrada = fs.openSync(arquivo, 'r');
-  compose(
-    [
-      'exec',
-      '-T',
-      'postgres',
-      'sh',
-      '-c',
-      'PGPASSWORD="$POSTGRES_PASSWORD" pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-acl',
-    ],
-    { stdio: [entrada, 'inherit', 'inherit'] },
-  );
+  if (urlNeon) {
+    // O dump do Neon (Postgres 18) é mais novo que o cliente do Postgres da homologação (16): restaura com um
+    // cliente 18 que compartilha a rede do container do banco. Usuário/senha/banco vêm do próprio container
+    // (variáveis dele) e passam por ambiente, sem aparecer na tela.
+    const alvo = saida('docker', [
+      'ps',
+      '-q',
+      '--filter',
+      `label=com.docker.compose.project=${PROJETO}`,
+      '--filter',
+      'label=com.docker.compose.service=postgres',
+    ]);
+    if (!alvo) falhar('Container do Postgres da homologação não encontrado.');
+    const env = JSON.parse(saida('docker', ['inspect', '-f', '{{json .Config.Env}}', alvo]) ?? '[]');
+    const v = (k) => env.find((e) => e.startsWith(`${k}=`))?.slice(k.length + 1) ?? '';
+    rodar(
+      'docker',
+      [
+        'run', '--rm', '-i', '--network', `container:${alvo}`,
+        '-e', 'PGPASSWORD', '-e', 'PGUSER', '-e', 'PGDATABASE',
+        IMAGEM_CLIENTE_PG, 'sh', '-c', // Código 1 = "erros ignorados": aqui só o SET transaction_timeout, que o Postgres 16 não conhece.
+        'pg_restore -h 127.0.0.1 -d "$PGDATABASE" --no-owner --no-acl; [ $? -le 1 ]',
+      ],
+      {
+        stdio: [entrada, 'inherit', 'inherit'],
+        env: { ...process.env, PGPASSWORD: v('POSTGRES_PASSWORD'), PGUSER: v('POSTGRES_USER'), PGDATABASE: v('POSTGRES_DB') },
+      },
+    );
+  } else {
+    compose(
+      [
+        'exec',
+        '-T',
+        'postgres',
+        'sh',
+        '-c',
+        'PGPASSWORD="$POSTGRES_PASSWORD" pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --no-acl',
+      ],
+      { stdio: [entrada, 'inherit', 'inherit'] },
+    );
+  }
   fs.closeSync(entrada);
   // Nenhuma sessão, link de senha ou token de impressão da produção vale na homologação.
   psql(
     'DELETE FROM "Sessao"; DELETE FROM "TokenRedefinicaoSenha"; DELETE FROM "TokenImpressao"; DELETE FROM "ArquivoTemporario";',
   );
 
-  // 3. Planilhas das importações: a API da homologação está parada; a produção é montada só leitura.
-  copiarArquivos();
+  // 3. Planilhas das importações (só existiam na produção em Docker; na Vercel ficam no banco).
+  const volumes = (saida('docker', ['volume', 'ls', '--format', '{{.Name}}']) ?? '').split(/\r?\n/);
+  if (volumes.includes(PROD_STORAGE)) {
+    copiarArquivos();
+  }
 
   // 4. Sobe de novo: o migrate aplica as migrations da branch atual por cima da cópia.
   compose(['up', '-d', '--wait']);
