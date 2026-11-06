@@ -428,7 +428,7 @@ const cards = computed(() => [
                 <span class="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-muted">
                   <span
                     class="block h-full rounded-full bg-primary"
-                    :style="{ width: `${Math.max(2, (l.participacao / (linhasMapa[0]?.participacao || 1)) * 100)}%` }"
+                    :style="{ width: `${Math.max(2, ((l.participacao ?? 0) / (linhasMapa[0]?.participacao || 1)) * 100)}%` }"
                   />
                 </span>
               </button>
