@@ -42,9 +42,36 @@ const formatos = computed(() => {
 const formato = ref<ExportFormato>('pdf');
 const marcadas = ref<string[]>([]);
 
+// Última escolha (formato + seções) lembrada neste navegador, por pessoa e por relatório. É só
+// conveniência: se o armazenamento falhar ou estiver vazio, vale o padrão (primeiro formato, tudo marcado).
+const auth = useAuthStore();
+const chaveEscolha = computed(() => `metabi-exportar:${auth.usuario?.id ?? 'anon'}:${props.relatorio}`);
+
+function lerEscolha(): { formato?: ExportFormato; secoes?: string[] } {
+  try {
+    const bruto = localStorage.getItem(chaveEscolha.value);
+    return bruto ? (JSON.parse(bruto) as { formato?: ExportFormato; secoes?: string[] }) : {};
+  } catch {
+    return {};
+  }
+}
+function guardarEscolha() {
+  try {
+    localStorage.setItem(chaveEscolha.value, JSON.stringify({ formato: formato.value, secoes: marcadas.value }));
+  } catch {
+    // Sem armazenamento (janela privada etc.): a escolha só vale desta vez.
+  }
+}
+
 function abrir() {
-  formato.value = formatos.value[0]?.value ?? 'pdf';
-  marcadas.value = secoes.value.map((s) => s.id);
+  const salva = lerEscolha();
+  const ids = secoes.value.map((s) => s.id);
+  formato.value = formatos.value.some((f) => f.value === salva.formato)
+    ? salva.formato!
+    : (formatos.value[0]?.value ?? 'pdf');
+  // Só as seções que ainda existem; se nada sobrou (ou nunca houve escolha), tudo marcado.
+  const validas = Array.isArray(salva.secoes) ? ids.filter((id) => salva.secoes!.includes(id)) : [];
+  marcadas.value = validas.length ? validas : ids;
   aberto.value = true;
 }
 
@@ -85,6 +112,7 @@ async function exportar() {
   gerando.value = true;
   try {
     await baixar(montarUrl());
+    guardarEscolha();
     aviso.sucesso(formato.value === 'pdf' ? 'PDF gerado.' : 'Arquivo gerado.');
     aberto.value = false;
   } catch (e) {
