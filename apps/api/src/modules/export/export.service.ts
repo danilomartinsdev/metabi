@@ -177,7 +177,7 @@ export class ExportService {
     try {
       return await this.renderer.renderizar(
         `${base}/print/${pagina}?token=${token}`,
-        `Metahospitalar · MetaBI — gerado por ${u.nome} em ${quando} · uso interno`,
+        `Metahospitalar · MetaBI — gerado por ${u.nome} em ${quando}`,
       );
     } catch (e) {
       this.logger.error(`Falha ao gerar PDF (${pagina}): ${(e as Error).message}`);
