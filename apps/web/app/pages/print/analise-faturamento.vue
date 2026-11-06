@@ -76,7 +76,12 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
 
     <p v-if="!a.temDados" class="py-16 text-center text-muted-foreground">Nenhuma nota fiscal importada.</p>
     <template v-else>
-      <section v-if="mostra('kpis')" class="grid grid-cols-4 gap-3" aria-label="Indicadores de faturamento">
+      <!-- A 1ª coluna é mais larga: o valor em R$ (ex.: R$ 63.866.373,72) não cabe numa coluna igual às outras. -->
+      <section
+        v-if="mostra('kpis')"
+        class="grid grid-cols-[1.7fr_1fr_1fr_1fr] gap-3"
+        aria-label="Indicadores de faturamento"
+      >
         <DashboardKpiCard
           rotulo="Faturamento no período"
           icone="i-lucide-dollar-sign"
