@@ -23,6 +23,7 @@ describe('CSV e Visão geral em planilha', () => {
       },
       evolucao: { ano: 2026, meses: [{ mes: 1, real: '1', anoAnterior: '2', meta: null }], atingimento: null },
       porRegiao: [],
+      porUf: [],
       porSegmento: [],
       topGestores: [],
       detalhamentoMensal: { linhas: [], total: { atual: '0', anterior: '0', pct: null } },

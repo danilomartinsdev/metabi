@@ -13,8 +13,10 @@ import {
   linhaNotaSchema,
   REGIAO_ENUM_ROTULO,
   regiaoDaUf,
+  UF_NOME,
   UF_REGIAO,
   UFS,
+  type UF,
   type PreviaNotas,
 } from '@metabi/shared';
 import type { ContextoRequisicao, UsuarioAutenticado } from '../../common/auth/types.js';
@@ -235,9 +237,10 @@ export class NotasFiscaisService {
     // `periodoWhere` alimenta o mapa (todas as regiões, para dar para somar/trocar a seleção);
     // `where` = período + regiões filtradas, e vale para todo o resto da análise.
     const periodoWhere = { dataEmissao: { gte: dataMes(de), lte: fimMes(ate) } };
-    const ufsFiltradas = (q.regiao ?? []).flatMap((reg) =>
-      UFS.filter((u) => UF_REGIAO[u] === REGIAO_ENUM_ROTULO[reg]),
-    );
+    // Estado escolhido vale no lugar das regiões; sem nenhum dos dois, tudo.
+    const ufsFiltradas = q.uf?.length
+      ? q.uf
+      : (q.regiao ?? []).flatMap((reg) => UFS.filter((u) => UF_REGIAO[u] === REGIAO_ENUM_ROTULO[reg]));
     const where = ufsFiltradas.length ? { ...periodoWhere, cliUf: { in: ufsFiltradas } } : periodoWhere;
 
     const [
@@ -339,6 +342,29 @@ export class NotasFiscaisService {
         ticket: null,
         participacao: fracao(v.total, total),
       }));
+    // Por estado: mesma base do mapa (todas as UFs do período).
+    const ufs = new Map<string, { total: Decimal; notas: number }>();
+    for (const u of porUf) {
+      const sigla = u.cliUf.trim().toUpperCase();
+      if (!regiaoDaUf(sigla)) continue;
+      const atual = ufs.get(sigla) ?? { total: new D(0), notas: 0 };
+      atual.total = atual.total.plus(valor(u._sum));
+      ufs.set(sigla, atual);
+    }
+    for (const n of notasUf) {
+      const atual = ufs.get(n.cliUf.trim().toUpperCase());
+      if (atual) atual.notas += 1;
+    }
+    const porEstado = [...ufs.entries()]
+      .sort(([, a], [, b]) => b.total.cmp(a.total))
+      .map(([sigla, v]) => ({
+        chave: sigla,
+        rotulo: UF_NOME[sigla as UF],
+        total: v.total.toFixed(2),
+        qtd: v.notas,
+        ticket: null,
+        participacao: fracao(v.total, total),
+      }));
     const nRep = contar(notasRep, 'repCodigo');
     const cRep = contar(clientesRep, 'repCodigo');
     const nCli = contar(notasCliente, 'cliCodigo');
@@ -416,6 +442,7 @@ export class NotasFiscaisService {
       notas: notas.length,
       clientes: clientes.length,
       porRegiao,
+      porUf: porEstado,
       divisoes: decrescente(porDivisao).map((d) => ({
         divisao: d.divisao,
         total: valor(d._sum).toFixed(2),

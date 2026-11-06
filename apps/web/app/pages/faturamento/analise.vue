@@ -31,12 +31,35 @@ function alternarRegiao(chave: string) {
   const novo = atual.includes(chave) ? atual.filter((x) => x !== chave) : [...atual, chave];
   void router.replace({ query: { ...route.query, regiao: novo.length ? novo.join(',') : undefined } });
 }
+// Mapa por região ou por estado: o filtro é de um nível só (trocar o nível limpa o outro).
+const nivelMapa = ref<'regiao' | 'uf'>(String(route.query.uf ?? '') ? 'uf' : 'regiao');
+const ufsSel = computed(() =>
+  String(route.query.uf ?? '')
+    .split(',')
+    .filter((x) => /^[A-Z]{2}$/.test(x)),
+);
+function alternarUf(chave: string) {
+  const atual = ufsSel.value;
+  const novo = atual.includes(chave) ? atual.filter((x) => x !== chave) : [...atual, chave];
+  void router.replace({
+    query: { ...route.query, regiao: undefined, uf: novo.length ? novo.join(',') : undefined },
+  });
+}
+function trocarNivel(n: 'regiao' | 'uf') {
+  nivelMapa.value = n;
+  void router.replace({ query: { ...route.query, regiao: undefined, uf: undefined } });
+}
+const linhasMapa = computed(() => (nivelMapa.value === 'uf' ? r.value?.porUf : r.value?.porRegiao) ?? []);
+const selMapa = computed(() => (nivelMapa.value === 'uf' ? ufsSel.value : regioesSel.value));
+const alternarMapa = (c: string) => (nivelMapa.value === 'uf' ? alternarUf(c) : alternarRegiao(c));
+const limparMapa = () => void router.replace({ query: { ...route.query, regiao: undefined, uf: undefined } });
 const qs = computed(() =>
   new URLSearchParams(
     Object.entries({
       de: de.value,
       ate: ate.value,
-      regiao: regioesSel.value.join(','),
+      regiao: nivelMapa.value === 'uf' ? '' : regioesSel.value.join(','),
+      uf: nivelMapa.value === 'uf' ? ufsSel.value.join(',') : '',
     }).filter(([, v]) => v) as [string, string][],
   ).toString(),
 );
@@ -338,46 +361,75 @@ const cards = computed(() => [
       <section v-if="r?.porRegiao.length" class="rounded-xl border bg-card p-5">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h3 class="text-sm font-medium text-muted-foreground">Faturamento por região</h3>
+            <h3 class="text-sm font-medium text-muted-foreground">
+              Faturamento por {{ nivelMapa === 'uf' ? 'estado' : 'região' }}
+            </h3>
             <p class="text-xs text-muted-foreground">
-              Clique numa região (no mapa ou na lista) para filtrar toda a análise
+              Clique {{ nivelMapa === 'uf' ? 'num estado' : 'numa região' }} (no mapa ou na lista) para filtrar
+              toda a análise
             </p>
           </div>
-          <UButton
-            v-if="regioesSel.length"
-            color="neutral"
-            variant="outline"
-            size="xs"
-            icon="i-lucide-x"
-            label="Limpar filtro de região"
-            @click="router.replace({ query: { ...route.query, regiao: undefined } })"
-          />
-        </div>
-        <div class="mt-3 grid grid-cols-1 items-center gap-6 lg:grid-cols-5">
-          <div class="lg:col-span-2">
-            <ChartsMapaBrasilChart
-              nivel="regiao"
-              :linhas="r.porRegiao"
-              :selecao="regioesSel"
-              altura="300px"
-              @alternar="alternarRegiao"
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-lg border p-0.5" role="group" aria-label="Nível do mapa">
+              <UButton
+                size="xs"
+                :variant="nivelMapa === 'regiao' ? 'solid' : 'ghost'"
+                :color="nivelMapa === 'regiao' ? 'primary' : 'neutral'"
+                label="Região"
+                @click="trocarNivel('regiao')"
+              />
+              <UButton
+                size="xs"
+                :variant="nivelMapa === 'uf' ? 'solid' : 'ghost'"
+                :color="nivelMapa === 'uf' ? 'primary' : 'neutral'"
+                label="Estado"
+                @click="trocarNivel('uf')"
+              />
+            </div>
+            <UButton
+              v-if="selMapa.length"
+              color="neutral"
+              variant="outline"
+              size="xs"
+              icon="i-lucide-x"
+              :label="nivelMapa === 'uf' ? 'Limpar filtro de estado' : 'Limpar filtro de região'"
+              @click="limparMapa"
             />
           </div>
-          <ul class="divide-y text-sm lg:col-span-3">
-            <li v-for="l in r.porRegiao" :key="l.chave">
+        </div>
+        <div class="mt-4 grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
+          <div class="mx-auto w-full max-w-lg">
+            <ChartsMapaBrasilChart
+              :nivel="nivelMapa"
+              :linhas="linhasMapa"
+              :selecao="selMapa"
+              altura="380px"
+              @alternar="alternarMapa"
+            />
+          </div>
+          <ul class="mx-auto flex max-h-[26rem] w-full max-w-xl flex-col gap-1 overflow-y-auto pr-1">
+            <li v-for="l in linhasMapa" :key="l.chave">
               <button
                 type="button"
-                class="flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted/40"
-                :class="regioesSel.includes(l.chave) ? 'bg-primary-soft text-primary' : ''"
-                :aria-pressed="regioesSel.includes(l.chave)"
-                @click="alternarRegiao(l.chave)"
+                class="block w-full rounded-lg border border-transparent px-3 py-2 text-left transition-colors hover:bg-muted/50"
+                :class="selMapa.includes(l.chave) ? 'border-primary/40 bg-primary-soft' : ''"
+                :aria-pressed="selMapa.includes(l.chave)"
+                @click="alternarMapa(l.chave)"
               >
-                <span class="font-medium">{{ l.rotulo }}</span>
-                <span class="num shrink-0 text-right">
-                  {{ formatBRL(l.total) }}
-                  <span class="ml-2 inline-block w-14 text-xs text-muted-foreground">{{
-                    formatPct(l.participacao)
-                  }}</span>
+                <span class="flex items-baseline justify-between gap-4">
+                  <span class="truncate text-sm font-medium">{{ l.rotulo }}</span>
+                  <span class="num shrink-0 text-sm">
+                    {{ formatBRL(l.total) }}
+                    <span class="ml-1.5 inline-block w-12 text-right text-xs text-muted-foreground">{{
+                      formatPct(l.participacao)
+                    }}</span>
+                  </span>
+                </span>
+                <span class="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-muted">
+                  <span
+                    class="block h-full rounded-full bg-primary"
+                    :style="{ width: `${Math.max(2, ((l.participacao ?? 0) / (linhasMapa[0]?.participacao || 1)) * 100)}%` }"
+                  />
                 </span>
               </button>
             </li>

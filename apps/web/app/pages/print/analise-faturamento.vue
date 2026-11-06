@@ -85,7 +85,10 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         <p class="text-muted-foreground">
           {{ periodoPorExtenso(a.periodo.de, a.periodo.ate) }} · notas fiscais do Focco
         </p>
-        <p v-if="dados.params.regiao?.length" class="text-xs text-muted-foreground">
+        <p v-if="dados.params.uf?.length" class="text-xs text-muted-foreground">
+          Estados: {{ dados.params.uf.join(', ') }}
+        </p>
+        <p v-else-if="dados.params.regiao?.length" class="text-xs text-muted-foreground">
           Regiões: {{ dados.params.regiao.map((x) => REGIAO_ENUM_ROTULO[x]).join(', ') }}
         </p>
       </div>
@@ -173,6 +176,24 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
                 <td class="py-1 pr-2">{{ l.rotulo }}</td>
                 <td class="num py-1 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
                 <td class="num w-14 py-1 text-right text-muted-foreground">{{ formatPct(l.participacao) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section v-if="mostra('regiao') && a.porUf.length" class="break-inside-avoid rounded-xl border p-4">
+        <h2 class="text-sm font-medium text-muted-foreground">Faturamento por estado</h2>
+        <div class="mt-2 flex items-center gap-6">
+          <div class="w-72 shrink-0">
+            <ChartsMapaBrasilChart nivel="uf" :linhas="a.porUf" :interativo="false" altura="240px" />
+          </div>
+          <table class="w-full text-[10px] leading-tight">
+            <tbody class="divide-y">
+              <tr v-for="l in a.porUf" :key="l.chave">
+                <td class="py-0.5 pr-2">{{ l.rotulo }} <span class="text-muted-foreground">({{ l.chave }})</span></td>
+                <td class="num py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+                <td class="num w-14 py-0.5 text-right text-muted-foreground">{{ formatPct(l.participacao) }}</td>
               </tr>
             </tbody>
           </table>
