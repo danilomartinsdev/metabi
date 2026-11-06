@@ -35,6 +35,25 @@ const a = computed(() => dados.value?.analise);
 /** Seções marcadas no diálogo de exportação (sem lista = relatório completo). */
 const mostra = (id: string) => !dados.value?.secoes || dados.value.secoes.includes(id);
 const cores = computed(() => coresFatias(dados.value?.paletaGraficos));
+/** Curva ABC de produtos: pelo valor (padrão), pela quantidade ou as duas, conforme o diálogo. */
+const abcModo = computed(() => dados.value?.abcProdutos ?? 'valor');
+const abcPorValor = computed(() => mostra('abcProdutos') && abcModo.value !== 'quantidade');
+const abcPorQuantidade = computed(() => mostra('abcProdutos') && abcModo.value !== 'valor');
+/** Quantidade por unidade (UN, KG…): resumo por classe + os maiores, sem somar unidades diferentes. */
+const gruposQuantidade = computed(() =>
+  (a.value?.abcProdutosQuantidade ?? []).map((g) => ({
+    ...g,
+    resumo: CLASSES.map((c) => {
+      const ls = g.produtos.filter((l) => l.classe === c);
+      return {
+        classe: c,
+        qtd: ls.length,
+        quantidade: ls.reduce((s, l) => s + Number(l.quantidade), 0),
+        participacao: ls.reduce((s, l) => s + l.participacao, 0),
+      };
+    }),
+  })),
+);
 
 /** Nas curvas ABC o PDF traz o resumo por classe e só os maiores (a lista inteira pode ter centenas). */
 const TOP_ABC = 30;
@@ -199,7 +218,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         v-for="curva in [
           { id: 'abcClientes', titulo: 'Curva ABC de faturamento por cliente', resumo: resumoClientes, rotulo: 'clientes' },
           { id: 'abcProdutos', titulo: 'Curva ABC por produto (valor vendido)', resumo: resumoProdutos, rotulo: 'produtos' },
-        ].filter((c) => mostra(c.id))"
+        ].filter((c) => (c.id === 'abcProdutos' ? abcPorValor : mostra(c.id)))"
         :key="curva.rotulo"
         class="rounded-xl border"
       >
@@ -263,6 +282,56 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
                 <td class="px-3 py-1.5 text-center font-semibold">{{ l.classe }}</td>
               </tr>
             </template>
+          </tbody>
+        </table>
+      </section>
+      <section
+        v-for="g in abcPorQuantidade ? gruposQuantidade : []"
+        :key="g.unidade"
+        class="rounded-xl border"
+      >
+        <div class="px-4 pt-4 pb-2">
+          <h2 class="text-sm font-medium text-muted-foreground">
+            Curva ABC por produto (quantidade vendida) — {{ g.unidade }}
+          </h2>
+          <p class="text-xs text-muted-foreground">
+            Resumo por classe e os {{ TOP_ABC }} maiores produtos · {{ formatInt(g.quantidadeTotal) }}
+            {{ g.unidade }} no total
+          </p>
+        </div>
+        <div class="grid grid-cols-3 gap-3 px-4 pb-3">
+          <div v-for="c in g.resumo" :key="c.classe" class="rounded-lg border px-3 py-2">
+            <p class="text-xs text-muted-foreground">Classe {{ c.classe }} · {{ DESCRICAO[c.classe] }}</p>
+            <p class="num font-semibold">{{ formatInt(c.quantidade) }} {{ g.unidade }}</p>
+            <p class="num text-xs text-muted-foreground">
+              {{ formatInt(c.qtd) }} produtos · {{ formatPct(c.participacao) }}
+            </p>
+          </div>
+        </div>
+        <table class="w-full text-xs">
+          <thead class="bg-muted/50 text-muted-foreground">
+            <tr>
+              <th class="w-8 px-3 py-1.5 text-left font-medium">#</th>
+              <th class="px-3 py-1.5 text-left font-medium">Código</th>
+              <th class="px-3 py-1.5 text-left font-medium">Descrição</th>
+              <th class="px-3 py-1.5 text-right font-medium">Quantidade</th>
+              <th class="px-3 py-1.5 text-right font-medium">Valor</th>
+              <th class="px-3 py-1.5 text-right font-medium">% Part.</th>
+              <th class="px-3 py-1.5 text-right font-medium">% Acum.</th>
+              <th class="px-3 py-1.5 text-center font-medium">Classe</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr v-for="(l, i) in g.produtos.slice(0, TOP_ABC)" :key="l.codigo" class="break-inside-avoid">
+              <td class="num px-3 py-1.5 text-muted-foreground">{{ i + 1 }}</td>
+              <td class="num px-3 py-1.5">{{ l.codigo }}</td>
+              <td class="px-3 py-1.5">{{ l.descricao }}</td>
+              <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatInt(l.quantidade) }}</td>
+              <td class="num px-3 py-1.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+              <td class="num px-3 py-1.5 text-right">{{ formatPct(l.participacao) }}</td>
+              <td class="num px-3 py-1.5 text-right">{{ formatPct(l.acumulado) }}</td>
+              <td class="px-3 py-1.5 text-center font-semibold">{{ l.classe }}</td>
+            </tr>
           </tbody>
         </table>
       </section>
