@@ -31,6 +31,8 @@ onMounted(async () => {
 });
 
 const a = computed(() => dados.value?.analise);
+/** Seções marcadas no diálogo de exportação (sem lista = relatório completo). */
+const mostra = (id: string) => !dados.value?.secoes || dados.value.secoes.includes(id);
 const cores = computed(() => coresFatias(dados.value?.paletaGraficos));
 
 /** Nas curvas ABC o PDF traz o resumo por classe e só os maiores (a lista inteira pode ter centenas). */
@@ -74,7 +76,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
 
     <p v-if="!a.temDados" class="py-16 text-center text-muted-foreground">Nenhuma nota fiscal importada.</p>
     <template v-else>
-      <section class="grid grid-cols-4 gap-3" aria-label="Indicadores de faturamento">
+      <section v-if="mostra('kpis')" class="grid grid-cols-4 gap-3" aria-label="Indicadores de faturamento">
         <DashboardKpiCard
           rotulo="Faturamento no período"
           icone="i-lucide-dollar-sign"
@@ -101,7 +103,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         />
       </section>
 
-      <section class="break-inside-avoid rounded-xl border p-4">
+      <section v-if="mostra('divisao')" class="break-inside-avoid rounded-xl border p-4">
         <h2 class="text-sm font-medium text-muted-foreground">Faturamento por divisão de venda</h2>
         <div class="mt-2 flex items-center gap-6">
           <ChartsBaseChart
@@ -133,7 +135,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         </div>
       </section>
 
-      <section class="rounded-xl border">
+      <section v-if="mostra('ranking')" class="rounded-xl border">
         <h2 class="px-4 pt-4 pb-2 text-sm font-medium text-muted-foreground">Ranking por representante</h2>
         <table class="w-full text-xs">
           <thead class="bg-muted/50 text-muted-foreground">
@@ -171,9 +173,9 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
 
       <section
         v-for="curva in [
-          { titulo: 'Curva ABC de faturamento por cliente', resumo: resumoClientes, rotulo: 'clientes' },
-          { titulo: 'Curva ABC por produto (valor vendido)', resumo: resumoProdutos, rotulo: 'produtos' },
-        ]"
+          { id: 'abcClientes', titulo: 'Curva ABC de faturamento por cliente', resumo: resumoClientes, rotulo: 'clientes' },
+          { id: 'abcProdutos', titulo: 'Curva ABC por produto (valor vendido)', resumo: resumoProdutos, rotulo: 'produtos' },
+        ].filter((c) => mostra(c.id))"
         :key="curva.rotulo"
         class="rounded-xl border"
       >

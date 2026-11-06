@@ -31,6 +31,8 @@ onMounted(async () => {
 });
 
 const v = computed(() => dados.value?.visaoGeral);
+/** Seções marcadas no diálogo de exportação (sem lista = relatório completo). */
+const mostra = (id: string) => !dados.value?.secoes || dados.value.secoes.includes(id);
 const NOMES_MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const rotuloMes = (m: string) => `${NOMES_MES[Number(m.slice(5)) - 1]}/${m.slice(0, 4)}`;
 const periodo = computed(() => {
@@ -62,10 +64,10 @@ const serie = (k: 'total' | 'qtd' | 'ticket') => v.value?.kpis[k].serie.map((s) 
 const TABELAS = computed(() =>
   dados.value
     ? [
-        { titulo: 'Ranking de representantes', coluna: 'Representante', r: dados.value.rankings.gestores },
-        { titulo: 'Ranking de estados', coluna: 'UF', r: dados.value.rankings.estados },
-        { titulo: 'Ranking de regiões', coluna: 'Região', r: dados.value.rankings.regioes },
-      ]
+        { id: 'rankGestores', titulo: 'Ranking de representantes', coluna: 'Representante', r: dados.value.rankings.gestores },
+        { id: 'rankEstados', titulo: 'Ranking de estados', coluna: 'UF', r: dados.value.rankings.estados },
+        { id: 'rankRegioes', titulo: 'Ranking de regiões', coluna: 'Região', r: dados.value.rankings.regioes },
+      ].filter((t) => mostra(t.id))
     : [],
 );
 </script>
@@ -92,7 +94,7 @@ const TABELAS = computed(() =>
       Filtros: {{ filtrosTexto.join(' · ') }}
     </p>
 
-    <section class="grid grid-cols-2 gap-3" aria-label="Indicadores">
+    <section v-if="mostra('kpis')" class="grid grid-cols-2 gap-3" aria-label="Indicadores">
       <DashboardKpiCard
         rotulo="Total vendido"
         icone="i-lucide-dollar-sign"
@@ -123,12 +125,12 @@ const TABELAS = computed(() =>
       />
     </section>
 
-    <p class="text-xs text-muted-foreground">
+    <p v-if="mostra('kpis')" class="text-xs text-muted-foreground">
       {{ formatInt(v.contagens.estados) }} estados · {{ formatInt(v.contagens.regioes) }} regiões ·
       {{ formatInt(v.contagens.gestores) }} representantes · {{ formatInt(v.contagens.clientes) }} clientes
     </p>
 
-    <section class="break-inside-avoid rounded-xl border p-4">
+    <section v-if="mostra('evolucao')" class="break-inside-avoid rounded-xl border p-4">
       <h2 class="text-sm font-medium text-muted-foreground">
         Evolução mensal {{ v.evolucao.ano }} — real × ano anterior{{
           v.evolucao.meses.some((m) => m.meta) ? ' × meta' : ''
@@ -146,7 +148,7 @@ const TABELAS = computed(() =>
       </p>
     </section>
 
-    <section class="grid break-inside-avoid grid-cols-2 gap-3">
+    <section v-if="mostra('participacao')" class="grid break-inside-avoid grid-cols-2 gap-3">
       <div class="rounded-xl border p-4">
         <h2 class="text-sm font-medium text-muted-foreground">Participação por região</h2>
         <ChartsBaseChart
@@ -165,8 +167,11 @@ const TABELAS = computed(() =>
       </div>
     </section>
 
-    <section class="grid break-inside-avoid grid-cols-2 gap-3">
-      <div class="rounded-xl border p-4">
+    <section
+      v-if="mostra('topGestores') || mostra('comparativo')"
+      class="grid break-inside-avoid grid-cols-2 gap-3"
+    >
+      <div v-if="mostra('topGestores')" class="rounded-xl border p-4">
         <h2 class="text-sm font-medium text-muted-foreground">Top 10 representantes</h2>
         <ChartsBaseChart
           altura="260px"
@@ -174,7 +179,7 @@ const TABELAS = computed(() =>
           :opcoes="(t) => barrasRankingOptions(v!.topGestores, t)"
         />
       </div>
-      <div class="rounded-xl border p-4">
+      <div v-if="mostra('comparativo')" class="rounded-xl border p-4">
         <h2 class="text-sm font-medium text-muted-foreground">
           Comparativo com o ano anterior
           <span class="block text-xs font-normal">
@@ -195,6 +200,7 @@ const TABELAS = computed(() =>
     </section>
 
     <DashboardDetalhamentoMensal
+      v-if="mostra('detalhamento')"
       class="break-inside-avoid"
       :detalhamento="v.detalhamentoMensal"
       :periodo="v.periodo"

@@ -6,14 +6,9 @@
 const props = defineProps<{ noMenu?: boolean }>();
 
 const aberto = useState('novidades-abertas', () => false);
-// Abre sozinho uma vez por sessão, se houver novidade ainda não vista.
-const jaAbriuSozinho = useState('novidades-auto', () => false);
+// Não abre sozinho: o sino só mostra o indicador de não vistas e abre no clique.
 const { visiveis, naoVistas, marcarVistas } = useNovidades();
 
-onMounted(() => {
-  if (!jaAbriuSozinho.value && naoVistas.value.length) aberto.value = true;
-  jaAbriuSozinho.value = true;
-});
 watch(aberto, (v, antes) => {
   if (antes && !v) marcarVistas();
 });

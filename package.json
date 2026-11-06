@@ -30,6 +30,12 @@
     "homolog:parar": "node scripts/homologacao.mjs parar",
     "vercel:copiar-prod": "node scripts/copiar-prod-neon.mjs",
     "vercel:definir-senha": "node scripts/definir-senha-neon.mjs",
+    "windows:instalar": "node scripts/windows/instalar.mjs",
+    "windows:atualizar": "node scripts/windows/atualizar.mjs",
+    "windows:copiar-neon": "node scripts/windows/copiar-neon.mjs",
+    "windows:criar-admin": "node scripts/windows/criar-admin.mjs",
+    "windows:backup": "node scripts/windows/backup.mjs",
+    "windows:status": "node scripts/windows/status.mjs",
     "hooks:test": "node --test .claude/hooks/*.test.mjs",
     "prepare": "git config core.hooksPath .githooks"
   },

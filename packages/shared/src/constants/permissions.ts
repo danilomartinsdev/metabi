@@ -44,7 +44,11 @@ export const PERMISSOES_ADMIN: readonly Permission[] = PERMISSIONS.filter((p) =>
 export const ROLE_KEYS = ['admin', 'gestor-comercial', 'representante', 'visualizador'] as const;
 export type RoleKey = (typeof ROLE_KEYS)[number];
 
-/** Papéis padrão (seed). Editáveis na interface — ver docs/arquitetura/seguranca-rbac.md. */
+/**
+ * Papéis padrão (seed). Exportar (PDF/Excel/CSV) é exclusivo do Admin: a Diretoria, que é um papel criado em
+ * Papéis, recebe `export.pdf`/`export.xlsx` marcando os checkboxes.
+ * Editáveis na interface — ver docs/arquitetura/seguranca-rbac.md.
+ */
 export const DEFAULT_ROLES: Record<RoleKey, { nome: string; permissoes: readonly Permission[] }> = {
   admin: { nome: 'Admin', permissoes: PERMISSOES_ADMIN },
   'gestor-comercial': {
@@ -54,8 +58,6 @@ export const DEFAULT_ROLES: Record<RoleKey, { nome: string; permissoes: readonly
       'pedidos.view',
       'import.run',
       'import.rollback',
-      'export.xlsx',
-      'export.pdf',
       'metas.edit',
       'faturamento.view',
       'faturamento-analise.view',
@@ -64,7 +66,7 @@ export const DEFAULT_ROLES: Record<RoleKey, { nome: string; permissoes: readonly
   },
   representante: {
     nome: 'Representante',
-    permissoes: ['dashboard.view', 'minhas-vendas.view', 'pedidos.view', 'export.xlsx', 'export.pdf'],
+    permissoes: ['dashboard.view', 'minhas-vendas.view', 'pedidos.view'],
   },
   visualizador: { nome: 'Visualizador', permissoes: ['dashboard.view', 'pedidos.view'] },
 };

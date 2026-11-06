@@ -1,0 +1,47 @@
+# Modelo do Caddyfile do servidor Windows (sem Docker). Gerado por scripts/windows/etapas.mjs:
+# os marcadores __...__ viram valores do .env e os hashes da CSP. Equivale a docker/Caddyfile.
+{
+	# Sem API de administração: o script reinicia o serviço quando o Caddyfile muda.
+	admin off
+}
+
+__SITE_ADDRESS__ {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Content-Security-Policy "default-src 'self'; script-src 'self' __CSP_SCRIPT_HASHES__; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+		-Server
+	}
+
+	# API: só o prefixo /api vai para o backend (que escuta só em 127.0.0.1).
+	handle /api/* {
+		reverse_proxy __API__
+	}
+
+	# SPA: arquivos estáticos com fallback para index.html.
+	handle {
+		root * "__SITE__"
+		@assets path /_nuxt/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# Interno (só nesta máquina): o Chrome da API abre /print/relatorio por aqui para gerar o PDF.
+http://127.0.0.1:__PORTA_IMPRESSAO__ {
+	bind 127.0.0.1
+	handle /api/* {
+		reverse_proxy __API__
+	}
+	handle {
+		root * "__SITE__"
+		try_files {path} /index.html
+		file_server
+	}
+}

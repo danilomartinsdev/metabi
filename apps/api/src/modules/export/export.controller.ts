@@ -3,9 +3,14 @@ import {
   type AnaliseNotasQuery,
   analiseNotasQuerySchema,
   EXPORT_XLSX_TIPOS,
+  type ExportPdfQuery,
+  type ExportVisaoGeralQuery,
   type ExportXlsxQuery,
   type ExportXlsxTipo,
+  exportPdfQuerySchema,
+  exportVisaoGeralQuerySchema,
   exportXlsxQuerySchema,
+  secoesSchema,
   type FaturamentoPdfQuery,
   type Filtros,
   faturamentoPdfQuerySchema,
@@ -49,15 +54,27 @@ export class ExportController {
     enviar(reply, await this.service.xlsx(u, tipo, q, contexto(req)));
   }
 
+  /** Visão geral em Excel/CSV, só com as seções marcadas no diálogo de exportação. */
+  @RequirePermission('export.xlsx')
+  @Get('export/visao-geral')
+  async visaoGeral(
+    @CurrentUser() u: UsuarioAutenticado,
+    @Query(new ZodPipe(exportVisaoGeralQuerySchema)) q: ExportVisaoGeralQuery,
+    @Req() req: FastifyRequest,
+    @Res() reply: FastifyReply,
+  ) {
+    enviar(reply, await this.service.visaoGeral(u, q, contexto(req)));
+  }
+
   @RequirePermission('export.pdf')
   @Get('export/pdf')
   async pdf(
     @CurrentUser() u: UsuarioAutenticado,
-    @Query(new ZodPipe(filtrosSchema)) f: Filtros,
+    @Query(new ZodPipe(exportPdfQuerySchema)) { secoes, ...f }: ExportPdfQuery,
     @Req() req: FastifyRequest,
     @Res() reply: FastifyReply,
   ) {
-    enviar(reply, await this.service.pdf(u, f, contexto(req)));
+    enviar(reply, await this.service.pdf(u, f, contexto(req), secoes));
   }
 
   /** PDF da página de Faturamento (permissão de PDF + faturamento.view + escopo "todos", checados no serviço). */
@@ -66,10 +83,11 @@ export class ExportController {
   async pdfFaturamento(
     @CurrentUser() u: UsuarioAutenticado,
     @Query(new ZodPipe(faturamentoPdfQuerySchema)) q: FaturamentoPdfQuery,
+    @Query('secoes', new ZodPipe(secoesSchema)) secoes: string[] | undefined,
     @Req() req: FastifyRequest,
     @Res() reply: FastifyReply,
   ) {
-    enviar(reply, await this.service.pdfFaturamento(u, q, contexto(req)));
+    enviar(reply, await this.service.pdfFaturamento(u, q, contexto(req), secoes));
   }
 
   /** PDF da Análise de faturamento (permissão de PDF + faturamento-analise.view + escopo "todos", no serviço). */
@@ -78,10 +96,11 @@ export class ExportController {
   async pdfAnaliseFaturamento(
     @CurrentUser() u: UsuarioAutenticado,
     @Query(new ZodPipe(analiseNotasQuerySchema)) q: AnaliseNotasQuery,
+    @Query('secoes', new ZodPipe(secoesSchema)) secoes: string[] | undefined,
     @Req() req: FastifyRequest,
     @Res() reply: FastifyReply,
   ) {
-    enviar(reply, await this.service.pdfAnaliseFaturamento(u, q, contexto(req)));
+    enviar(reply, await this.service.pdfAnaliseFaturamento(u, q, contexto(req), secoes));
   }
 
   /** Lido pela página /print/relatorio aberta pelo Chromium da API. O token é a credencial (uso único). */
