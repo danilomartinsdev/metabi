@@ -55,8 +55,6 @@ const gruposQuantidade = computed(() =>
   })),
 );
 
-/** Nas curvas ABC o PDF traz o resumo por classe e só os maiores (a lista inteira pode ter centenas). */
-const TOP_ABC = 30;
 const CLASSES: ClasseAbc[] = ['A', 'B', 'C'];
 const DESCRICAO: Record<ClasseAbc, string> = { A: 'até 80%', B: 'de 80% a 95%', C: 'últimos 5%' };
 function resumoAbc(linhas: { classe: ClasseAbc; total: string; participacao: number }[]) {
@@ -216,8 +214,8 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
 
       <section
         v-for="curva in [
-          { id: 'abcClientes', titulo: 'Curva ABC de faturamento por cliente', resumo: resumoClientes, rotulo: 'clientes' },
-          { id: 'abcProdutos', titulo: 'Curva ABC por produto (valor vendido)', resumo: resumoProdutos, rotulo: 'produtos' },
+          { id: 'abcClientes', titulo: 'Curva ABC de faturamento por cliente', resumo: resumoClientes, rotulo: 'clientes', total: a.abcClientes.length },
+          { id: 'abcProdutos', titulo: 'Curva ABC por produto (valor vendido)', resumo: resumoProdutos, rotulo: 'produtos', total: a.abcProdutos.length },
         ].filter((c) => (c.id === 'abcProdutos' ? abcPorValor : mostra(c.id)))"
         :key="curva.rotulo"
         class="rounded-xl border"
@@ -225,7 +223,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         <div class="px-4 pt-4 pb-2">
           <h2 class="text-sm font-medium text-muted-foreground">{{ curva.titulo }}</h2>
           <p class="text-xs text-muted-foreground">
-            Resumo por classe e os {{ TOP_ABC }} maiores {{ curva.rotulo }}
+            Resumo por classe e a lista completa de {{ curva.rotulo }} ({{ formatInt(curva.total) }})
           </p>
         </div>
         <div class="grid grid-cols-3 gap-3 px-4 pb-3">
@@ -254,7 +252,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
           <tbody class="divide-y">
             <template v-if="curva.rotulo === 'clientes'">
               <tr
-                v-for="(l, i) in a.abcClientes.slice(0, TOP_ABC)"
+                v-for="(l, i) in a.abcClientes"
                 :key="l.codigo"
                 class="break-inside-avoid"
               >
@@ -269,7 +267,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
             </template>
             <template v-else>
               <tr
-                v-for="(l, i) in a.abcProdutos.slice(0, TOP_ABC)"
+                v-for="(l, i) in a.abcProdutos"
                 :key="l.codigo"
                 class="break-inside-avoid"
               >
@@ -295,7 +293,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
             Curva ABC por produto (quantidade vendida) — {{ g.unidade }}
           </h2>
           <p class="text-xs text-muted-foreground">
-            Resumo por classe e os {{ TOP_ABC }} maiores produtos · {{ formatInt(g.quantidadeTotal) }}
+            Resumo por classe e a lista completa · {{ formatInt(g.quantidadeTotal) }}
             {{ g.unidade }} no total
           </p>
         </div>
@@ -322,7 +320,7 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
             </tr>
           </thead>
           <tbody class="divide-y">
-            <tr v-for="(l, i) in g.produtos.slice(0, TOP_ABC)" :key="l.codigo" class="break-inside-avoid">
+            <tr v-for="(l, i) in g.produtos" :key="l.codigo" class="break-inside-avoid">
               <td class="num px-3 py-1.5 text-muted-foreground">{{ i + 1 }}</td>
               <td class="num px-3 py-1.5">{{ l.codigo }}</td>
               <td class="px-3 py-1.5">{{ l.descricao }}</td>
