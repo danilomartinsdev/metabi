@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { UFS, type UF } from '../constants/regioes.js';
 import { type LinhaRanking, REGIOES_ENUM } from './dashboard.js';
 import { dataBR, decimalBR, type ErroLinha } from './importacao.js';
 
@@ -117,6 +118,16 @@ export const analiseNotasQuerySchema = z
         v === undefined ? [] : (Array.isArray(v) ? v : v.split(',')).map((s) => s.trim()).filter(Boolean),
       )
       .pipe(z.array(z.enum(REGIOES_ENUM)).max(6)),
+    /** Estados (UF) do cliente: "SP,RJ" ou repetida. Vale no lugar das regiões quando informado. */
+    uf: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .transform((v) =>
+        v === undefined
+          ? []
+          : (Array.isArray(v) ? v : v.split(',')).map((s) => s.trim().toUpperCase()).filter(Boolean),
+      )
+      .pipe(z.array(z.enum(UFS as [UF, ...UF[]])).max(28)),
   })
   .refine((f) => !f.de || !f.ate || f.de <= f.ate, { error: 'Período inválido', path: ['ate'] });
 export type AnaliseNotasQuery = z.output<typeof analiseNotasQuerySchema>;
@@ -197,6 +208,8 @@ export interface AnaliseNotas {
   representantes: LinhaRepresentanteNotas[];
   /** Faturamento por região (UF do cliente → região), maior primeiro; `chave` no formato do mapa (NORTE, CENTRO_OESTE…). */
   porRegiao: LinhaRanking[];
+  /** Faturamento por estado (UF do cliente), maior primeiro; `chave` = sigla da UF (EX = Exterior). */
+  porUf: LinhaRanking[];
   /** Ranking de representantes dentro de cada divisão (clique na fatia); participacao = fração da divisão. */
   representantesPorDivisao: { divisao: string; total: string; representantes: LinhaRepresentanteNotas[] }[];
   abcClientes: {
