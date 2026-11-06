@@ -397,8 +397,8 @@ const cards = computed(() => [
             />
           </div>
         </div>
-        <div class="mt-4 grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
-          <div class="mx-auto w-full max-w-lg">
+        <div class="mt-4 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+          <div class="mx-auto w-full max-w-md">
             <ChartsMapaBrasilChart
               :nivel="nivelMapa"
               :linhas="linhasMapa"
@@ -407,25 +407,29 @@ const cards = computed(() => [
               @alternar="alternarMapa"
             />
           </div>
-          <ul class="mx-auto flex max-h-[26rem] w-full max-w-xl flex-col gap-1 overflow-y-auto pr-1">
-            <li v-for="l in linhasMapa" :key="l.chave">
+          <ul
+            class="w-full"
+            :class="nivelMapa === 'uf' ? 'gap-x-4 sm:columns-2' : 'mx-auto max-w-xl'"
+          >
+            <li v-for="l in linhasMapa" :key="l.chave" class="break-inside-avoid">
               <button
                 type="button"
-                class="block w-full rounded-lg border border-transparent px-3 py-2 text-left transition-colors hover:bg-muted/50"
+                class="block w-full rounded-lg border border-transparent px-2.5 text-left transition-colors hover:bg-muted/50"
+                :style="{ paddingBlock: nivelMapa === 'uf' ? '0.3rem' : '0.5rem' }"
                 :class="selMapa.includes(l.chave) ? 'border-primary/40 bg-primary-soft' : ''"
                 :aria-pressed="selMapa.includes(l.chave)"
                 @click="alternarMapa(l.chave)"
               >
                 <span class="flex items-baseline justify-between gap-4">
                   <span class="truncate text-sm font-medium">{{ l.rotulo }}</span>
-                  <span class="num shrink-0 text-sm">
+                  <span class="num shrink-0" :class="nivelMapa === 'uf' ? 'text-xs' : 'text-sm'">
                     {{ formatBRL(l.total) }}
-                    <span class="ml-1.5 inline-block w-12 text-right text-xs text-muted-foreground">{{
+                    <span class="ml-1 inline-block w-11 text-right text-xs text-muted-foreground">{{
                       formatPct(l.participacao)
                     }}</span>
                   </span>
                 </span>
-                <span class="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-muted">
+                <span class="mt-1 block h-1 overflow-hidden rounded-full bg-muted">
                   <span
                     class="block h-full rounded-full bg-primary"
                     :style="{ width: `${Math.max(2, ((l.participacao ?? 0) / (linhasMapa[0]?.participacao || 1)) * 100)}%` }"
