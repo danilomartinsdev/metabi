@@ -82,7 +82,7 @@ const mesesEscolhidos = computed(() => dados.value?.params.meses ?? []);
     Link de impressão inválido ou expirado.
   </div>
   <div v-else-if="!dados || !r" class="py-24 text-center text-sm text-muted-foreground">Carregando…</div>
-  <article v-else class="space-y-5 text-sm">
+  <article v-else class="space-y-5 text-sm" :class="dados.quebra ? '[&>section:nth-of-type(n+2)]:break-before-page' : ''">
     <header class="flex items-end justify-between border-b pb-3">
       <div>
         <img src="/brand/logo-meta-hospitalar.webp" alt="Metahospitalar" class="h-9 w-auto" />

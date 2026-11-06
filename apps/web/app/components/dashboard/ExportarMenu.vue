@@ -47,6 +47,8 @@ const formatos = computed(() => {
 });
 const formato = ref<ExportFormato>('pdf');
 const marcadas = ref<string[]>([]);
+/** PDF: cada assunto (seção) começa numa página nova. */
+const quebraPagina = ref(false);
 /** Curva ABC de produtos (só na Análise de faturamento): pelo valor, pela quantidade ou as duas. */
 const abcProdutos = ref<AbcProdutosModo>('valor');
 const MODOS_ABC: { label: string; value: AbcProdutosModo }[] = [
@@ -64,11 +66,21 @@ const escolheAbc = computed(
 const auth = useAuthStore();
 const chaveEscolha = computed(() => `metabi-exportar:${auth.usuario?.id ?? 'anon'}:${props.relatorio}`);
 
-function lerEscolha(): { formato?: ExportFormato; secoes?: string[]; abcProdutos?: AbcProdutosModo } {
+function lerEscolha(): {
+  formato?: ExportFormato;
+  secoes?: string[];
+  abcProdutos?: AbcProdutosModo;
+  quebra?: boolean;
+} {
   try {
     const bruto = localStorage.getItem(chaveEscolha.value);
     return bruto
-      ? (JSON.parse(bruto) as { formato?: ExportFormato; secoes?: string[]; abcProdutos?: AbcProdutosModo })
+      ? (JSON.parse(bruto) as {
+          formato?: ExportFormato;
+          secoes?: string[];
+          abcProdutos?: AbcProdutosModo;
+          quebra?: boolean;
+        })
       : {};
   } catch {
     return {};
@@ -76,7 +88,12 @@ function lerEscolha(): { formato?: ExportFormato; secoes?: string[]; abcProdutos
 }
 function guardarEscolha() {
   try {
-    localStorage.setItem(chaveEscolha.value, JSON.stringify({ formato: formato.value, secoes: marcadas.value, abcProdutos: abcProdutos.value }));
+    localStorage.setItem(chaveEscolha.value, JSON.stringify({
+        formato: formato.value,
+        secoes: marcadas.value,
+        abcProdutos: abcProdutos.value,
+        quebra: quebraPagina.value,
+      }));
   } catch {
     // Sem armazenamento (janela privada etc.): a escolha só vale desta vez.
   }
@@ -91,6 +108,7 @@ function abrir() {
   // Só as seções que ainda existem; se nada sobrou (ou nunca houve escolha), tudo marcado.
   const validas = Array.isArray(salva.secoes) ? ids.filter((id) => salva.secoes!.includes(id)) : [];
   marcadas.value = validas.length ? validas : ids;
+  quebraPagina.value = salva.quebra === true;
   abcProdutos.value = MODOS_ABC.some((m) => m.value === salva.abcProdutos) ? salva.abcProdutos! : 'valor';
   aberto.value = true;
 }
@@ -112,11 +130,13 @@ function montarUrl(): string {
     const p = new URLSearchParams(props.consulta ?? '');
     if (sel) p.set('secoes', sel);
     if (escolheAbc.value) p.set('abcProdutos', abcProdutos.value);
+    if (quebraPagina.value) p.set('quebra', '1');
     return `/export/pdf/${props.relatorio}?${p}`;
   }
   const p = new URLSearchParams({ ...query.value });
   if (formato.value === 'pdf') {
     if (sel) p.set('secoes', sel);
+    if (quebraPagina.value) p.set('quebra', '1');
     return `/export/pdf?${p}`;
   }
   p.set('formato', formato.value);
@@ -192,6 +212,12 @@ async function exportar() {
               <p class="text-sm font-medium">Curva ABC de produtos</p>
               <URadioGroup v-model="abcProdutos" :items="MODOS_ABC" orientation="horizontal" size="sm" />
             </div>
+            <UCheckbox
+              v-if="formato === 'pdf'"
+              v-model="quebraPagina"
+              label="Quebrar página por assunto"
+              description="Cada seção marcada começa numa página nova"
+            />
             <p v-if="formato !== 'pdf'" class="text-xs text-muted-foreground">
               Em Excel/CSV os gráficos saem como tabela com os mesmos dados.
             </p>

@@ -63,13 +63,22 @@ export const secoesSchema = z
   )
   .pipe(z.array(ID_SECAO).max(20).optional());
 
+/** "Quebrar página por assunto" (checkbox do diálogo): ?quebra=1. Ausente = contínuo. */
+export const quebraSchema = z
+  .enum(['0', '1', 'true', 'false'])
+  .optional()
+  .transform((v) => v === '1' || v === 'true');
+
 /** Curva ABC de produtos no PDF da Análise: pelo valor vendido, pela quantidade ou as duas. */
 export const ABC_PRODUTOS_MODOS = ['valor', 'quantidade', 'ambos'] as const;
 export type AbcProdutosModo = (typeof ABC_PRODUTOS_MODOS)[number];
 export const abcProdutosModoSchema = z.enum(ABC_PRODUTOS_MODOS).optional();
 
 /** PDF das vendas: filtros globais + seções marcadas. */
-export const exportPdfQuerySchema = z.intersection(filtrosSchema, z.object({ secoes: secoesSchema }));
+export const exportPdfQuerySchema = z.intersection(
+  filtrosSchema,
+  z.object({ secoes: secoesSchema, quebra: quebraSchema }),
+);
 export type ExportPdfQuery = z.output<typeof exportPdfQuerySchema>;
 
 /** Planilha/CSV da Visão geral: filtros + formato + seções marcadas. */
@@ -95,13 +104,24 @@ export const printTokenSchema = z.object({ token: z.string().regex(/^[\w-]{43}$/
 
 /** O que um token de impressão autoriza: qual relatório e com quais parâmetros (guardado no token). */
 export const solicitacaoImpressaoSchema = z.discriminatedUnion('tipo', [
-  z.object({ tipo: z.literal('vendas'), filtros: filtrosSchema, secoes: z.array(ID_SECAO).optional() }),
-  z.object({ tipo: z.literal('faturamento'), params: faturamentoPdfQuerySchema, secoes: z.array(ID_SECAO).optional() }),
+  z.object({
+    tipo: z.literal('vendas'),
+    filtros: filtrosSchema,
+    secoes: z.array(ID_SECAO).optional(),
+    quebra: z.boolean().optional(),
+  }),
+  z.object({
+    tipo: z.literal('faturamento'),
+    params: faturamentoPdfQuerySchema,
+    secoes: z.array(ID_SECAO).optional(),
+    quebra: z.boolean().optional(),
+  }),
   z.object({
     tipo: z.literal('analise-faturamento'),
     params: analiseNotasQuerySchema,
     secoes: z.array(ID_SECAO).optional(),
     abcProdutos: abcProdutosModoSchema,
+    quebra: z.boolean().optional(),
   }),
 ]);
 export type SolicitacaoImpressao = z.output<typeof solicitacaoImpressaoSchema>;
@@ -109,6 +129,8 @@ export type SolicitacaoImpressao = z.output<typeof solicitacaoImpressaoSchema>;
 /** Dados do PDF de faturamento (rota /print/faturamento da SPA). */
 export interface FaturamentoImpressao {
   geradoPor: string;
+  /** Cada seção começa numa página nova. */
+  quebra?: boolean;
   /** Seções marcadas pelo usuário; ausente = tudo. */
   secoes?: string[];
   geradoEm: string;
@@ -122,6 +144,7 @@ export interface FaturamentoImpressao {
 /** Dados do PDF da Análise de faturamento (rota /print/analise-faturamento da SPA). */
 export interface AnaliseFaturamentoImpressao {
   geradoPor: string;
+  quebra?: boolean;
   secoes?: string[];
   /** Curva ABC de produtos escolhida no diálogo (ausente = por valor). */
   abcProdutos?: AbcProdutosModo;
@@ -134,6 +157,7 @@ export interface AnaliseFaturamentoImpressao {
 /** Dados do relatório executivo em PDF (rota /print/relatorio da SPA). */
 export interface RelatorioImpressao {
   geradoPor: string;
+  quebra?: boolean;
   secoes?: string[];
   geradoEm: string;
   /** Paleta de quem pediu o PDF (o relatório sai com as cores dele). */

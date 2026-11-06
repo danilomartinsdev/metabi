@@ -12,6 +12,7 @@ import {
   exportXlsxQuerySchema,
   secoesSchema,
   abcProdutosModoSchema,
+  quebraSchema,
   type AbcProdutosModo,
   type FaturamentoPdfQuery,
   type Filtros,
@@ -72,11 +73,11 @@ export class ExportController {
   @Get('export/pdf')
   async pdf(
     @CurrentUser() u: UsuarioAutenticado,
-    @Query(new ZodPipe(exportPdfQuerySchema)) { secoes, ...f }: ExportPdfQuery,
+    @Query(new ZodPipe(exportPdfQuerySchema)) { secoes, quebra, ...f }: ExportPdfQuery,
     @Req() req: FastifyRequest,
     @Res() reply: FastifyReply,
   ) {
-    enviar(reply, await this.service.pdf(u, f, contexto(req), secoes));
+    enviar(reply, await this.service.pdf(u, f, contexto(req), secoes, quebra));
   }
 
   /** PDF da página de Faturamento (permissão de PDF + faturamento.view + escopo "todos", checados no serviço). */
@@ -86,10 +87,11 @@ export class ExportController {
     @CurrentUser() u: UsuarioAutenticado,
     @Query(new ZodPipe(faturamentoPdfQuerySchema)) q: FaturamentoPdfQuery,
     @Query('secoes', new ZodPipe(secoesSchema)) secoes: string[] | undefined,
+    @Query('quebra', new ZodPipe(quebraSchema)) quebra: boolean,
     @Req() req: FastifyRequest,
     @Res() reply: FastifyReply,
   ) {
-    enviar(reply, await this.service.pdfFaturamento(u, q, contexto(req), secoes));
+    enviar(reply, await this.service.pdfFaturamento(u, q, contexto(req), secoes, quebra));
   }
 
   /** PDF da Análise de faturamento (permissão de PDF + faturamento-analise.view + escopo "todos", no serviço). */
@@ -100,10 +102,11 @@ export class ExportController {
     @Query(new ZodPipe(analiseNotasQuerySchema)) q: AnaliseNotasQuery,
     @Query('secoes', new ZodPipe(secoesSchema)) secoes: string[] | undefined,
     @Query('abcProdutos', new ZodPipe(abcProdutosModoSchema)) abcProdutos: AbcProdutosModo | undefined,
+    @Query('quebra', new ZodPipe(quebraSchema)) quebra: boolean,
     @Req() req: FastifyRequest,
     @Res() reply: FastifyReply,
   ) {
-    enviar(reply, await this.service.pdfAnaliseFaturamento(u, q, contexto(req), secoes, abcProdutos));
+    enviar(reply, await this.service.pdfAnaliseFaturamento(u, q, contexto(req), secoes, abcProdutos, quebra));
   }
 
   /** Lido pela página /print/relatorio aberta pelo Chromium da API. O token é a credencial (uso único). */
