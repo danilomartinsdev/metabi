@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {
+  ABC_COLUNAS,
+  type AbcColunaId,
   type AbcProdutosModo,
   type ExportFormato,
   type ExportXlsxTipo,
@@ -61,6 +63,18 @@ const escolheAbc = computed(
     props.relatorio === 'analise-faturamento' && formato.value === 'pdf' && marcadas.value.includes('abcProdutos'),
 );
 
+/** Colunas das tabelas da Curva ABC (clientes e produtos): todas marcadas; desmarcar oculta no PDF. */
+const abcColunas = ref<AbcColunaId[]>(ABC_COLUNAS.map((c) => c.id));
+const escolheColunasAbc = computed(
+  () =>
+    props.relatorio === 'analise-faturamento' &&
+    formato.value === 'pdf' &&
+    (marcadas.value.includes('abcClientes') || marcadas.value.includes('abcProdutos')),
+);
+function alternarColuna(id: AbcColunaId, v: boolean | 'indeterminate') {
+  abcColunas.value = ABC_COLUNAS.map((c) => c.id).filter((x) => (x === id ? v === true : abcColunas.value.includes(x)));
+}
+
 // Última escolha (formato + seções) lembrada neste navegador, por pessoa e por relatório. É só
 // conveniência: se o armazenamento falhar ou estiver vazio, vale o padrão (primeiro formato, tudo marcado).
 const auth = useAuthStore();
@@ -70,6 +84,7 @@ function lerEscolha(): {
   formato?: ExportFormato;
   secoes?: string[];
   abcProdutos?: AbcProdutosModo;
+  abcColunas?: string[];
   quebra?: boolean;
 } {
   try {
@@ -79,6 +94,7 @@ function lerEscolha(): {
           formato?: ExportFormato;
           secoes?: string[];
           abcProdutos?: AbcProdutosModo;
+          abcColunas?: string[];
           quebra?: boolean;
         })
       : {};
@@ -92,6 +108,7 @@ function guardarEscolha() {
         formato: formato.value,
         secoes: marcadas.value,
         abcProdutos: abcProdutos.value,
+        abcColunas: abcColunas.value,
         quebra: quebraPagina.value,
       }));
   } catch {
@@ -110,13 +127,21 @@ function abrir() {
   marcadas.value = validas.length ? validas : ids;
   quebraPagina.value = salva.quebra === true;
   abcProdutos.value = MODOS_ABC.some((m) => m.value === salva.abcProdutos) ? salva.abcProdutos! : 'valor';
+  const todasColunas = ABC_COLUNAS.map((c) => c.id);
+  const colunasSalvas = Array.isArray(salva.abcColunas) ? todasColunas.filter((c) => salva.abcColunas!.includes(c)) : [];
+  abcColunas.value = colunasSalvas.length ? colunasSalvas : todasColunas;
   aberto.value = true;
 }
 
 /** Excel/CSV de uma tabela (pedidos, rankings, clientes) exporta a própria tabela: sem seções. */
 const usaSecoes = computed(() => formato.value === 'pdf' || !props.xlsx);
 const todas = computed(() => marcadas.value.length === secoes.value.length);
-const podeExportar = computed(() => !gerando.value && (!usaSecoes.value || marcadas.value.length > 0));
+const podeExportar = computed(
+  () =>
+    !gerando.value &&
+    (!usaSecoes.value || marcadas.value.length > 0) &&
+    (!escolheColunasAbc.value || abcColunas.value.length > 0),
+);
 
 function alternar(id: string, v: boolean | 'indeterminate') {
   marcadas.value = v === true ? [...new Set([...marcadas.value, id])] : marcadas.value.filter((x) => x !== id);
@@ -130,6 +155,10 @@ function montarUrl(): string {
     const p = new URLSearchParams(props.consulta ?? '');
     if (sel) p.set('secoes', sel);
     if (escolheAbc.value) p.set('abcProdutos', abcProdutos.value);
+    // Todas as colunas = não manda nada (tabela completa).
+    if (escolheColunasAbc.value && abcColunas.value.length < ABC_COLUNAS.length) {
+      p.set('abcColunas', abcColunas.value.join(','));
+    }
     if (quebraPagina.value) p.set('quebra', '1');
     return `/export/pdf/${props.relatorio}?${p}`;
   }
@@ -211,6 +240,20 @@ async function exportar() {
             <div v-if="escolheAbc" class="space-y-1.5 rounded-lg border p-3">
               <p class="text-sm font-medium">Curva ABC de produtos</p>
               <URadioGroup v-model="abcProdutos" :items="MODOS_ABC" orientation="horizontal" size="sm" />
+            </div>
+            <div v-if="escolheColunasAbc" class="space-y-1.5 rounded-lg border p-3">
+              <p class="text-sm font-medium">Colunas da Curva ABC</p>
+              <p class="text-xs text-muted-foreground">Desmarque as que não devem aparecer no PDF.</p>
+              <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+                <UCheckbox
+                  v-for="c in ABC_COLUNAS"
+                  :key="c.id"
+                  size="sm"
+                  :model-value="abcColunas.includes(c.id)"
+                  :label="c.rotulo"
+                  @update:model-value="(v) => alternarColuna(c.id, v)"
+                />
+              </div>
             </div>
             <UCheckbox
               v-if="formato === 'pdf'"

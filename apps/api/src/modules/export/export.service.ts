@@ -1,5 +1,6 @@
 import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import type {
+  AbcColunaId,
   AbcProdutosModo,
   AnaliseFaturamentoImpressao,
   AnaliseNotasQuery,
@@ -247,18 +248,19 @@ export class ExportService {
     secoes?: string[],
     abcProdutos?: AbcProdutosModo,
     quebra?: boolean,
+    abcColunas?: AbcColunaId[],
   ): Promise<Arquivo> {
     exigirAnaliseFaturamento(u);
     const { periodo } = await this.notas.analise(p);
     const conteudo = await this.gerarPdf(
       u,
-      { tipo: 'analise-faturamento', params: p, secoes, abcProdutos, quebra },
+      { tipo: 'analise-faturamento', params: p, secoes, abcProdutos, abcColunas, quebra },
       'analise-faturamento',
     );
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
-      detalhes: { relatorio: 'analise-faturamento', secoes: secoes ?? 'todas', abcProdutos, quebra, ...periodo },
+      detalhes: { relatorio: 'analise-faturamento', secoes: secoes ?? 'todas', abcProdutos, abcColunas, quebra, ...periodo },
       ctx,
     });
     return {
@@ -333,6 +335,7 @@ export class ExportService {
       paletaGraficos: u.paletaGraficos,
       secoes: solicitacao.secoes,
       abcProdutos: solicitacao.abcProdutos,
+      abcColunas: solicitacao.abcColunas,
       quebra: solicitacao.quebra,
       params: solicitacao.params,
       analise: await this.notas.analise(solicitacao.params),

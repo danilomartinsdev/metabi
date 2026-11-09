@@ -11,8 +11,10 @@ import {
   exportVisaoGeralQuerySchema,
   exportXlsxQuerySchema,
   secoesSchema,
+  abcColunasSchema,
   abcProdutosModoSchema,
   quebraSchema,
+  type AbcColunaId,
   type AbcProdutosModo,
   type FaturamentoPdfQuery,
   type Filtros,
@@ -103,10 +105,14 @@ export class ExportController {
     @Query('secoes', new ZodPipe(secoesSchema)) secoes: string[] | undefined,
     @Query('abcProdutos', new ZodPipe(abcProdutosModoSchema)) abcProdutos: AbcProdutosModo | undefined,
     @Query('quebra', new ZodPipe(quebraSchema)) quebra: boolean,
+    @Query('abcColunas', new ZodPipe(abcColunasSchema)) abcColunas: AbcColunaId[] | undefined,
     @Req() req: FastifyRequest,
     @Res() reply: FastifyReply,
   ) {
-    enviar(reply, await this.service.pdfAnaliseFaturamento(u, q, contexto(req), secoes, abcProdutos, quebra));
+    enviar(
+      reply,
+      await this.service.pdfAnaliseFaturamento(u, q, contexto(req), secoes, abcProdutos, quebra, abcColunas),
+    );
   }
 
   /** Lido pela página /print/relatorio aberta pelo Chromium da API. O token é a credencial (uso único). */

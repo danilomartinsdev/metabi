@@ -74,6 +74,28 @@ export const ABC_PRODUTOS_MODOS = ['valor', 'quantidade', 'ambos'] as const;
 export type AbcProdutosModo = (typeof ABC_PRODUTOS_MODOS)[number];
 export const abcProdutosModoSchema = z.enum(ABC_PRODUTOS_MODOS).optional();
 
+/** Colunas das tabelas da Curva ABC no PDF (a do meio é "Cliente" na curva de clientes e "Descrição" na de produtos). */
+export const ABC_COLUNAS = [
+  { id: 'pos', rotulo: '#' },
+  { id: 'codigo', rotulo: 'Código' },
+  { id: 'nome', rotulo: 'Cliente / Descrição' },
+  { id: 'valor', rotulo: 'Valor' },
+  { id: 'participacao', rotulo: '% Part.' },
+  { id: 'acumulado', rotulo: '% Acum.' },
+  { id: 'classe', rotulo: 'Classe' },
+] as const;
+export type AbcColunaId = (typeof ABC_COLUNAS)[number]['id'];
+const ID_ABC_COLUNA = z.enum(ABC_COLUNAS.map((c) => c.id) as [AbcColunaId, ...AbcColunaId[]]);
+
+/** Colunas visíveis da Curva ABC na query ("a,b" ou repetida). Ausente = todas (undefined). */
+export const abcColunasSchema = z
+  .union([z.string(), z.array(z.string())])
+  .optional()
+  .transform((v) =>
+    v === undefined ? undefined : (Array.isArray(v) ? v : v.split(',')).map((x) => x.trim()).filter(Boolean),
+  )
+  .pipe(z.array(ID_ABC_COLUNA).max(ABC_COLUNAS.length).optional());
+
 /** PDF das vendas: filtros globais + seções marcadas. */
 export const exportPdfQuerySchema = z.intersection(
   filtrosSchema,
@@ -121,6 +143,7 @@ export const solicitacaoImpressaoSchema = z.discriminatedUnion('tipo', [
     params: analiseNotasQuerySchema,
     secoes: z.array(ID_SECAO).optional(),
     abcProdutos: abcProdutosModoSchema,
+    abcColunas: z.array(ID_ABC_COLUNA).optional(),
     quebra: z.boolean().optional(),
   }),
 ]);
@@ -148,6 +171,8 @@ export interface AnaliseFaturamentoImpressao {
   secoes?: string[];
   /** Curva ABC de produtos escolhida no diálogo (ausente = por valor). */
   abcProdutos?: AbcProdutosModo;
+  /** Colunas visíveis nas tabelas da Curva ABC (ausente = todas). */
+  abcColunas?: AbcColunaId[];
   geradoEm: string;
   paletaGraficos: PaletaGrafico | null;
   params: AnaliseNotasQuery;
