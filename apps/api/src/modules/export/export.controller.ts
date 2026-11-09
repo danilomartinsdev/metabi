@@ -105,13 +105,17 @@ export class ExportController {
     @Query('secoes', new ZodPipe(secoesSchema)) secoes: string[] | undefined,
     @Query('abcProdutos', new ZodPipe(abcProdutosModoSchema)) abcProdutos: AbcProdutosModo | undefined,
     @Query('quebra', new ZodPipe(quebraSchema)) quebra: boolean,
-    @Query('abcColunas', new ZodPipe(abcColunasSchema)) abcColunas: AbcColunaId[] | undefined,
+    @Query('abcColunasClientes', new ZodPipe(abcColunasSchema)) abcColunasClientes: AbcColunaId[] | undefined,
+    @Query('abcColunasProdutos', new ZodPipe(abcColunasSchema)) abcColunasProdutos: AbcColunaId[] | undefined,
     @Req() req: FastifyRequest,
     @Res() reply: FastifyReply,
   ) {
     enviar(
       reply,
-      await this.service.pdfAnaliseFaturamento(u, q, contexto(req), secoes, abcProdutos, quebra, abcColunas),
+      await this.service.pdfAnaliseFaturamento(u, q, contexto(req), secoes, abcProdutos, quebra, {
+        clientes: abcColunasClientes,
+        produtos: abcColunasProdutos,
+      }),
     );
   }
 

@@ -63,17 +63,33 @@ const escolheAbc = computed(
     props.relatorio === 'analise-faturamento' && formato.value === 'pdf' && marcadas.value.includes('abcProdutos'),
 );
 
-/** Colunas das tabelas da Curva ABC (clientes e produtos): todas marcadas; desmarcar oculta no PDF. */
-const abcColunas = ref<AbcColunaId[]>(ABC_COLUNAS.map((c) => c.id));
-const escolheColunasAbc = computed(
-  () =>
-    props.relatorio === 'analise-faturamento' &&
-    formato.value === 'pdf' &&
-    (marcadas.value.includes('abcClientes') || marcadas.value.includes('abcProdutos')),
-);
-function alternarColuna(id: AbcColunaId, v: boolean | 'indeterminate') {
-  abcColunas.value = ABC_COLUNAS.map((c) => c.id).filter((x) => (x === id ? v === true : abcColunas.value.includes(x)));
+/** Colunas de cada Curva ABC no PDF: todas visíveis; clicar numa coluna a oculta. */
+type CurvaAbc = 'abcClientes' | 'abcProdutos';
+const TODAS_COLUNAS: AbcColunaId[] = ABC_COLUNAS.map((c) => c.id);
+const abcColunas = ref<Record<CurvaAbc, AbcColunaId[]>>({
+  abcClientes: [...TODAS_COLUNAS],
+  abcProdutos: [...TODAS_COLUNAS],
+});
+/** Curva cujo seletor de colunas está aberto (uma por vez, para o diálogo não crescer). */
+const colunasAbertas = ref<CurvaAbc | null>(null);
+/** O seletor de colunas só existe no PDF da Análise e para a curva que está marcada. */
+const temColunas = (id: string): id is CurvaAbc =>
+  props.relatorio === 'analise-faturamento' &&
+  formato.value === 'pdf' &&
+  (id === 'abcClientes' || id === 'abcProdutos') &&
+  marcadas.value.includes(id);
+const rotuloColuna = (curva: CurvaAbc, c: (typeof ABC_COLUNAS)[number]) =>
+  c.id === 'nome' ? (curva === 'abcClientes' ? 'Cliente' : 'Descrição') : c.rotulo;
+function alternarColuna(curva: CurvaAbc, id: AbcColunaId) {
+  const atuais = abcColunas.value[curva];
+  const novas = TODAS_COLUNAS.filter((x) => (x === id ? !atuais.includes(id) : atuais.includes(x)));
+  // Pelo menos uma coluna precisa ficar: sem isso a tabela sairia vazia.
+  if (novas.length) abcColunas.value = { ...abcColunas.value, [curva]: novas };
 }
+const colunasEscolhidas = (curva: CurvaAbc) => {
+  const l = abcColunas.value[curva];
+  return l.length < TODAS_COLUNAS.length ? l.join(',') : '';
+};
 
 // Última escolha (formato + seções) lembrada neste navegador, por pessoa e por relatório. É só
 // conveniência: se o armazenamento falhar ou estiver vazio, vale o padrão (primeiro formato, tudo marcado).
@@ -84,7 +100,7 @@ function lerEscolha(): {
   formato?: ExportFormato;
   secoes?: string[];
   abcProdutos?: AbcProdutosModo;
-  abcColunas?: string[];
+  abcColunas?: Partial<Record<CurvaAbc, string[]>>;
   quebra?: boolean;
 } {
   try {
@@ -94,7 +110,7 @@ function lerEscolha(): {
           formato?: ExportFormato;
           secoes?: string[];
           abcProdutos?: AbcProdutosModo;
-          abcColunas?: string[];
+          abcColunas?: Partial<Record<CurvaAbc, string[]>>;
           quebra?: boolean;
         })
       : {};
@@ -127,21 +143,20 @@ function abrir() {
   marcadas.value = validas.length ? validas : ids;
   quebraPagina.value = salva.quebra === true;
   abcProdutos.value = MODOS_ABC.some((m) => m.value === salva.abcProdutos) ? salva.abcProdutos! : 'valor';
-  const todasColunas = ABC_COLUNAS.map((c) => c.id);
-  const colunasSalvas = Array.isArray(salva.abcColunas) ? todasColunas.filter((c) => salva.abcColunas!.includes(c)) : [];
-  abcColunas.value = colunasSalvas.length ? colunasSalvas : todasColunas;
+  const colunasDe = (curva: CurvaAbc) => {
+    const salvas = salva.abcColunas?.[curva];
+    const validas = Array.isArray(salvas) ? TODAS_COLUNAS.filter((c) => salvas.includes(c)) : [];
+    return validas.length ? validas : [...TODAS_COLUNAS];
+  };
+  abcColunas.value = { abcClientes: colunasDe('abcClientes'), abcProdutos: colunasDe('abcProdutos') };
+  colunasAbertas.value = null;
   aberto.value = true;
 }
 
 /** Excel/CSV de uma tabela (pedidos, rankings, clientes) exporta a própria tabela: sem seções. */
 const usaSecoes = computed(() => formato.value === 'pdf' || !props.xlsx);
 const todas = computed(() => marcadas.value.length === secoes.value.length);
-const podeExportar = computed(
-  () =>
-    !gerando.value &&
-    (!usaSecoes.value || marcadas.value.length > 0) &&
-    (!escolheColunasAbc.value || abcColunas.value.length > 0),
-);
+const podeExportar = computed(() => !gerando.value && (!usaSecoes.value || marcadas.value.length > 0));
 
 function alternar(id: string, v: boolean | 'indeterminate') {
   marcadas.value = v === true ? [...new Set([...marcadas.value, id])] : marcadas.value.filter((x) => x !== id);
@@ -156,9 +171,10 @@ function montarUrl(): string {
     if (sel) p.set('secoes', sel);
     if (escolheAbc.value) p.set('abcProdutos', abcProdutos.value);
     // Todas as colunas = não manda nada (tabela completa).
-    if (escolheColunasAbc.value && abcColunas.value.length < ABC_COLUNAS.length) {
-      p.set('abcColunas', abcColunas.value.join(','));
-    }
+    const clientes = temColunas('abcClientes') ? colunasEscolhidas('abcClientes') : '';
+    const produtos = temColunas('abcProdutos') ? colunasEscolhidas('abcProdutos') : '';
+    if (clientes) p.set('abcColunasClientes', clientes);
+    if (produtos) p.set('abcColunasProdutos', produtos);
     if (quebraPagina.value) p.set('quebra', '1');
     return `/export/pdf/${props.relatorio}?${p}`;
   }
@@ -229,31 +245,50 @@ async function exportar() {
               </div>
             </div>
             <div class="space-y-2 rounded-lg border p-3">
-              <UCheckbox
-                v-for="s in secoes"
-                :key="s.id"
-                :model-value="marcadas.includes(s.id)"
-                :label="s.rotulo"
-                @update:model-value="(v) => alternar(s.id, v)"
-              />
+              <div v-for="s in secoes" :key="s.id">
+                <UCheckbox
+                  :model-value="marcadas.includes(s.id)"
+                  :label="s.rotulo"
+                  @update:model-value="(v) => alternar(s.id, v)"
+                />
+                <!-- Colunas da Curva ABC: discreto (um link) até a pessoa querer mexer. -->
+                <div v-if="temColunas(s.id)" class="mt-1 ml-6">
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                    :aria-expanded="colunasAbertas === s.id"
+                    @click="colunasAbertas = colunasAbertas === s.id ? null : s.id"
+                  >
+                    <UIcon
+                      name="i-lucide-chevron-right"
+                      class="size-3 transition-transform"
+                      :class="colunasAbertas === s.id ? 'rotate-90' : ''"
+                    />
+                    Colunas · {{ abcColunas[s.id].length }} de {{ ABC_COLUNAS.length }}
+                  </button>
+                  <div v-if="colunasAbertas === s.id" class="mt-1.5 flex flex-wrap gap-1.5">
+                    <button
+                      v-for="c in ABC_COLUNAS"
+                      :key="c.id"
+                      type="button"
+                      class="rounded-full border px-2.5 py-0.5 text-xs transition-colors"
+                      :class="
+                        abcColunas[s.id].includes(c.id)
+                          ? 'border-primary/30 bg-primary/10 text-primary'
+                          : 'text-muted-foreground line-through opacity-60 hover:opacity-100'
+                      "
+                      :aria-pressed="abcColunas[s.id].includes(c.id)"
+                      @click="alternarColuna(s.id, c.id)"
+                    >
+                      {{ rotuloColuna(s.id, c) }}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
             <div v-if="escolheAbc" class="space-y-1.5 rounded-lg border p-3">
               <p class="text-sm font-medium">Curva ABC de produtos</p>
               <URadioGroup v-model="abcProdutos" :items="MODOS_ABC" orientation="horizontal" size="sm" />
-            </div>
-            <div v-if="escolheColunasAbc" class="space-y-1.5 rounded-lg border p-3">
-              <p class="text-sm font-medium">Colunas da Curva ABC</p>
-              <p class="text-xs text-muted-foreground">Desmarque as que não devem aparecer no PDF.</p>
-              <div class="flex flex-wrap gap-x-4 gap-y-1.5">
-                <UCheckbox
-                  v-for="c in ABC_COLUNAS"
-                  :key="c.id"
-                  size="sm"
-                  :model-value="abcColunas.includes(c.id)"
-                  :label="c.rotulo"
-                  @update:model-value="(v) => alternarColuna(c.id, v)"
-                />
-              </div>
             </div>
             <UCheckbox
               v-if="formato === 'pdf'"

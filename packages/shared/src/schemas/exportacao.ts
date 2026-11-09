@@ -74,7 +74,7 @@ export const ABC_PRODUTOS_MODOS = ['valor', 'quantidade', 'ambos'] as const;
 export type AbcProdutosModo = (typeof ABC_PRODUTOS_MODOS)[number];
 export const abcProdutosModoSchema = z.enum(ABC_PRODUTOS_MODOS).optional();
 
-/** Colunas das tabelas da Curva ABC no PDF (a do meio é "Cliente" na curva de clientes e "Descrição" na de produtos). */
+/** Colunas das tabelas da Curva ABC no PDF (a "nome" é "Cliente" na curva de clientes e "Descrição" na de produtos). */
 export const ABC_COLUNAS = [
   { id: 'pos', rotulo: '#' },
   { id: 'codigo', rotulo: 'Código' },
@@ -143,7 +143,8 @@ export const solicitacaoImpressaoSchema = z.discriminatedUnion('tipo', [
     params: analiseNotasQuerySchema,
     secoes: z.array(ID_SECAO).optional(),
     abcProdutos: abcProdutosModoSchema,
-    abcColunas: z.array(ID_ABC_COLUNA).optional(),
+    abcColunasClientes: z.array(ID_ABC_COLUNA).optional(),
+    abcColunasProdutos: z.array(ID_ABC_COLUNA).optional(),
     quebra: z.boolean().optional(),
   }),
 ]);
@@ -171,8 +172,10 @@ export interface AnaliseFaturamentoImpressao {
   secoes?: string[];
   /** Curva ABC de produtos escolhida no diálogo (ausente = por valor). */
   abcProdutos?: AbcProdutosModo;
-  /** Colunas visíveis nas tabelas da Curva ABC (ausente = todas). */
-  abcColunas?: AbcColunaId[];
+  /** Colunas visíveis na Curva ABC por cliente (ausente = todas). */
+  abcColunasClientes?: AbcColunaId[];
+  /** Colunas visíveis nas Curvas ABC por produto, valor e quantidade (ausente = todas). */
+  abcColunasProdutos?: AbcColunaId[];
   geradoEm: string;
   paletaGraficos: PaletaGrafico | null;
   params: AnaliseNotasQuery;

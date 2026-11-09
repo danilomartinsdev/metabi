@@ -248,13 +248,21 @@ export class ExportService {
     secoes?: string[],
     abcProdutos?: AbcProdutosModo,
     quebra?: boolean,
-    abcColunas?: AbcColunaId[],
+    abcColunas?: { clientes?: AbcColunaId[]; produtos?: AbcColunaId[] },
   ): Promise<Arquivo> {
     exigirAnaliseFaturamento(u);
     const { periodo } = await this.notas.analise(p);
     const conteudo = await this.gerarPdf(
       u,
-      { tipo: 'analise-faturamento', params: p, secoes, abcProdutos, abcColunas, quebra },
+      {
+        tipo: 'analise-faturamento',
+        params: p,
+        secoes,
+        abcProdutos,
+        abcColunasClientes: abcColunas?.clientes,
+        abcColunasProdutos: abcColunas?.produtos,
+        quebra,
+      },
       'analise-faturamento',
     );
     await this.audit.registrar({
@@ -335,7 +343,8 @@ export class ExportService {
       paletaGraficos: u.paletaGraficos,
       secoes: solicitacao.secoes,
       abcProdutos: solicitacao.abcProdutos,
-      abcColunas: solicitacao.abcColunas,
+      abcColunasClientes: solicitacao.abcColunasClientes,
+      abcColunasProdutos: solicitacao.abcColunasProdutos,
       quebra: solicitacao.quebra,
       params: solicitacao.params,
       analise: await this.notas.analise(solicitacao.params),

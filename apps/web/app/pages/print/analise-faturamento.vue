@@ -56,7 +56,10 @@ const gruposQuantidade = computed(() =>
 );
 
 /** Colunas das tabelas da Curva ABC marcadas no diálogo (sem lista = todas). */
-const col = (id: AbcColunaId) => !dados.value?.abcColunas || dados.value.abcColunas.includes(id);
+const col = (curva: string, id: AbcColunaId) => {
+  const l = curva === 'abcClientes' ? dados.value?.abcColunasClientes : dados.value?.abcColunasProdutos;
+  return !l || l.includes(id);
+};
 
 const CLASSES: ClasseAbc[] = ['A', 'B', 'C'];
 const DESCRICAO: Record<ClasseAbc, string> = { A: 'até 80%', B: 'de 80% a 95%', C: 'últimos 5%' };
@@ -265,15 +268,15 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         <table class="w-full text-[10px] leading-tight">
           <thead class="bg-muted/50 text-muted-foreground">
             <tr>
-              <th v-if="col('pos')" class="w-8 px-2 py-0.5 text-left font-medium">#</th>
-              <th v-if="col('codigo')" class="px-2 py-0.5 text-left font-medium">Código</th>
-              <th v-if="col('nome')" class="px-2 py-0.5 text-left font-medium">
+              <th v-if="col(curva.id, 'pos')" class="w-8 px-2 py-0.5 text-left font-medium">#</th>
+              <th v-if="col(curva.id, 'codigo')" class="px-2 py-0.5 text-left font-medium">Código</th>
+              <th v-if="col(curva.id, 'nome')" class="px-2 py-0.5 text-left font-medium">
                 {{ curva.rotulo === 'clientes' ? 'Cliente' : 'Descrição' }}
               </th>
-              <th v-if="col('valor')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Valor</th>
-              <th v-if="col('participacao')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Part.</th>
-              <th v-if="col('acumulado')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Acum.</th>
-              <th v-if="col('classe')" class="px-2 py-0.5 text-center font-medium">Classe</th>
+              <th v-if="col(curva.id, 'valor')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Valor</th>
+              <th v-if="col(curva.id, 'participacao')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Part.</th>
+              <th v-if="col(curva.id, 'acumulado')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Acum.</th>
+              <th v-if="col(curva.id, 'classe')" class="px-2 py-0.5 text-center font-medium">Classe</th>
             </tr>
           </thead>
           <tbody class="divide-y">
@@ -283,13 +286,13 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
                 :key="l.codigo"
                 class="break-inside-avoid"
               >
-                <td v-if="col('pos')" class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
-                <td v-if="col('codigo')" class="num px-2 py-0.5">{{ l.codigo }}</td>
-                <td v-if="col('nome')" class="px-2 py-0.5">{{ l.nomeFantasia || l.razaoSocial }} · {{ l.uf }}</td>
-                <td v-if="col('valor')" class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
-                <td v-if="col('participacao')" class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
-                <td v-if="col('acumulado')" class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
-                <td v-if="col('classe')" class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
+                <td v-if="col(curva.id, 'pos')" class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
+                <td v-if="col(curva.id, 'codigo')" class="num px-2 py-0.5">{{ l.codigo }}</td>
+                <td v-if="col(curva.id, 'nome')" class="px-2 py-0.5">{{ l.nomeFantasia || l.razaoSocial }} · {{ l.uf }}</td>
+                <td v-if="col(curva.id, 'valor')" class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+                <td v-if="col(curva.id, 'participacao')" class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
+                <td v-if="col(curva.id, 'acumulado')" class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
+                <td v-if="col(curva.id, 'classe')" class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
               </tr>
             </template>
             <template v-else>
@@ -298,13 +301,13 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
                 :key="l.codigo"
                 class="break-inside-avoid"
               >
-                <td v-if="col('pos')" class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
-                <td v-if="col('codigo')" class="num px-2 py-0.5">{{ l.codigo }}</td>
-                <td v-if="col('nome')" class="px-2 py-0.5">{{ l.descricao }}</td>
-                <td v-if="col('valor')" class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
-                <td v-if="col('participacao')" class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
-                <td v-if="col('acumulado')" class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
-                <td v-if="col('classe')" class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
+                <td v-if="col(curva.id, 'pos')" class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
+                <td v-if="col(curva.id, 'codigo')" class="num px-2 py-0.5">{{ l.codigo }}</td>
+                <td v-if="col(curva.id, 'nome')" class="px-2 py-0.5">{{ l.descricao }}</td>
+                <td v-if="col(curva.id, 'valor')" class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+                <td v-if="col(curva.id, 'participacao')" class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
+                <td v-if="col(curva.id, 'acumulado')" class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
+                <td v-if="col(curva.id, 'classe')" class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
               </tr>
             </template>
           </tbody>
@@ -336,26 +339,26 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         <table class="w-full text-[10px] leading-tight">
           <thead class="bg-muted/50 text-muted-foreground">
             <tr>
-              <th v-if="col('pos')" class="w-8 px-2 py-0.5 text-left font-medium">#</th>
-              <th v-if="col('codigo')" class="px-2 py-0.5 text-left font-medium">Código</th>
-              <th v-if="col('nome')" class="px-2 py-0.5 text-left font-medium">Descrição</th>
+              <th v-if="col('abcProdutos', 'pos')" class="w-8 px-2 py-0.5 text-left font-medium">#</th>
+              <th v-if="col('abcProdutos', 'codigo')" class="px-2 py-0.5 text-left font-medium">Código</th>
+              <th v-if="col('abcProdutos', 'nome')" class="px-2 py-0.5 text-left font-medium">Descrição</th>
               <th class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Quantidade</th>
-              <th v-if="col('valor')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Valor</th>
-              <th v-if="col('participacao')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Part.</th>
-              <th v-if="col('acumulado')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Acum.</th>
-              <th v-if="col('classe')" class="px-2 py-0.5 text-center font-medium">Classe</th>
+              <th v-if="col('abcProdutos', 'valor')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">Valor</th>
+              <th v-if="col('abcProdutos', 'participacao')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Part.</th>
+              <th v-if="col('abcProdutos', 'acumulado')" class="px-2 py-0.5 text-right font-medium whitespace-nowrap">% Acum.</th>
+              <th v-if="col('abcProdutos', 'classe')" class="px-2 py-0.5 text-center font-medium">Classe</th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-for="(l, i) in g.produtos" :key="l.codigo" class="break-inside-avoid">
-              <td v-if="col('pos')" class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
-              <td v-if="col('codigo')" class="num px-2 py-0.5">{{ l.codigo }}</td>
-              <td v-if="col('nome')" class="px-2 py-0.5">{{ l.descricao }}</td>
+              <td v-if="col('abcProdutos', 'pos')" class="num px-2 py-0.5 text-muted-foreground">{{ i + 1 }}</td>
+              <td v-if="col('abcProdutos', 'codigo')" class="num px-2 py-0.5">{{ l.codigo }}</td>
+              <td v-if="col('abcProdutos', 'nome')" class="px-2 py-0.5">{{ l.descricao }}</td>
               <td class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatInt(l.quantidade) }}</td>
-              <td v-if="col('valor')" class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
-              <td v-if="col('participacao')" class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
-              <td v-if="col('acumulado')" class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
-              <td v-if="col('classe')" class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
+              <td v-if="col('abcProdutos', 'valor')" class="num px-2 py-0.5 text-right whitespace-nowrap">{{ formatBRL(l.total) }}</td>
+              <td v-if="col('abcProdutos', 'participacao')" class="num px-2 py-0.5 text-right">{{ formatPct(l.participacao) }}</td>
+              <td v-if="col('abcProdutos', 'acumulado')" class="num px-2 py-0.5 text-right">{{ formatPct(l.acumulado) }}</td>
+              <td v-if="col('abcProdutos', 'classe')" class="px-2 py-0.5 text-center font-semibold">{{ l.classe }}</td>
             </tr>
           </tbody>
         </table>
