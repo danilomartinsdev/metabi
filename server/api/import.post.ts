@@ -1,8 +1,8 @@
 import { parseWorkbook, writeOrders } from '../utils/orders'
-import { requireAuth } from '../utils/auth'
+import { requireAdmin } from '../utils/auth'
 
 export default defineEventHandler(async event => {
-  requireAuth(event)
+  await requireAdmin(event)
   const parts = await readMultipartFormData(event)
   const file = parts?.find(part => part.name === 'file')
   if (!file?.data?.length) throw createError({ statusCode: 400, statusMessage: 'Arquivo não enviado' })

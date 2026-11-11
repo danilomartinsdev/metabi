@@ -4,3 +4,4 @@ node_modules
 data/orders.json
 .env
 *.log
+data/maintenance.json

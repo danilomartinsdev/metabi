@@ -13,7 +13,7 @@ export default defineEventHandler(async event => {
   const emailMatches = email === admin.email
   const passwordMatches = await bcrypt.compare(password, emailMatches ? admin.passwordHash : DUMMY_HASH)
   if (!emailMatches || !passwordMatches) throw createError({ statusCode: 401, statusMessage: 'E-mail ou senha inválidos' })
-  const token = jwt.sign({ email, name: 'Administrador' }, getJwtSecret(), { algorithm: 'HS256', expiresIn: '8h' })
+  const token = jwt.sign({ email, name: 'Administrador', role: 'admin' }, getJwtSecret(), { algorithm: 'HS256', expiresIn: '8h' })
   setCookie(event, 'meta_bi_token', token, { httpOnly: true, sameSite: 'lax', secure: Boolean(useRuntimeConfig().cookieSecure), maxAge: 60 * 60 * 8 })
   return { user: { email, name: 'Administrador' } }
 })

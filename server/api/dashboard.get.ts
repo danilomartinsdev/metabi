@@ -16,7 +16,7 @@ function aggregate(orders: Order[], key: keyof Order) {
 }
 
 export default defineEventHandler(async event => {
-  requireAuth(event)
+  await requireAuth(event)
   const query = getQuery(event)
   let orders = await readOrders()
   if (query.region) orders = orders.filter(o => o.region === query.region)

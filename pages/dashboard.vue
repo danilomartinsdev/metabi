@@ -16,21 +16,71 @@ const regions = computed(() => data.value?.regions || [])
 const managers = computed(() => data.value?.managers || [])
 const ufs = computed(() => [...new Set((data.value?.states || []).map(x => x.name))].sort())
 async function logout() { await $fetch('/api/auth/logout', { method: 'POST' }); await router.push('/') }
+const { data: maintenance, refresh: refreshMaintenance } = await useFetch<{ active: boolean, message: string }>('/api/maintenance')
+const maintenanceMessage = ref(maintenance.value?.message || '')
+const togglingMaintenance = ref(false)
+async function toggleMaintenance() {
+  const next = !maintenance.value?.active
+  if (!confirm(next ? 'Ativar modo manutenção? Visitantes verão a tela de manutenção; só administradores continuam acessando.' : 'Desativar modo manutenção e liberar o sistema?')) return
+  togglingMaintenance.value = true; message.value = ''
+  try {
+    await $fetch('/api/admin/maintenance', { method: 'POST', body: { active: next, message: maintenanceMessage.value } })
+    await refreshMaintenance()
+    message.value = next ? 'Modo manutenção ATIVADO' : 'Modo manutenção desativado'
+  } catch (err: any) { message.value = err?.data?.message || 'Falha ao alterar modo manutenção' }
+  finally { togglingMaintenance.value = false }
+}
+const adminOpen = ref(false)
+const selectedYears = ref<string[]>([])
+const clearing = ref(false)
+const { data: yearsData, refresh: refreshYears } = await useFetch<{ years: { year: string, count: number, total: number }[], total: number }>('/api/admin/years')
+async function clearData(all: boolean) {
+  const years = selectedYears.value
+  if (!all && !years.length) return
+  const text = all ? 'Isso apagará TODAS as importações e zerará o BI. Continuar?' : `Apagar os pedidos de ${years.join(', ')}? Esta ação não pode ser desfeita.`
+  if (!confirm(text)) return
+  clearing.value = true; message.value = ''
+  try {
+    const result = await $fetch<{ removed: number }>('/api/admin/clear', { method: 'POST', body: all ? { all: true } : { years } })
+    message.value = `${result.removed} pedidos removidos`
+    selectedYears.value = []
+    await Promise.all([refresh(), refreshYears()])
+  } catch (err: any) { message.value = err?.data?.message || 'Falha ao limpar dados' }
+  finally { clearing.value = false }
+}
 async function importFile() {
   if (!file.value) return
   importing.value = true; message.value = ''
   const body = new FormData(); body.append('file', file.value)
-  try { const result = await $fetch<{ imported: number }>('/api/import', { method: 'POST', body }); message.value = `${result.imported} pedidos importados com sucesso`; await refresh() }
+  try { const result = await $fetch<{ imported: number }>('/api/import', { method: 'POST', body }); message.value = `${result.imported} pedidos importados com sucesso`; await Promise.all([refresh(), refreshYears()]) }
   catch (err: any) { message.value = err?.data?.message || 'Falha ao importar arquivo' }
   finally { importing.value = false }
 }
 </script>
 <template>
   <div class="app-shell">
-    <header class="topbar"><div class="brand"><img class="company-logo small" :src="config.public.logoUrl" alt="Meta Hospitalar"><div><strong>META HOSPITALAR</strong><span>BI Executivo</span></div></div><div class="topbar-actions"><span class="updated"><i></i> Dados atualizados</span><button class="ghost-button" @click="logout">Sair</button></div></header>
+    <header class="topbar"><div class="brand"><img class="company-logo small" :src="config.public.logoUrl" alt="Meta Hospitalar"><div><strong>META HOSPITALAR</strong><span>BI Executivo</span></div></div><div class="topbar-actions"><span v-if="maintenance?.active" class="updated"><i></i> EM MANUTENÇÃO</span><span v-else class="updated"><i></i> Dados atualizados</span><button class="ghost-button" @click="logout">Sair</button></div></header>
     <main class="dashboard">
       <div class="heading"><div><p class="eyebrow">PAINEL EXECUTIVO</p><h1>Visão geral</h1></div><label class="import-button">＋ Importar Excel<input type="file" accept=".xls,.xlsx" @change="file = ($event.target as HTMLInputElement).files?.[0] || null"></label><button v-if="file" class="primary-button compact" @click="importFile">{{ importing ? 'Importando...' : 'Confirmar importação' }}</button></div>
       <p v-if="message" class="notice">{{ message }}</p>
+      <section class="panel admin-panel">
+        <div class="panel-title"><div><h2>Administração · Importações</h2><p>{{ yearsData?.total || 0 }} pedidos na base</p></div><button class="ghost-button" @click="adminOpen = !adminOpen">{{ adminOpen ? 'Fechar' : 'Gerenciar' }}</button></div>
+        <div v-if="adminOpen">
+          <div class="maintenance-box" :class="{ on: maintenance?.active }">
+            <strong>Modo manutenção: {{ maintenance?.active ? 'ATIVO' : 'desligado' }}</strong>
+            <input v-model="maintenanceMessage" maxlength="300" placeholder="Mensagem exibida aos visitantes (opcional)">
+            <button class="ghost-button" :class="{ danger: !maintenance?.active }" :disabled="togglingMaintenance" @click="toggleMaintenance">{{ maintenance?.active ? 'Desativar manutenção' : 'Ativar manutenção' }}</button>
+          </div>
+          <p v-if="!yearsData?.years.length">Nenhuma importação na base.</p>
+          <div v-else class="admin-years">
+            <label v-for="y in yearsData.years" :key="y.year" class="admin-year"><input v-model="selectedYears" type="checkbox" :value="y.year"> <b>{{ y.year }}</b> · {{ y.count }} pedidos · {{ money(y.total) }}</label>
+          </div>
+          <div class="admin-actions">
+            <button class="ghost-button" :disabled="!selectedYears.length || clearing" @click="clearData(false)">Apagar anos selecionados</button>
+            <button class="ghost-button danger" :disabled="!yearsData?.total || clearing" @click="clearData(true)">Zerar BI (apagar tudo)</button>
+          </div>
+        </div>
+      </section>
       <section class="filters"><label>REGIÃO<select v-model="filters.region"><option value="">Todas</option><option v-for="item in regions" :key="item.name">{{ item.name }}</option></select></label><label>UF<select v-model="filters.uf"><option value="">Todas</option><option v-for="uf in ufs" :key="uf">{{ uf }}</option></select></label><label>GESTOR<select v-model="filters.manager"><option value="">Todos</option><option v-for="item in managers" :key="item.name">{{ item.name }}</option></select></label><label>SEGMENTO<select v-model="filters.segment"><option value="">Todos</option><option>Público</option><option>Privado</option></select></label><label class="search">BUSCA<input v-model="filters.search" placeholder="Cliente, pedido, gestor..."></label><button class="clear" @click="Object.assign(filters, { region: '', uf: '', manager: '', segment: '', search: '' })">× Limpar</button></section>
       <div v-if="pending" class="loading">Carregando indicadores...</div>
       <p v-else-if="error" class="error">{{ error }}</p>
