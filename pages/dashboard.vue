@@ -30,7 +30,7 @@ async function toggleMaintenance() {
   } catch (err: any) { message.value = err?.data?.message || 'Falha ao alterar modo manutenção' }
   finally { togglingMaintenance.value = false }
 }
-const adminOpen = ref(false)
+const adminOpen = ref(true)
 const selectedYears = ref<string[]>([])
 const clearing = ref(false)
 const { data: yearsData, refresh: refreshYears } = await useFetch<{ years: { year: string, count: number, total: number }[], total: number }>('/api/admin/years')
