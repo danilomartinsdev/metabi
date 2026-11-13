@@ -9,3 +9,4 @@ export * from './schemas/usuarios.js';
 export * from './schemas/exportacao.js';
 export * from './schemas/faturamento.js';
 export * from './schemas/notas-fiscais.js';
+export * from './schemas/limpeza.js';

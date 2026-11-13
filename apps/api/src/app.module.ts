@@ -6,6 +6,7 @@ import { AuthGuard } from './common/auth/auth.guard.js';
 import { HttpExceptionFilter } from './common/http-exception.filter.js';
 import { ConfigModule } from './config/config.module.js';
 import { ManutencaoModule } from './modules/manutencao/manutencao.module.js';
+import { LimpezaModule } from './modules/limpeza/limpeza.module.js';
 import { ArquivosModule } from './modules/arquivos/arquivos.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
@@ -51,6 +52,7 @@ const dev = process.env.NODE_ENV !== 'production';
     AuditModule,
     ArquivosModule,
     ManutencaoModule,
+    LimpezaModule,
     MailModule,
     AuthModule,
     UsuariosModule,

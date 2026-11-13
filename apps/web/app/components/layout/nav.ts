@@ -96,6 +96,7 @@ export const NAV: NavGroup[] = [
       { label: 'Usuários', to: '/admin/usuarios', icon: 'i-lucide-users', permissao: 'users.manage' },
       { label: 'Papéis', to: '/admin/papeis', icon: 'i-lucide-shield', permissao: 'users.manage' },
       { label: 'Auditoria', to: '/admin/auditoria', icon: 'i-lucide-scroll-text', permissao: 'audit.view' },
+      { label: 'Limpar dados', to: '/admin/limpeza', icon: 'i-lucide-trash-2', permissao: 'users.manage' },
     ],
   },
 ];

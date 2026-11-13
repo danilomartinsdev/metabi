@@ -83,6 +83,8 @@ export class ScopedPedidosRepository {
  */
 @Injectable()
 export class PedidosEscritaRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
   existentes(tx: Prisma.TransactionClient, focoIds: number[]) {
     return tx.pedido.findMany({ where: { focoId: { in: focoIds } } });
   }
@@ -97,6 +99,18 @@ export class PedidosEscritaRepository {
 
   apagar(tx: Prisma.TransactionClient, focoIds: number[]) {
     return tx.pedido.deleteMany({ where: { focoId: { in: focoIds } } });
+  }
+
+  /** Quantidade de pedidos por mês de competência (Limpeza por ano; só Admin com escopo "todos"). */
+  contarPorCompetencia() {
+    return this.prisma.pedido.groupBy({ by: ['competencia'], _count: { _all: true } });
+  }
+
+  /** Apaga todos os pedidos emitidos no ano (Limpeza por ano; só Admin com escopo "todos"). */
+  apagarPorAno(tx: Prisma.TransactionClient, ano: number) {
+    return tx.pedido.deleteMany({
+      where: { dtEmissao: { gte: new Date(Date.UTC(ano, 0, 1)), lt: new Date(Date.UTC(ano + 1, 0, 1)) } },
+    });
   }
 
   /** Pedidos alterados por lotes posteriores a `loteId` (bloqueiam o rollback). */

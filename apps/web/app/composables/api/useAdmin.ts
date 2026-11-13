@@ -1,5 +1,8 @@
 import type {
   AuditoriaLinha,
+  LimpezaAno,
+  LimpezaExecutar,
+  LimpezaResultado,
   PapelAdmin,
   PapelSalvar,
   Segmento,
@@ -134,5 +137,20 @@ export function useAtualizarCliente() {
     mutationFn: (p: { id: string; segmentoOverride: Segmento | null }) =>
       request(`/clientes/${p.id}`, { method: 'PATCH', body: { segmentoOverride: p.segmentoOverride } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['clientes-admin'] }),
+  });
+}
+
+export function useLimpezaQuery() {
+  const { request } = useApi();
+  return useQuery({ queryKey: ['limpeza'], queryFn: () => request<LimpezaAno[]>('/limpeza') });
+}
+
+export function useExecutarLimpeza() {
+  const { request } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (p: LimpezaExecutar) => request<LimpezaResultado>('/limpeza', { method: 'POST', body: p }),
+    // Os dados mudaram em vários menus: recarrega tudo.
+    onSuccess: () => qc.invalidateQueries(),
   });
 }
