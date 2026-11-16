@@ -41,7 +41,8 @@ const secoes = computed(() => SECOES_EXPORT[props.relatorio]);
 const formatos = computed(() => {
   const l: { label: string; value: ExportFormato; description: string }[] = [];
   if (can('export.pdf')) l.push({ label: 'PDF', value: 'pdf', description: 'Relatório para imprimir' });
-  if (props.relatorio === 'vendas' && can('export.xlsx')) {
+  // Planilha: Visão geral/tabelas de vendas e a Análise de descontos (tabela por produto + resumo).
+  if ((props.relatorio === 'vendas' || props.relatorio === 'analise-descontos') && can('export.xlsx')) {
     l.push({ label: 'Excel', value: 'xlsx', description: 'Planilha .xlsx' });
     l.push({ label: 'CSV', value: 'csv', description: 'Texto separado por ;' });
   }
@@ -153,8 +154,8 @@ function abrir() {
   aberto.value = true;
 }
 
-/** Excel/CSV de uma tabela (pedidos, rankings, clientes) exporta a própria tabela: sem seções. */
-const usaSecoes = computed(() => formato.value === 'pdf' || !props.xlsx);
+/** Excel/CSV de uma tabela (pedidos, rankings, clientes, descontos) exporta a própria tabela: sem seções. */
+const usaSecoes = computed(() => formato.value === 'pdf' || (props.relatorio === 'vendas' && !props.xlsx));
 const todas = computed(() => marcadas.value.length === secoes.value.length);
 const podeExportar = computed(() => !gerando.value && (!usaSecoes.value || marcadas.value.length > 0));
 
@@ -168,6 +169,10 @@ function montarUrl(): string {
   const sel = usaSecoes.value && !todas.value ? marcadas.value.join(',') : '';
   if (props.relatorio !== 'vendas') {
     const p = new URLSearchParams(props.consulta ?? '');
+    if (formato.value !== 'pdf') {
+      p.set('formato', formato.value);
+      return `/export/descontos?${p}`;
+    }
     if (sel) p.set('secoes', sel);
     if (escolheAbc.value) p.set('abcProdutos', abcProdutos.value);
     // Todas as colunas = não manda nada (tabela completa).

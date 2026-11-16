@@ -16,6 +16,26 @@ export interface Novidade {
 /** Novidades do sistema, a mais recente primeiro. Acrescente no topo a cada entrega. */
 export const NOVIDADES: Novidade[] = [
   {
+    id: '2026-11-16-3',
+    data: '2026-11-16',
+    titulo: 'Tabela de preços',
+    texto:
+      'Os preços de tabela agora têm tela própria em Administração › Tabela de preços: todos os produtos que já saíram em nota, de qualquer ano, com o preço do ano anterior ao lado. Dá para incluir à mão um produto que ainda não foi vendido.',
+    para: '/admin/precos',
+    permissao: 'precos.edit',
+    exigeEscopoTodos: true,
+  },
+  {
+    id: '2026-11-16-2',
+    data: '2026-11-16',
+    titulo: 'Análise de descontos com relatórios',
+    texto:
+      'A Previsão de descontos virou Análise › Análise de descontos: escolha o período (de/até), veja o desconto de cada produto e exporte o relatório em PDF, Excel ou CSV.',
+    para: '/faturamento/descontos',
+    permissao: 'descontos.view',
+    exigeEscopoTodos: true,
+  },
+  {
     id: '2026-11-16-1',
     data: '2026-11-16',
     titulo: 'Previsão de descontos',

@@ -67,7 +67,7 @@ export const NAV: NavGroup[] = [
         permissao: 'faturamento-analise.view',
       },
       {
-        label: 'Previsão de descontos',
+        label: 'Análise de descontos',
         to: '/faturamento/descontos',
         icon: 'i-lucide-badge-percent',
         permissao: 'descontos.view',
@@ -80,6 +80,12 @@ export const NAV: NavGroup[] = [
     itens: [
       { label: 'Importações', to: '/admin/importacoes', icon: 'i-lucide-file-up', permissao: 'import.run' },
       { label: 'Metas', to: '/admin/metas', icon: 'i-lucide-target', permissao: 'metas.edit' },
+      {
+        label: 'Tabela de preços',
+        to: '/admin/precos',
+        icon: 'i-lucide-circle-dollar-sign',
+        permissao: 'precos.edit',
+      },
       {
         label: 'Histórico',
         to: '/admin/historico',

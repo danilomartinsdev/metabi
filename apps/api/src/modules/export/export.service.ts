@@ -2,7 +2,10 @@ import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import type {
   AbcColunaId,
   AbcProdutosModo,
+  AnaliseDescontosImpressao,
+  AnaliseDescontosQuery,
   AnaliseFaturamentoImpressao,
+  ExportDescontosQuery,
   AnaliseNotasQuery,
   ExportVisaoGeralQuery,
   ExportXlsxQuery,
@@ -20,6 +23,7 @@ import { ENV, type Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import { DashboardService } from '../dashboard/dashboard.service.js';
+import { DescontosService } from '../descontos/descontos.service.js';
 import { FaturamentoService } from '../faturamento/faturamento.service.js';
 import { NotasFiscaisService } from '../notas-fiscais/notas-fiscais.service.js';
 import { PdfRenderer } from './pdf-renderer.service.js';
@@ -27,6 +31,7 @@ import {
   blocosVisaoGeral,
   type InfoExportacao,
   planilhaClientes,
+  planilhaDescontos,
   planilhaPedidos,
   planilhaRanking,
   planilhaVisaoGeral,
@@ -61,6 +66,7 @@ export class ExportService {
     private readonly dashboard: DashboardService,
     private readonly faturamento: FaturamentoService,
     private readonly notas: NotasFiscaisService,
+    private readonly descontos: DescontosService,
     private readonly tokens: PrintTokenService,
     private readonly renderer: PdfRenderer,
     private readonly audit: AuditService,
@@ -278,6 +284,65 @@ export class ExportService {
     };
   }
 
+  /** PDF da Análise de descontos: exige a permissão da tela e escopo "todos". */
+  async pdfAnaliseDescontos(
+    u: UsuarioAutenticado,
+    p: AnaliseDescontosQuery,
+    ctx: ContextoRequisicao,
+    secoes?: string[],
+    quebra?: boolean,
+  ): Promise<Arquivo> {
+    exigirDescontos(u);
+    const { periodo } = await this.descontos.analise(p);
+    const conteudo = await this.gerarPdf(
+      u,
+      { tipo: 'analise-descontos', params: p, secoes, quebra },
+      'analise-descontos',
+    );
+    await this.audit.registrar({
+      acao: 'export.pdf',
+      usuarioId: u.id,
+      detalhes: { relatorio: 'analise-descontos', secoes: secoes ?? 'todas', quebra, ...periodo },
+      ctx,
+    });
+    return {
+      conteudo,
+      nome: `metabi-analise-descontos-${periodo.de}_${periodo.ate}.pdf`,
+      tipo: 'application/pdf',
+    };
+  }
+
+  /** Excel/CSV da Análise de descontos (tabela por produto + resumo). */
+  async planilhaDescontos(u: UsuarioAutenticado, q: ExportDescontosQuery, ctx: ContextoRequisicao): Promise<Arquivo> {
+    exigirDescontos(u);
+    const { formato, ...p } = q;
+    const a = await this.descontos.analise(p);
+    const conteudo = planilhaDescontos(a, u.nome, new Date(), formato);
+    await this.audit.registrar({
+      acao: 'export.xlsx',
+      usuarioId: u.id,
+      detalhes: { tipo: 'analise-descontos', formato, linhas: a.produtos.length, ...a.periodo },
+      ctx,
+    });
+    return arquivoPlanilha(`metabi-analise-descontos-${a.periodo.de}_${a.periodo.ate}`, formato, conteudo);
+  }
+
+  /** Dados do PDF da Análise de descontos. Revalida permissão e escopo com o usuário atual. */
+  async analiseDescontosImpressao(token: string): Promise<AnaliseDescontosImpressao> {
+    const e = await this.tokens.consumir(token, 'analise-descontos');
+    if (!e) throw Erros.naoAutenticado();
+    const { usuario: u, solicitacao } = e;
+    exigirDescontos(u);
+    return {
+      geradoPor: u.nome,
+      geradoEm: new Date().toISOString(),
+      secoes: solicitacao.secoes,
+      quebra: solicitacao.quebra,
+      params: solicitacao.params,
+      analise: await this.descontos.analise(solicitacao.params),
+    };
+  }
+
   /** Dados da página de impressão: consome o token (uso único) e aplica o escopo de quem pediu o PDF. */
   async relatorio(token: string): Promise<RelatorioImpressao> {
     const e = await this.tokens.consumir(token, 'vendas');
@@ -382,6 +447,14 @@ function exigirAnaliseFaturamento(u: UsuarioAutenticado): void {
 function exigirFaturamento(u: UsuarioAutenticado): void {
   if (!u.permissoes.includes('faturamento.view')) {
     throw new ApiException(HttpStatus.FORBIDDEN, 'FORBIDDEN', 'Sem permissão para ver o faturamento.');
+  }
+  exigirEscopoTodos(u);
+}
+
+/** Análise de descontos: além do arquivo, exige a permissão da tela e escopo "todos". */
+function exigirDescontos(u: UsuarioAutenticado): void {
+  if (!u.permissoes.includes('descontos.view')) {
+    throw new ApiException(HttpStatus.FORBIDDEN, 'FORBIDDEN', 'Sem permissão para ver a análise de descontos.');
   }
   exigirEscopoTodos(u);
 }

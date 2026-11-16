@@ -431,6 +431,19 @@ model PrecoTabela {
 }
 
 // Histórico das importações de notas fiscais (uma por arquivo confirmado).
+/// Produto incluído à mão na tabela de preços (ainda sem nota fiscal). Os produtos das notas não ficam aqui:
+/// a lista da tabela de preços é a união dos dois.
+model ProdutoCadastro {
+  id        String   @id @default(uuid()) @db.Uuid
+  codigo    String // como na curva ABC: sem o ponto final das variantes
+  unidade   String   @default("")
+  descricao String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([codigo, unidade])
+}
+
 model NotaFiscalLote {
   id          String           @id @default(uuid()) @db.Uuid
   arquivoNome String

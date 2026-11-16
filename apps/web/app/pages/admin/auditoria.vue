@@ -65,6 +65,8 @@ const ROTULOS: Record<string, string> = {
   'notas.importadas': 'Notas fiscais importadas',
   'limpeza.executada': 'Dados de um ano apagados',
   'precos.alterados': 'Tabela de preços alterada',
+  'produto.incluido': 'Produto incluído na tabela de preços',
+  'produto.excluido': 'Produto excluído da tabela de preços',
   'sessoes.todas-encerradas': 'Todas as sessões encerradas (atualização)',
 };
 // Listar usuários exige users.manage; sem ela, o filtro por usuário não aparece.

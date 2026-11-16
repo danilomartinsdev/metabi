@@ -47,11 +47,14 @@ UF fora da lista → erro de validação na linha da importação.
 - Meta total é cadastrada explicitamente (não é soma das metas por representante).
 - Só papéis com `metas.edit` alteram; alterações auditadas.
 
-## Previsão de descontos
+## Análise de descontos e tabela de preços
 - Tabela de preços **por ano**: produto (código agrupado da curva ABC, "MT169." = "MT169") + unidade → preço de tabela (Decimal(14,4)).
-- Desconto = preço de tabela do ano × quantidade vendida no ano − valor vendido (ITNFS_VALOR_TOTAL dos itens de NF do ano). Negativo = vendido acima da tabela.
+- Desconto = preço de tabela × quantidade vendida − valor vendido (ITNFS_VALOR_TOTAL dos itens de NF), num período de/até (padrão: do início do ano ao último mês com notas). Negativo = vendido acima da tabela.
+- Período que cruza anos: cada mês usa a tabela do seu ano; o preço unitário só aparece quando o período está num ano só.
 - Cada ano usa só a sua tabela: alterar os preços de um ano não muda os números de outro. Produto sem preço no ano fica fora do desconto; a "cobertura" mostra quanto do faturamento do ano tem preço.
-- Ver: `descontos.view` + escopo "todos"; editar preços: `precos.edit` + escopo "todos"; alterações auditadas (`precos.alterados`).
+- A tabela de preços (Administração › Tabela de preços) lista todo produto que já saiu em nota, de qualquer ano, mais os incluídos à mão (`ProdutoCadastro`, para produto ainda sem nota). Não dá para incluir à mão um produto que já está nas notas; excluir um incluído à mão apaga os preços dele em todos os anos.
+- Ver a análise: `descontos.view` + escopo "todos"; tabela de preços: `precos.edit` + escopo "todos"; alterações auditadas (`precos.alterados`, `produto.incluido`, `produto.excluido`).
+- Relatórios: PDF (indicadores + desconto por produto) e Excel/CSV (aba Produtos + aba Resumo).
 
 ## Histórico 2025
 - Vem do mesmo relatório Focco detalhado de 2025 → importação normal, mesmas regras.

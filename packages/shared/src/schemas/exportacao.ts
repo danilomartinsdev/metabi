@@ -7,6 +7,7 @@ import {
   type FaturamentoResumo,
   faturamentoPdfQuerySchema,
 } from './faturamento.js';
+import { type AnaliseDescontos, type AnaliseDescontosQuery, analiseDescontosQuerySchema } from './descontos.js';
 import { type AnaliseNotas, type AnaliseNotasQuery, analiseNotasQuerySchema } from './notas-fiscais.js';
 
 /** O que pode ser exportado em Excel (uma planilha por tela de análise). */
@@ -45,6 +46,10 @@ export const SECOES_EXPORT = {
     { id: 'ranking', rotulo: 'Ranking por representante' },
     { id: 'abcClientes', rotulo: 'Curva ABC por cliente' },
     { id: 'abcProdutos', rotulo: 'Curva ABC por produto' },
+  ],
+  'analise-descontos': [
+    { id: 'kpis', rotulo: 'Indicadores de desconto' },
+    { id: 'produtos', rotulo: 'Desconto por produto' },
   ],
 } as const;
 export type RelatorioExport = keyof typeof SECOES_EXPORT;
@@ -146,6 +151,12 @@ export const solicitacaoImpressaoSchema = z.discriminatedUnion('tipo', [
     abcColunasProdutos: z.array(ID_ABC_COLUNA).optional(),
     quebra: z.boolean().optional(),
   }),
+  z.object({
+    tipo: z.literal('analise-descontos'),
+    params: analiseDescontosQuerySchema,
+    secoes: z.array(ID_SECAO).optional(),
+    quebra: z.boolean().optional(),
+  }),
 ]);
 export type SolicitacaoImpressao = z.output<typeof solicitacaoImpressaoSchema>;
 
@@ -178,6 +189,23 @@ export interface AnaliseFaturamentoImpressao {
   paletaGraficos: PaletaGrafico | null;
   params: AnaliseNotasQuery;
   analise: AnaliseNotas;
+}
+
+/** Excel/CSV da Análise de descontos: período da tela + formato. */
+export const exportDescontosQuerySchema = z.intersection(
+  analiseDescontosQuerySchema,
+  z.object({ formato: z.enum(EXPORT_FORMATOS_PLANILHA).default('xlsx') }),
+);
+export type ExportDescontosQuery = z.output<typeof exportDescontosQuerySchema>;
+
+/** Dados do PDF da Análise de descontos (rota /print/analise-descontos da SPA). */
+export interface AnaliseDescontosImpressao {
+  geradoPor: string;
+  quebra?: boolean;
+  secoes?: string[];
+  geradoEm: string;
+  params: AnaliseDescontosQuery;
+  analise: AnaliseDescontos;
 }
 
 /** Dados do relatório executivo em PDF (rota /print/relatorio da SPA). */

@@ -24,7 +24,7 @@ segmento, status, busca (cliente, nº pedido, CPR, gestor).
 | /dashboard/regioes | Ranking por região | idem | dashboard.view |
 | /dashboard/clientes | Clientes | ranking, recorrência, clientes novos | dashboard.view |
 | /pedidos | Lista de pedidos | tabela paginada no servidor, colunas configuráveis, badge de status | pedidos.view |
-| /faturamento/descontos | Previsão de descontos (itens de NF × tabela de preços do ano) | seletor de ano; KPIs valor de tabela, vendido, desconto e cobertura; aba Tabela de preços (produtos vendidos no ano com preço editável, busca, "só sem preço", "preencher vazios com o ano anterior"); aba Por representante | descontos.view (+ precos.edit para editar) e escopo "todos" |
+| /faturamento/descontos | Análise de descontos (itens de NF × tabela de preços) | período de/até (atalhos Último mês e Acumulado do ano); KPIs valor de tabela, vendido com preço, desconto e cobertura; desconto por produto (busca, com/sem preço, total); Exportar em PDF, Excel e CSV; atalho para a Tabela de preços | descontos.view e escopo "todos" (exportar: export.pdf/export.xlsx) |
 
 Toda tabela tem botão "Exportar Excel" (export.xlsx); dashboards têm "Exportar PDF" (export.pdf).
 
@@ -33,6 +33,7 @@ Toda tabela tem botão "Exportar Excel" (export.xlsx); dashboards têm "Exportar
 |---|---|---|
 | /admin/importacoes | Upload (arrastar e soltar), prévia, confirmação, histórico de lotes, rollback | import.run / import.rollback |
 | /admin/metas | Metas mensais total e por representante | metas.edit |
+| /admin/precos | Tabela de preços por ano: produtos das notas (qualquer ano) + incluídos à mão; preço editável, preço do ano anterior, última venda, busca e filtros, "preencher vazios com o ano anterior", incluir/excluir produto à mão | precos.edit e escopo "todos" |
 | /admin/representantes | Cadastro (nome de exibição, segmento, ativo) | cadastros.edit |
 | /admin/clientes | Override de segmento por cliente | cadastros.edit |
 | /admin/status-pdv | Significado dos status e se contam no total | cadastros.edit |

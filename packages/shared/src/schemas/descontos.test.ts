@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { precosSalvarSchema, precoTabelaSchema } from './descontos.js';
+import {
+  analiseDescontosQuerySchema,
+  precosSalvarSchema,
+  precoTabelaSchema,
+  produtoNovoSchema,
+} from './descontos.js';
 
 describe('precoTabelaSchema', () => {
   it('aceita formatos pt-BR e ponto decimal, até 4 casas', () => {
@@ -38,5 +43,28 @@ describe('precosSalvarSchema', () => {
       precosSalvarSchema.safeParse({ ano: 1999, precos: [{ produtoCodigo: 'A', unidade: '', preco: '1' }] })
         .success,
     ).toBe(false);
+  });
+});
+
+describe('produtoNovoSchema', () => {
+  it('tira o ponto final do código (como a curva ABC) e põe a unidade em maiúsculas', () => {
+    expect(produtoNovoSchema.parse({ codigo: ' MT900. ', descricao: ' CAMA NOVA ', unidade: 'un' })).toEqual({
+      codigo: 'MT900',
+      descricao: 'CAMA NOVA',
+      unidade: 'UN',
+    });
+  });
+
+  it('exige código e descrição', () => {
+    expect(produtoNovoSchema.safeParse({ codigo: '.', descricao: 'X', unidade: '' }).success).toBe(false);
+    expect(produtoNovoSchema.safeParse({ codigo: 'A1', descricao: ' ', unidade: '' }).success).toBe(false);
+  });
+});
+
+describe('analiseDescontosQuerySchema', () => {
+  it('aceita período vazio ou de ≤ até; recusa invertido', () => {
+    expect(analiseDescontosQuerySchema.safeParse({}).success).toBe(true);
+    expect(analiseDescontosQuerySchema.safeParse({ de: '2025-11', ate: '2026-02' }).success).toBe(true);
+    expect(analiseDescontosQuerySchema.safeParse({ de: '2026-05', ate: '2026-01' }).success).toBe(false);
   });
 });

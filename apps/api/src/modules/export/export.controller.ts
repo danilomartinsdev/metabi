@@ -1,5 +1,9 @@
 import { Controller, Get, Header, Param, Query, Req, Res } from '@nestjs/common';
 import {
+  type AnaliseDescontosQuery,
+  analiseDescontosQuerySchema,
+  type ExportDescontosQuery,
+  exportDescontosQuerySchema,
   type AnaliseNotasQuery,
   analiseNotasQuerySchema,
   EXPORT_XLSX_TIPOS,
@@ -117,6 +121,32 @@ export class ExportController {
     );
   }
 
+  /** PDF da Análise de descontos (permissão de PDF + descontos.view + escopo "todos", no serviço). */
+  @RequirePermission('export.pdf')
+  @Get('export/pdf/analise-descontos')
+  async pdfAnaliseDescontos(
+    @CurrentUser() u: UsuarioAutenticado,
+    @Query(new ZodPipe(analiseDescontosQuerySchema)) q: AnaliseDescontosQuery,
+    @Query('secoes', new ZodPipe(secoesSchema)) secoes: string[] | undefined,
+    @Query('quebra', new ZodPipe(quebraSchema)) quebra: boolean,
+    @Req() req: FastifyRequest,
+    @Res() reply: FastifyReply,
+  ) {
+    enviar(reply, await this.service.pdfAnaliseDescontos(u, q, contexto(req), secoes, quebra));
+  }
+
+  /** Excel/CSV da Análise de descontos (permissão de planilha + descontos.view + escopo "todos"). */
+  @RequirePermission('export.xlsx')
+  @Get('export/descontos')
+  async planilhaDescontos(
+    @CurrentUser() u: UsuarioAutenticado,
+    @Query(new ZodPipe(exportDescontosQuerySchema)) q: ExportDescontosQuery,
+    @Req() req: FastifyRequest,
+    @Res() reply: FastifyReply,
+  ) {
+    enviar(reply, await this.service.planilhaDescontos(u, q, contexto(req)));
+  }
+
   /** Lido pela página /print/relatorio aberta pelo Chromium da API. O token é a credencial (uso único). */
   @Public()
   @Get('print/relatorio')
@@ -139,5 +169,13 @@ export class ExportController {
   @Header('cache-control', 'no-store')
   analiseFaturamento(@Query(new ZodPipe(printTokenSchema)) q: { token: string }) {
     return this.service.analiseFaturamentoImpressao(q.token);
+  }
+
+  /** Lido pela página /print/analise-descontos (mesmo esquema de token de uso único). */
+  @Public()
+  @Get('print/analise-descontos')
+  @Header('cache-control', 'no-store')
+  analiseDescontos(@Query(new ZodPipe(printTokenSchema)) q: { token: string }) {
+    return this.service.analiseDescontosImpressao(q.token);
   }
 }

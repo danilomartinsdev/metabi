@@ -1,6 +1,7 @@
 // Montagem das planilhas Excel (puro, sem banco). Dinheiro vem como string decimal da camada de
 // métricas e vira célula numérica só aqui, na apresentação, com formato R$.
 import type {
+  AnaliseDescontos,
   ClientesResumo,
   ExportFormatoPlanilha,
   Filtros,
@@ -341,5 +342,69 @@ export function planilhaVisaoGeral(
   const wb = XLSX.utils.book_new();
   for (const bl of blocos) XLSX.utils.book_append_sheet(wb, abaDoBloco(bl), bl.nome.slice(0, 31));
   XLSX.utils.book_append_sheet(wb, abaFiltros(info, rotulosGestor), 'Filtros');
+  return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx', compression: true }) as Buffer;
+}
+
+// ───────────────────────── Análise de descontos ─────────────────────────
+
+const PRECO = '"R$" #,##0.00##';
+
+/** Análise de descontos: aba "Produtos" (uma linha por produto) + aba "Resumo" (indicadores e período). */
+export function planilhaDescontos(
+  a: AnaliseDescontos,
+  geradoPor: string,
+  geradoEm: Date,
+  formato: ExportFormatoPlanilha = 'xlsx',
+) {
+  const s = a.resumo;
+  const ws = aba(
+    a.produtos.map((l, i) => ({ ...l, pos: i + 1 })),
+    [
+      { titulo: '#', valor: (l) => l.pos, largura: 5 },
+      { titulo: 'Código', valor: (l) => l.codigo, largura: 14 },
+      { titulo: 'Descrição', valor: (l) => l.descricao, largura: 48 },
+      { titulo: 'Un.', valor: (l) => l.unidade || null, largura: 6 },
+      { titulo: 'Quantidade', valor: (l) => num(l.quantidade), formato: '#,##0.00', largura: 12 },
+      { titulo: 'Vendido', valor: (l) => num(l.vendido), formato: BRL, largura: 16 },
+      { titulo: 'Preço de tabela', valor: (l) => num(l.preco), formato: PRECO, largura: 16 },
+      { titulo: 'Valor de tabela', valor: (l) => num(l.valorTabela), formato: BRL, largura: 16 },
+      { titulo: 'Desconto', valor: (l) => num(l.desconto), formato: BRL, largura: 16 },
+      { titulo: '% Desconto', valor: (l) => l.percentual, formato: PCT, largura: 11 },
+      {
+        titulo: 'Observação',
+        valor: (l) =>
+          l.valorTabela === null
+            ? 'Sem preço de tabela'
+            : l.precoParcial
+              ? 'Parte das vendas sem preço (fora do cálculo)'
+              : null,
+        largura: 40,
+      },
+    ],
+    ['', 'Total', '', '', null, num(s.vendidoTotal), null, num(s.valorTabela), num(s.desconto), s.percentual, ''],
+  );
+  if (formato === 'csv') return Buffer.from('﻿' + csvDe(ws), 'utf8');
+  const resumo = XLSX.utils.aoa_to_sheet([
+    ['Relatório', 'Análise de descontos'],
+    ['Período', `${a.periodo.de} a ${a.periodo.ate}`],
+    ['Regra', 'Desconto = preço de tabela × quantidade − valor vendido; cada mês usa a tabela do seu ano'],
+    ['Valor de tabela', num(s.valorTabela)],
+    ['Vendido (itens com preço)', num(s.vendidoComPreco)],
+    ['Desconto previsto', num(s.desconto)],
+    ['% de desconto', s.percentual],
+    ['Faturamento total do período', num(s.vendidoTotal)],
+    ['Cobertura da tabela', s.cobertura],
+    ['Produtos com preço', `${s.produtosComPreco} de ${s.produtos}`],
+    ['Gerado por', geradoPor],
+    ['Gerado em', geradoEm.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
+  ]);
+  for (const [linha, z] of [[3, BRL], [4, BRL], [5, BRL], [6, PCT], [7, BRL], [8, PCT]] as const) {
+    const cel = resumo[XLSX.utils.encode_cell({ r: linha, c: 1 })] as XLSX.CellObject | undefined;
+    if (cel && cel.t === 'n') cel.z = z;
+  }
+  resumo['!cols'] = [{ wch: 28 }, { wch: 70 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Produtos');
+  XLSX.utils.book_append_sheet(wb, resumo, 'Resumo');
   return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx', compression: true }) as Buffer;
 }
