@@ -40,17 +40,30 @@ function excelDate(value: unknown): string {
   return text
 }
 
+// Valor em pt-BR arredondado a centavos. "83575,74920002" → 83575.75; "1.234,5" → 1234.5.
+// Sem vírgula, o ponto é decimal ("83575.749" → 83575.75), a menos que haja mais de um ponto ("1.234.567" → 1234567).
+export function parseMoney(value: unknown): number {
+  if (typeof value === 'number') return Number.isFinite(value) ? Math.round(value * 100) / 100 : 0
+  let text = String(value ?? '').replace(/[^\d,.-]/g, '')
+  if (text.includes(',')) text = text.replace(/\./g, '').replace(',', '.')
+  else if ((text.match(/\./g) || []).length > 1) text = text.replace(/\./g, '')
+  const number = Number(text)
+  return Number.isFinite(number) ? Math.round(number * 100) / 100 : 0
+}
+
 function clean(value: unknown) {
   return String(value ?? '').replace(/\uFFFD/g, '').trim()
 }
 
 export function parseWorkbook(buffer: Buffer): Order[] {
-  const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: false })
+  // raw: o .xls do Focco é texto/HTML; sem isso o SheetJS lê "83575,74920002" como 8357574920002
+  // (vírgula como milhar) e "01/05/2026" como data americana. Planilhas .xlsx binárias não são afetadas.
+  const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: false, raw: true })
   const rows = XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' })
   const data = rows.slice(1) as unknown[][]
   return data.filter(row => row[0] || row[1]).map((row, index) => {
     const uf = clean(row[7]).toUpperCase()
-    const value = typeof row[9] === 'number' ? row[9] : Number(String(row[9]).replace(/[^\d,-]/g, '').replace(',', '.')) || 0
+    const value = parseMoney(row[9])
     return {
       id: clean(row[0]) || `import-${index + 1}`,
       orderNumber: clean(row[1]),
