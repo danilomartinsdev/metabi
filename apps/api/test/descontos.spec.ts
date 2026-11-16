@@ -151,7 +151,11 @@ describe('tabela de preços', () => {
     const r = await req('GET', '/api/precos?ano=2026', tokenAdmin);
     expect(r.statusCode).toBe(200);
     const t = r.json();
-    expect(t.anos).toEqual([2026, 2025]);
+    // Salvar preço num ano inclui o ano na lista.
+    expect(t.anos).toEqual([
+      { ano: 2026, precos: 2 },
+      { ano: 2025, precos: 1 },
+    ]);
     expect(t.produtos.map((p: Linha) => p.codigo)).toEqual(['MT169', 'MT416', 'ND1150']);
     expect(linha(t.produtos, 'MT169')).toMatchObject({
       descricao: 'CAMA EXEMPLO MT169',
@@ -229,8 +233,56 @@ describe('tabela de preços', () => {
     ).toBe(400);
   });
 
+  it('inclui ano vazio ou copiando os preços de outro ano; não repete ano (409)', async () => {
+    const vazio = await req('POST', '/api/precos/anos', tokenAdmin, { payload: { ano: 2030 } });
+    expect(vazio.statusCode).toBe(201);
+    expect(vazio.json().anos[0]).toEqual({ ano: 2030, precos: 0 });
+
+    const copia = await req('POST', '/api/precos/anos', tokenAdmin, {
+      payload: { ano: 2031, copiarDe: 2026 },
+    });
+    expect(copia.statusCode).toBe(201);
+    const t = copia.json();
+    expect(t.ano).toBe(2031);
+    expect(linha(t.produtos, 'MT169')).toMatchObject({ preco: '600' });
+    expect(linha(t.produtos, 'MT416')).toMatchObject({ preco: '125.5' });
+    // A cópia é independente: mudar 2031 não mexe em 2026.
+    await salvar(tokenAdmin, 2031, [{ produtoCodigo: 'MT169', unidade: 'UN', preco: '1' }]);
+    expect((await analise()).resumo.valorTabela).toBe('2302.00');
+
+    expect((await req('POST', '/api/precos/anos', tokenAdmin, { payload: { ano: 2030 } })).statusCode).toBe(
+      409,
+    );
+    expect((await req('POST', '/api/precos/anos', tokenAdmin, { payload: { ano: 1990 } })).statusCode).toBe(
+      400,
+    );
+  });
+
+  it('retirar ano apaga só os preços dele e tira da lista', async () => {
+    expect((await req('DELETE', '/api/precos/anos/2031', tokenAdmin)).statusCode).toBe(204);
+    expect(await ctx.prisma.precoTabela.count({ where: { ano: 2031 } })).toBe(0);
+    expect(await ctx.prisma.precoTabela.count({ where: { ano: 2026 } })).toBe(2);
+    const t = (await req('GET', '/api/precos?ano=2026', tokenAdmin)).json();
+    expect(t.anos.map((a: { ano: number }) => a.ano)).not.toContain(2031);
+    expect((await req('DELETE', '/api/precos/anos/2031', tokenAdmin)).statusCode).toBe(404);
+    expect((await req('DELETE', '/api/precos/anos/2030', tokenAdmin)).statusCode).toBe(204);
+  });
+
+  it('gestor comercial não inclui nem retira ano', async () => {
+    expect((await req('POST', '/api/precos/anos', tokenGestor, { payload: { ano: 2040 } })).statusCode).toBe(
+      403,
+    );
+    expect((await req('DELETE', '/api/precos/anos/2026', tokenGestor)).statusCode).toBe(403);
+  });
+
   it('alterações ficam na auditoria', async () => {
-    for (const acao of ['precos.alterados', 'produto.incluido', 'produto.excluido']) {
+    for (const acao of [
+      'precos.alterados',
+      'produto.incluido',
+      'produto.excluido',
+      'precos.ano-incluido',
+      'precos.ano-excluido',
+    ]) {
       expect(await ctx.prisma.auditLog.count({ where: { acao } }), acao).toBeGreaterThan(0);
     }
   });

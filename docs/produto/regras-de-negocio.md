@@ -55,6 +55,7 @@ UF fora da lista → erro de validação na linha da importação.
 - A tabela de preços (Administração › Tabela de preços) lista todo produto que já saiu em nota, de qualquer ano, mais os incluídos à mão (`ProdutoCadastro`, para produto ainda sem nota). Não dá para incluir à mão um produto que já está nas notas; excluir um incluído à mão apaga os preços dele em todos os anos.
 - Ver a análise: `descontos.view` + escopo "todos"; tabela de preços: `precos.edit` + escopo "todos"; alterações auditadas (`precos.alterados`, `produto.incluido`, `produto.excluido`).
 - Relatórios: PDF (indicadores + desconto por produto) e Excel/CSV (aba Produtos + aba Resumo).
+- Anos da tabela (`AnoTabelaPreco`): o usuário inclui (vazio ou copiando os preços de outro ano, que depois ficam independentes) e retira (apaga os preços daquele ano; a análise deixa de calcular o desconto das vendas dele). Gravar preço num ano fora da lista inclui o ano. Auditado (`precos.ano-incluido`, `precos.ano-excluido`).
 
 ## Histórico 2025
 - Vem do mesmo relatório Focco detalhado de 2025 → importação normal, mesmas regras.

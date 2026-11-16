@@ -431,6 +431,12 @@ model PrecoTabela {
 }
 
 // Histórico das importações de notas fiscais (uma por arquivo confirmado).
+/// Anos da tabela de preços, incluídos e retirados pelo usuário. Retirar um ano apaga os preços dele.
+model AnoTabelaPreco {
+  ano       Int      @id
+  createdAt DateTime @default(now())
+}
+
 /// Produto incluído à mão na tabela de preços (ainda sem nota fiscal). Os produtos das notas não ficam aqui:
 /// a lista da tabela de preços é a união dos dois.
 model ProdutoCadastro {

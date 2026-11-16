@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { precoTabelaSchema, type ProdutoPreco, produtoNovoSchema } from '@metabi/shared';
 import {
+  useExcluirAno,
   useExcluirProduto,
+  useIncluirAno,
   useIncluirProduto,
   usePrecosQuery,
   useSalvarPrecos,
@@ -24,11 +26,86 @@ const ano = computed(() => {
 });
 const q = usePrecosQuery(ano);
 const t = computed(() => q.data.value);
-const anos = computed(() =>
-  [...new Set([anoAtual + 1, anoAtual, ...(t.value?.anos ?? [])])]
-    .sort((a, b) => b - a)
-    .map((a) => ({ label: String(a), value: a })),
-);
+/** Anos incluídos na tabela (o usuário inclui e retira). */
+const anosTabela = computed(() => t.value?.anos ?? []);
+const anoIncluido = computed(() => anosTabela.value.some((a) => a.ano === ano.value));
+const anos = computed(() => {
+  const l = anosTabela.value.map((a) => ({
+    label: `${a.ano} · ${formatInt(a.precos)} ${a.precos === 1 ? 'preço' : 'preços'}`,
+    value: a.ano,
+  }));
+  // Ano aberto pela URL que não está na lista: aparece só enquanto estiver selecionado.
+  if (t.value && !anoIncluido.value) l.unshift({ label: `${ano.value} · fora da lista`, value: ano.value });
+  return l;
+});
+// Sem ano na URL e o ano atual fora da lista: abre o mais recente da lista.
+watch(t, (v) => {
+  if (!v || route.query.ano || !v.anos.length || v.anos.some((a) => a.ano === anoAtual)) return;
+  void router.replace({ query: { ...route.query, ano: String(v.anos[0]!.ano) } });
+});
+
+// ---- Incluir / retirar ano ----
+const incluindoAno = ref(false);
+const novoAno = reactive<{ ano: number; copiarDe: number | null }>({ ano: anoAtual + 1, copiarDe: null });
+const erroAno = ref('');
+const origensCopia = computed(() => [
+  { label: 'Não copiar (começar vazio)', value: null },
+  ...anosTabela.value
+    .filter((a) => a.precos > 0)
+    .map((a) => ({ label: `Copiar os preços de ${a.ano} (${formatInt(a.precos)})`, value: a.ano })),
+]);
+async function abrirInclusaoAno() {
+  if (alterado.value && !(await descartar())) return;
+  const maior = Math.max(anoAtual, ...anosTabela.value.map((a) => a.ano));
+  const livre = anosTabela.value.some((a) => a.ano === anoAtual) ? maior + 1 : anoAtual;
+  const ultimoComPreco = anosTabela.value.find((a) => a.precos > 0)?.ano ?? null;
+  Object.assign(novoAno, { ano: livre, copiarDe: ultimoComPreco });
+  erroAno.value = '';
+  incluindoAno.value = true;
+}
+const incluirAnoM = useIncluirAno();
+async function incluirAno() {
+  const n = Number(novoAno.ano);
+  if (!Number.isInteger(n) || n < 2020 || n > 2100) {
+    erroAno.value = 'Informe um ano entre 2020 e 2100.';
+    return;
+  }
+  if (anosTabela.value.some((a) => a.ano === n)) {
+    erroAno.value = `O ano ${n} já está na lista.`;
+    return;
+  }
+  try {
+    await incluirAnoM.mutateAsync({ ano: n, copiarDe: novoAno.copiarDe });
+    edicoes.value = {};
+    incluindoAno.value = false;
+    void router.replace({ query: { ...route.query, ano: String(n) } });
+    aviso.sucesso(
+      novoAno.copiarDe ? `Ano ${n} incluído com os preços de ${novoAno.copiarDe}.` : `Ano ${n} incluído.`,
+    );
+  } catch (e) {
+    erroAno.value = e instanceof Error ? e.message : 'Não foi possível incluir o ano.';
+  }
+}
+const excluirAnoM = useExcluirAno();
+async function retirarAno() {
+  const a = anosTabela.value.find((x) => x.ano === ano.value);
+  if (!a) return;
+  const ok = await confirmar({
+    titulo: `Retirar o ano ${a.ano}?`,
+    descricao:
+      a.precos > 0
+        ? `Os ${formatInt(a.precos)} preços de ${a.ano} serão apagados e a Análise de descontos deixa de calcular o desconto das vendas de ${a.ano}. Os outros anos não mudam.`
+        : `O ano sai da lista. Ele não tem preços cadastrados.`,
+    rotuloConfirmar: 'Retirar ano',
+    perigo: true,
+    acao: () => excluirAnoM.mutateAsync(a.ano),
+  });
+  if (!ok) return;
+  edicoes.value = {};
+  const proximo = anosTabela.value.find((x) => x.ano !== a.ano)?.ano;
+  void router.replace({ query: { ...route.query, ano: proximo ? String(proximo) : undefined } });
+  aviso.sucesso(`Ano ${a.ano} retirado da tabela de preços.`);
+}
 
 const descartar = () =>
   confirmar({
@@ -185,9 +262,24 @@ onBeforeRouteLeave(async () => !alterado.value || (await descartar()));
       <USelect
         :model-value="ano"
         :items="anos"
-        class="w-28"
+        class="w-48"
         aria-label="Ano da tabela"
         @update:model-value="(v) => trocarAno(Number(v))"
+      />
+      <UButton
+        icon="i-lucide-calendar-plus"
+        label="Incluir ano"
+        color="neutral"
+        variant="outline"
+        @click="abrirInclusaoAno"
+      />
+      <UButton
+        v-if="anoIncluido"
+        icon="i-lucide-calendar-x"
+        label="Retirar ano"
+        color="error"
+        variant="ghost"
+        @click="retirarAno"
       />
       <UButton
         icon="i-lucide-plus"
@@ -312,6 +404,36 @@ onBeforeRouteLeave(async () => !alterado.value || (await descartar()));
         </div>
       </UiExtraEstadoBloco>
     </section>
+
+    <UModal
+      v-model:open="incluindoAno"
+      title="Incluir ano"
+      description="Cada ano tem a sua tabela de preços. Copiar de outro ano é só o ponto de partida: depois os dois anos ficam independentes."
+    >
+      <template #body>
+        <form id="form-ano" class="space-y-4" @submit.prevent="incluirAno">
+          <UFormField label="Ano" required>
+            <UInput v-model.number="novoAno.ano" type="number" min="2020" max="2100" class="w-32" />
+          </UFormField>
+          <UFormField label="Preços iniciais">
+            <USelect v-model="novoAno.copiarDe" :items="origensCopia" class="w-full" />
+          </UFormField>
+          <p v-if="erroAno" class="text-sm text-error" role="alert">{{ erroAno }}</p>
+        </form>
+      </template>
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton color="neutral" variant="outline" label="Cancelar" @click="incluindoAno = false" />
+          <UButton
+            type="submit"
+            form="form-ano"
+            icon="i-lucide-calendar-plus"
+            label="Incluir ano"
+            :loading="incluirAnoM.isPending.value"
+          />
+        </div>
+      </template>
+    </UModal>
 
     <UModal
       v-model:open="incluindo"

@@ -1,4 +1,4 @@
-import type { AnaliseDescontos, PrecosSalvar, ProdutoNovo, TabelaPrecos } from '@metabi/shared';
+import type { AnaliseDescontos, AnoNovo, PrecosSalvar, ProdutoNovo, TabelaPrecos } from '@metabi/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import type { MaybeRefOrGetter } from 'vue';
 import { useApi } from './useApi';
@@ -31,6 +31,32 @@ export function useSalvarPrecos() {
     mutationFn: (p: PrecosSalvar) => request<TabelaPrecos>('/precos', { method: 'PUT', body: p }),
     onSuccess: (t) => {
       qc.setQueryData(['precos', t.ano], t);
+      void qc.invalidateQueries({ queryKey: ['descontos'] });
+    },
+  });
+}
+
+/** Inclui um ano na tabela de preços (opcionalmente copiando os preços de outro ano). */
+export function useIncluirAno() {
+  const { request } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (p: AnoNovo) => request<TabelaPrecos>('/precos/anos', { method: 'POST', body: p }),
+    onSuccess: (t) => {
+      qc.setQueryData(['precos', t.ano], t);
+      void qc.invalidateQueries({ queryKey: ['precos'] });
+    },
+  });
+}
+
+/** Retira um ano da tabela de preços (apaga os preços dele). */
+export function useExcluirAno() {
+  const { request } = useApi();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ano: number) => request<void>(`/precos/anos/${ano}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['precos'] });
       void qc.invalidateQueries({ queryKey: ['descontos'] });
     },
   });

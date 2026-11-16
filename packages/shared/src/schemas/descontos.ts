@@ -78,10 +78,18 @@ export interface ProdutoPreco {
 
 export interface TabelaPrecos {
   ano: number;
-  /** Anos com notas ou com preços cadastrados (mais recente primeiro). */
-  anos: number[];
+  /** Anos da tabela de preços, incluídos pelo usuário (mais recente primeiro). */
+  anos: { ano: number; precos: number }[];
   produtos: ProdutoPreco[];
 }
+
+/** Incluir um ano na tabela de preços; `copiarDe` copia os preços de outro ano como ponto de partida. */
+export const anoNovoSchema = z.object({
+  ano: z.number().int().min(2020).max(2100),
+  copiarDe: z.number().int().min(2020).max(2100).nullish(),
+});
+export type AnoNovo = z.output<typeof anoNovoSchema>;
+export const anoParamSchema = ano;
 
 // ---- Análise de descontos ----
 

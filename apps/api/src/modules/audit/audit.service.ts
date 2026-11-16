@@ -35,6 +35,8 @@ export type AcaoAuditada =
   | 'precos.alterados'
   | 'produto.incluido'
   | 'produto.excluido'
+  | 'precos.ano-incluido'
+  | 'precos.ano-excluido'
   // Gravada só pela migration que encerra as sessões numa atualização (todos entram de novo).
   | 'sessoes.todas-encerradas';
 

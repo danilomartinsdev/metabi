@@ -1,5 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, Req } from '@nestjs/common';
 import {
+  type AnoNovo,
+  anoNovoSchema,
+  anoParamSchema,
   type AnaliseDescontosQuery,
   analiseDescontosQuerySchema,
   type PrecosSalvar,
@@ -67,6 +70,30 @@ export class PrecosController {
   ) {
     exigirEscopoTodos(u);
     return this.service.salvar(dados, u, contexto(req));
+  }
+
+  @RequirePermission('precos.edit')
+  @Post('anos')
+  incluirAno(
+    @Body(new ZodPipe(anoNovoSchema)) dados: AnoNovo,
+    @CurrentUser() u: UsuarioAutenticado,
+    @Req() req: FastifyRequest,
+  ) {
+    exigirEscopoTodos(u);
+    return this.service.incluirAno(dados, u, contexto(req));
+  }
+
+  /** Retira o ano da lista e apaga todos os preços dele. */
+  @RequirePermission('precos.edit')
+  @Delete('anos/:ano')
+  @HttpCode(204)
+  async excluirAno(
+    @Param('ano', new ZodPipe(anoParamSchema)) ano: number,
+    @CurrentUser() u: UsuarioAutenticado,
+    @Req() req: FastifyRequest,
+  ) {
+    exigirEscopoTodos(u);
+    await this.service.excluirAno(ano, u, contexto(req));
   }
 
   @RequirePermission('precos.edit')
