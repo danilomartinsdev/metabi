@@ -34,9 +34,9 @@ async function tokenFaturamento(id = usuarioId) {
   return tokens.criar(u!, { tipo: 'faturamento', params });
 }
 
-async function tokenAnalise(id = usuarioId) {
+async function tokenAnalise(id = usuarioId, filtros: Record<string, string> = {}) {
   const u = await ctx.app.get(UsuarioLoader).carregarAtivo(id);
-  const params = analiseNotasQuerySchema.parse({ de: '2026-01', ate: '2026-03' });
+  const params = analiseNotasQuerySchema.parse({ de: '2026-01', ate: '2026-03', ...filtros });
   return tokens.criar(u!, { tipo: 'analise-faturamento', params });
 }
 
@@ -133,9 +133,16 @@ describe('PDF da Análise de faturamento', () => {
     const r = await ler('analise-faturamento', await tokenAnalise());
     expect(r.statusCode).toBe(200);
     const b = r.json();
-    expect(b.params).toEqual({ de: '2026-01', ate: '2026-03' });
+    // Sem filtro de região/estado, os dois vêm vazios (= todas).
+    expect(b.params).toEqual({ de: '2026-01', ate: '2026-03', regiao: [], uf: [] });
     expect(b.analise.periodo).toEqual({ de: '2026-01', ate: '2026-03' });
     expect(b.analise).toMatchObject({ temDados: false, divisoes: [], representantes: [] });
+  });
+
+  it('token da análise leva junto o filtro de região/estado da tela', async () => {
+    const r = await ler('analise-faturamento', await tokenAnalise(usuarioId, { regiao: 'SUL', uf: 'sp,rj' }));
+    expect(r.statusCode).toBe(200);
+    expect(r.json().params).toEqual({ de: '2026-01', ate: '2026-03', regiao: ['SUL'], uf: ['SP', 'RJ'] });
   });
 
   it('um token só abre o relatório do seu tipo', async () => {

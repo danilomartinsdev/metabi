@@ -10,7 +10,6 @@ import {
   barrasFaturamentoOptions,
   evolucaoFaturamentoOptions,
 } from '~/utils/charts/faturamento';
-import { useApi } from '~/composables/api/useApi';
 import { anoAnterior, deslocarMes, periodoCurto, periodoPorExtenso } from '~/utils/periodo';
 
 // Faturamento: domínio separado dos pedidos (relatório diário do Focco). Não altera outras telas.

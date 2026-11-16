@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useApi } from '~/composables/api/useApi';
 import { useAnaliseNotasQuery } from '~/composables/api/useNotasFiscais';
 import { corDaDivisao, divisoesOptions } from '~/utils/charts/notas-fiscais';
 import { coresFatias } from '~/utils/charts/palette';
