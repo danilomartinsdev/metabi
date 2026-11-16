@@ -89,11 +89,11 @@ export interface VisaoGeral {
     };
   };
   contagens: { estados: number; regioes: number; gestores: number; clientes: number };
+  /** Meses do período (de..ate, "AAAA-MM"; pode cruzar anos) × mesmo mês do ano anterior × meta. */
   evolucao: {
-    ano: number;
-    meses: { mes: number; real: string; anoAnterior: string; meta: string | null }[];
-    /** Σ real ÷ Σ meta nos meses de jan até o mês final do período que têm meta; null = sem meta. */
-    atingimento: { mesInicial: number; mesFinal: number; meta: string; real: string; pct: number | null } | null;
+    meses: { mes: string; real: string; anoAnterior: string; meta: string | null }[];
+    /** Σ real ÷ Σ meta nos meses do período que têm meta; null = sem meta. */
+    atingimento: { mesInicial: string; mesFinal: string; meta: string; real: string; pct: number | null } | null;
   };
   porRegiao: LinhaRanking[];
   porSegmento: LinhaRanking[];

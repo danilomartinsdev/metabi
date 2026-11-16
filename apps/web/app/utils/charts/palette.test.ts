@@ -34,8 +34,7 @@ describe('gráficos usam a cor de comparação no ano anterior', () => {
   it('evolução mensal: linha do ano anterior com t.comparacao', () => {
     const t = aplicarPaleta(TEMA_CLARO, 'vinho', false);
     const ev = {
-      ano: 2026,
-      meses: [{ mes: 1, real: '10', anoAnterior: '8', meta: null }],
+      meses: [{ mes: '2026-01', real: '10', anoAnterior: '8', meta: null }],
       atingimento: null,
     };
     const series = evolucaoOptions(ev, t).series as { name: string; lineStyle?: { color: string } }[];

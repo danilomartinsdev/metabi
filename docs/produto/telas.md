@@ -18,7 +18,7 @@ segmento, status, busca (cliente, nº pedido, CPR, gestor).
 | Rota | Objetivo | Componentes | Permissão |
 |---|---|---|---|
 | /minhas-vendas | Minhas vendas (checkbox "Ver Minhas vendas" em Papéis; padrão só Representante; página inicial de quem tem) | KPIs total/pedidos/ticket; meta do mês e acumulada; evolução mensal; top 10 clientes; vendas por estado; pedidos recentes. Filtro só de período; dados no escopo do usuário | minhas-vendas.view |
-| /dashboard | Visão Geral | KPIs com variação + sparkline; chips (estados, regiões, gestores, clientes); evolução mensal Real × Ano anterior × Meta (ignora filtro de mês); donut Região ⇄ Público×Privado; Top 10 gestores; acumulado por segmento | dashboard.view |
+| /dashboard | Visão Geral | KPIs com variação + sparkline; chips (estados, regiões, gestores, clientes); evolução mensal Real × Ano anterior × Meta (meses do período); donut Região ⇄ Público×Privado; Top 10 gestores; acumulado por segmento | dashboard.view |
 | /dashboard/gestores | Ranking de gestores | gráfico + tabela ordenável, % participação, linha de total | dashboard.view |
 | /dashboard/estados | Ranking por UF | idem | dashboard.view |
 | /dashboard/regioes | Ranking por região | idem | dashboard.view |

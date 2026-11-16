@@ -2,9 +2,8 @@
 import type { LinhaRanking, VisaoGeral } from '@metabi/shared';
 import type { EChartsOption } from 'echarts';
 import { formatBRL, formatCompact, formatPct } from '../format';
+import { nomesSeriesPeriodo, rotulosMeses } from '../periodo';
 import type { TemaGrafico } from './palette';
-
-const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const base = (t: TemaGrafico): EChartsOption => ({
   textStyle: { fontFamily: 'Inter, system-ui, sans-serif', color: t.texto },
@@ -22,9 +21,11 @@ const eixoValor = (t: TemaGrafico) => ({
   splitLine: { lineStyle: { color: t.borda } },
 });
 
-/** Evolução mensal: Real (barras) × Ano anterior (linha tracejada) × Meta (linha). */
+/** Evolução mensal (meses do período): Real (barras) × Ano anterior (linha tracejada) × Meta (linha). */
 export function evolucaoOptions(ev: VisaoGeral['evolucao'], t: TemaGrafico): EChartsOption {
   const temMeta = ev.meses.some((m) => m.meta !== null);
+  const meses = ev.meses.map((m) => m.mes);
+  const nomes = nomesSeriesPeriodo(meses);
   return {
     ...base(t),
     grid: { left: 8, right: 8, top: 36, bottom: 8, containLabel: true },
@@ -36,7 +37,7 @@ export function evolucaoOptions(ev: VisaoGeral['evolucao'], t: TemaGrafico): ECh
     },
     xAxis: {
       type: 'category',
-      data: MESES,
+      data: rotulosMeses(meses),
       axisLine: { lineStyle: { color: t.borda } },
       axisLabel: { color: t.textoSuave },
       axisTick: { show: false },
@@ -44,14 +45,14 @@ export function evolucaoOptions(ev: VisaoGeral['evolucao'], t: TemaGrafico): ECh
     yAxis: eixoValor(t),
     series: [
       {
-        name: String(ev.ano),
+        name: nomes.atual,
         type: 'bar',
         data: ev.meses.map((m) => Number(m.real)),
         itemStyle: { color: t.primaria, borderRadius: [4, 4, 0, 0] },
         barMaxWidth: 28,
       },
       {
-        name: String(ev.ano - 1),
+        name: nomes.anterior,
         type: 'line',
         data: ev.meses.map((m) => Number(m.anoAnterior)),
         lineStyle: { type: 'dashed', color: t.comparacao, width: 2 },

@@ -120,16 +120,16 @@ export function acumuladoPorSegmento(linhas: LinhaVenda[], de: string, ate: stri
 }
 
 /**
- * Atingimento acumulado: Σ real ÷ Σ meta nos meses jan..mesFinal que têm meta (> 0).
+ * Atingimento acumulado: Σ real ÷ Σ meta nos meses do período ("AAAA-MM") que têm meta (> 0).
  * Sem nenhuma meta no intervalo → null ("sem meta").
  */
 export function atingimentoAcumulado(
-  real: Map<number, Decimal>,
-  metas: Map<number, Decimal> | null,
-  mesFinal: number,
-): { mesInicial: number; mesFinal: number; meta: string; real: string; pct: number | null } | null {
+  real: Map<string, Decimal>,
+  metas: Map<string, Decimal> | null,
+  periodo: string[],
+): { mesInicial: string; mesFinal: string; meta: string; real: string; pct: number | null } | null {
   if (!metas) return null;
-  const meses = Array.from({ length: mesFinal }, (_, i) => i + 1).filter((m) => metas.get(m)?.gt(0));
+  const meses = periodo.filter((m) => metas.get(m)?.gt(0));
   if (!meses.length) return null;
   const meta = meses.reduce((s, m) => s.plus(metas.get(m)!), zero());
   const realizado = meses.reduce((s, m) => s.plus(real.get(m) ?? zero()), zero());

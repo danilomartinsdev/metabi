@@ -111,7 +111,7 @@ const mesesEscolhidos = computed(() => dados.value?.params.meses ?? []);
 
       <section v-if="mostra('grafico')" class="break-inside-avoid rounded-xl border p-4">
         <h2 class="text-sm font-medium text-muted-foreground">
-          Fatura DRE mês a mês {{ r.mensal.ano }} — comparada ao ano anterior
+          Fatura DRE mês a mês {{ periodo }} — comparada ao ano anterior
         </h2>
         <ChartsBaseChart
           class="mt-2"
@@ -123,12 +123,9 @@ const mesesEscolhidos = computed(() => dados.value?.params.meses ?? []);
 
       <section v-if="mostra('mensal')" class="break-inside-avoid rounded-xl border">
         <h2 class="px-4 pt-4 pb-2 text-sm font-medium text-muted-foreground">
-          Faturamento mês a mês — {{ dados.mensal.ano }}
+          Faturamento mês a mês — {{ periodo }}
         </h2>
-        <p v-if="!dados.mensal.meses.length" class="px-4 pb-4 text-muted-foreground">
-          Sem faturamento importado em {{ dados.mensal.ano }}.
-        </p>
-        <FaturamentoTabelaMensal v-else :mensal="dados.mensal" compacto />
+        <FaturamentoTabelaMensal :mensal="r.mensal" compacto />
       </section>
 
       <section v-if="dados.comparativo && mostra('comparativo')" class="break-inside-avoid rounded-xl border">

@@ -73,12 +73,23 @@ intervalo → "sem meta".
 arredondamento absorvida na exibição, não no cálculo). A linha de total mostra Σ valor, Σ qtd,
 100%.
 
+### Gráficos seguem o período (decisão de 2026-11-16)
+Todo gráfico, série e tabela mês a mês mostra **só os meses do período escolhido** (de..ate), podendo
+cruzar anos (eixo "Dez/25, Jan/26"; legenda "Período × Ano anterior"). Antes, a evolução mostrava o ano
+inteiro e os minigráficos os últimos 12 meses.
+
 ### Sparkline dos KPIs
-Série dos últimos 12 meses até o mês final do filtro, mesma métrica e filtros (exceto período).
+Série mês a mês do período, mesma métrica e filtros. Período de um mês só = um ponto (o card não mostra
+o minigráfico).
 
 ### Evolução mensal (Real × Ano anterior × Meta)
-12 meses do ano selecionado; **ignora o filtro de mês** (usa só o ano). Meta = meta total, ou
+Meses do período × mesmo mês do ano anterior × meta do mês. Meta = meta total, ou
 soma das metas dos representantes quando filtrado por gestor **[PENDENTE: confirmar]**.
+Atingimento acumulado = Σ real ÷ Σ meta nos meses **do período** que têm meta.
+
+### Faturamento mês a mês (tela Faturamento e PDF)
+Gráfico "Fatura DRE mês a mês" e tabela "Faturamento mês a mês": meses do período escolhido no topo;
+total da tabela = total do período (igual aos cards). A tabela não tem mais seletor de ano próprio.
 
 ## Teste de aceite (Fase 3)
 Cálculo manual de **agosto/2026** com a planilha real, documentado em teste

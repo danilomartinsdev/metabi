@@ -138,10 +138,12 @@ export interface FaturamentoResumo {
   periodo: { de: string; ate: string };
   temDados: boolean;
   kpis: Record<keyof TotaisFaturamento, { valor: string; anterior: string; pct: number | null }>;
-  /** Mês a mês do ano de `ate` (cada coluna + DRE do mesmo mês do ano anterior). */
+  /**
+   * Mês a mês do período (de..ate, "AAAA-MM"; pode cruzar anos): cada coluna + DRE do mesmo mês do ano
+   * anterior. Total = soma do período (igual aos KPIs).
+   */
   mensal: {
-    ano: number;
-    meses: (TotaisFaturamento & { mes: number; dreAnoAnterior: string })[];
+    meses: (TotaisFaturamento & { mes: string; dreAnoAnterior: string })[];
     total: TotaisFaturamento;
   };
   /** Dias do período, com a semana do relatório (SEMANA) para filtrar por semana. */
@@ -150,7 +152,6 @@ export interface FaturamentoResumo {
 }
 
 const anoParam = z.coerce.number().int().min(2000).max(2100);
-export const faturamentoAnoQuerySchema = z.object({ ano: anoParam });
 /**
  * "8,9,10" (query string) ou [8, 9, 10] → [8, 9, 10], sem repetidos e em ordem. Aceitar a lista já
  * convertida deixa o schema idempotente (o PDF guarda os parâmetros validados no token e valida de novo).
@@ -170,14 +171,13 @@ export type CampoTotalFaturamento = keyof TotaisFaturamento;
 export const CAMPOS_FATURAMENTO = ['dre', 'bruto', 'antecipado', 'remessa', 'devolucao'] as const;
 
 /**
- * PDF de faturamento: o que está na tela — período (de/ate), ano da tabela mês a mês e, se houver,
- * o comparativo (anos, meses escolhidos e indicador).
+ * PDF de faturamento: o que está na tela — período (de/ate; também define a tabela mês a mês) e, se
+ * houver, o comparativo (anos, meses escolhidos e indicador).
  */
 export const faturamentoPdfQuerySchema = z
   .object({
     de: mes.optional(),
     ate: mes.optional(),
-    ano: anoParam.optional(),
     anoA: anoParam.optional(),
     anoB: anoParam.optional(),
     meses: listaMeses.optional(),
@@ -193,13 +193,6 @@ export const faturamentoPdfQuerySchema = z
     path: ['anoB'],
   });
 export type FaturamentoPdfQuery = z.output<typeof faturamentoPdfQuerySchema>;
-
-/** Tabela mês a mês de um ano (só os meses com faturamento importado). */
-export interface FaturamentoMensal {
-  ano: number;
-  meses: (TotaisFaturamento & { mes: number; dias: number })[];
-  total: TotaisFaturamento;
-}
 
 /** Valores dos dois anos num recorte (mês, ano todo ou meses em comum): diferença = B − A; pct = (B − A) / A. */
 export interface ComparacaoFaturamento {

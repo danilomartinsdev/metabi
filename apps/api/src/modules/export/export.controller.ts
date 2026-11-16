@@ -17,9 +17,7 @@ import {
   type AbcColunaId,
   type AbcProdutosModo,
   type FaturamentoPdfQuery,
-  type Filtros,
   faturamentoPdfQuerySchema,
-  filtrosSchema,
   printTokenSchema,
 } from '@metabi/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';

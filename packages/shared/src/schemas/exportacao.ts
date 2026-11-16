@@ -3,7 +3,6 @@ import type { PaletaGrafico } from './auth.js';
 import { type Filtros, filtrosSchema, type Ranking, type VisaoGeral } from './dashboard.js';
 import {
   type FaturamentoComparativo,
-  type FaturamentoMensal,
   type FaturamentoPdfQuery,
   type FaturamentoResumo,
   faturamentoPdfQuerySchema,
@@ -161,7 +160,6 @@ export interface FaturamentoImpressao {
   paletaGraficos: PaletaGrafico | null;
   params: FaturamentoPdfQuery;
   resumo: FaturamentoResumo;
-  mensal: FaturamentoMensal;
   comparativo: FaturamentoComparativo | null;
 }
 

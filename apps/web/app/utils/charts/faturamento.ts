@@ -2,9 +2,8 @@
 import type { FaturamentoResumo } from '@metabi/shared';
 import type { EChartsOption } from 'echarts';
 import { formatBRL, formatCompact } from '../format';
+import { nomesSeriesPeriodo, rotulosMeses } from '../periodo';
 import type { TemaGrafico } from './palette';
-
-const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const base = (t: TemaGrafico): EChartsOption => ({
   textStyle: { fontFamily: 'Inter, system-ui, sans-serif', color: t.texto },
@@ -23,9 +22,11 @@ const eixoValor = (t: TemaGrafico) => ({
   splitLine: { lineStyle: { color: t.borda } },
 });
 
-/** Fatura DRE mês a mês (barras) × mesmo mês do ano anterior (linha tracejada). */
+/** Fatura DRE mês a mês do período (barras) × mesmo mês do ano anterior (linha tracejada). */
 export function evolucaoFaturamentoOptions(m: FaturamentoResumo['mensal'], t: TemaGrafico): EChartsOption {
   const temAnterior = m.meses.some((x) => Number(x.dreAnoAnterior) !== 0);
+  const meses = m.meses.map((x) => x.mes);
+  const nomes = nomesSeriesPeriodo(meses);
   return {
     ...base(t),
     grid: { left: 8, right: 8, top: 36, bottom: 8, containLabel: true },
@@ -33,7 +34,7 @@ export function evolucaoFaturamentoOptions(m: FaturamentoResumo['mensal'], t: Te
     tooltip: tooltip(t),
     xAxis: {
       type: 'category',
-      data: m.meses.map((x) => MESES[x.mes - 1]!),
+      data: rotulosMeses(meses),
       axisLine: { lineStyle: { color: t.borda } },
       axisLabel: { color: t.textoSuave },
       axisTick: { show: false },
@@ -41,7 +42,7 @@ export function evolucaoFaturamentoOptions(m: FaturamentoResumo['mensal'], t: Te
     yAxis: eixoValor(t),
     series: [
       {
-        name: String(m.ano),
+        name: nomes.atual,
         type: 'bar',
         data: m.meses.map((x) => Number(x.dre)),
         itemStyle: { color: t.primaria, borderRadius: [4, 4, 0, 0] },
@@ -50,7 +51,7 @@ export function evolucaoFaturamentoOptions(m: FaturamentoResumo['mensal'], t: Te
       ...(temAnterior
         ? [
             {
-              name: String(m.ano - 1),
+              name: nomes.anterior,
               type: 'line' as const,
               data: m.meses.map((x) => Number(x.dreAnoAnterior)),
               lineStyle: { type: 'dashed' as const, color: t.comparacao, width: 2 },

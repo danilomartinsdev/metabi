@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { FaturamentoMensal } from '@metabi/shared';
+import type { FaturamentoResumo } from '@metabi/shared';
 
-/** Tabela mês a mês de um ano (página de Faturamento e PDF). */
-defineProps<{
-  mensal: FaturamentoMensal;
+/** Tabela mês a mês do período (página de Faturamento e PDF). */
+const props = defineProps<{
+  mensal: FaturamentoResumo['mensal'];
   /** PDF: letra e espaçamento menores para as 6 colunas caberem na largura do A4. */
   compacto?: boolean;
 }>();
@@ -28,6 +28,10 @@ const COLUNAS_TABELA = [
   { k: 'remessa', r: 'Remessa' },
   { k: 'devolucao', r: 'Devolução' },
 ] as const;
+// "Março" num ano só; "Março/2026" quando o período cruza anos.
+const umAno = computed(() => new Set(props.mensal.meses.map((m) => m.mes.slice(0, 4))).size <= 1);
+const rotulo = (m: string) =>
+  MESES_EXTENSO[Number(m.slice(5, 7)) - 1] + (umAno.value ? '' : `/${m.slice(0, 4)}`);
 </script>
 
 <template>
@@ -55,7 +59,7 @@ const COLUNAS_TABELA = [
       </thead>
       <tbody class="divide-y">
         <tr v-for="m in mensal.meses" :key="m.mes" class="hover:bg-muted/30">
-          <th scope="row" class="px-5 py-2 text-left font-medium">{{ MESES_EXTENSO[m.mes - 1] }}</th>
+          <th scope="row" class="px-5 py-2 text-left font-medium">{{ rotulo(m.mes) }}</th>
           <td
             v-for="c in COLUNAS_TABELA"
             :key="c.k"

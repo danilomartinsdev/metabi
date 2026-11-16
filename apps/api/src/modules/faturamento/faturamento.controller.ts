@@ -3,7 +3,6 @@ import {
   confirmarFaturamentoSchema,
   type FaturamentoComparativoQuery,
   type FaturamentoQuery,
-  faturamentoAnoQuerySchema,
   faturamentoComparativoQuerySchema,
   faturamentoQuerySchema,
 } from '@metabi/shared';
@@ -41,16 +40,6 @@ export class FaturamentoController {
   anos(@CurrentUser() u: UsuarioAutenticado) {
     exigirEscopoTodos(u);
     return this.service.anos();
-  }
-
-  @RequirePermission('faturamento.view')
-  @Get('mensal')
-  mensal(
-    @Query(new ZodPipe(faturamentoAnoQuerySchema)) q: z.infer<typeof faturamentoAnoQuerySchema>,
-    @CurrentUser() u: UsuarioAutenticado,
-  ) {
-    exigirEscopoTodos(u);
-    return this.service.mensal(q.ano);
   }
 
   @RequirePermission('faturamento.view')

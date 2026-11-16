@@ -67,3 +67,23 @@ export function variacoesKpi(
   const pa = periodoAnterior(p);
   return [{ rotulo: `vs. ${periodoCurto(pa.de, pa.ate)}`, pct: kpi.mesAnterior.pct }, ano];
 }
+
+/** Eixo de meses dos gráficos: "Jan" quando o período é de um ano só; "Jan/26" quando cruza anos. */
+export function rotulosMeses(meses: string[]): string[] {
+  const umAno = new Set(meses.map(ano)).size <= 1;
+  return meses.map((m) => {
+    const r = curto(m).charAt(0).toUpperCase() + curto(m).slice(1);
+    return umAno ? r : `${r}/${m.slice(2, 4)}`;
+  });
+}
+
+/** Legenda real × ano anterior: "2026" e "2025" num ano só; "Período" e "Ano anterior" cruzando anos. */
+export function nomesSeriesPeriodo(meses: string[]): { atual: string; anterior: string } {
+  const anos = [...new Set(meses.map(ano))];
+  return anos.length === 1
+    ? { atual: anos[0]!, anterior: String(Number(anos[0]) - 1) }
+    : { atual: 'Período', anterior: 'Ano anterior' };
+}
+
+/** "set/2026" de um mês "AAAA-MM". */
+export const mesCurto = (m: string) => `${curto(m)}/${ano(m)}`;

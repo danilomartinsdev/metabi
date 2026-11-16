@@ -81,27 +81,49 @@ describe('KPIs do exemplo base (agosto/2026)', () => {
     expect(seg.total).toEqual({ atual: '50000.00', anterior: '20000.00', pct: 1.5 });
   });
 
-  it('atingimento acumulado: Σ real ÷ Σ meta só nos meses com meta (ago = 30.000 ÷ 40.000 = 75%)', () => {
+  it('atingimento acumulado: Σ real ÷ Σ meta só nos meses do período com meta (30.000 ÷ 40.000 = 75%)', () => {
     const D = Prisma.Decimal;
     const real = new Map([
-      [7, new D(20000)],
-      [8, new D(30000)],
+      ['2026-06', new D(10000)],
+      ['2026-07', new D(20000)],
+      ['2026-08', new D(30000)],
     ]);
-    // Julho sem meta (0) fica de fora; setembro está além do mês final.
+    // Período jul–ago: junho e setembro ficam fora do período; julho sem meta (0) fica de fora.
     const metas = new Map([
-      [7, new D(0)],
-      [8, new D(40000)],
-      [9, new D(50000)],
+      ['2026-06', new D(99999)],
+      ['2026-07', new D(0)],
+      ['2026-08', new D(40000)],
+      ['2026-09', new D(50000)],
     ]);
-    expect(atingimentoAcumulado(real, metas, 8)).toEqual({
-      mesInicial: 8,
-      mesFinal: 8,
+    const periodo = ['2026-07', '2026-08'];
+    expect(atingimentoAcumulado(real, metas, periodo)).toEqual({
+      mesInicial: '2026-08',
+      mesFinal: '2026-08',
       meta: '40000.00',
       real: '30000.00',
       pct: 0.75,
     });
-    expect(atingimentoAcumulado(real, null, 8)).toBeNull();
-    expect(atingimentoAcumulado(real, new Map([[9, new D(1)]]), 8)).toBeNull();
+    expect(atingimentoAcumulado(real, null, periodo)).toBeNull();
+    expect(atingimentoAcumulado(real, new Map([['2026-09', new D(1)]]), periodo)).toBeNull();
+  });
+
+  it('atingimento cruzando o ano: nov/2025–jan/2026', () => {
+    const D = Prisma.Decimal;
+    const real = new Map([
+      ['2025-12', new D(30)],
+      ['2026-01', new D(50)],
+    ]);
+    const metas = new Map([
+      ['2025-12', new D(60)],
+      ['2026-01', new D(40)],
+    ]);
+    expect(atingimentoAcumulado(real, metas, ['2025-11', '2025-12', '2026-01'])).toMatchObject({
+      mesInicial: '2025-12',
+      mesFinal: '2026-01',
+      meta: '100.00',
+      real: '80.00',
+      pct: 0.8,
+    });
   });
 
   it('ranking ordena por total e participação soma 100%', () => {
