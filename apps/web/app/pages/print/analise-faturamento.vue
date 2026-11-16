@@ -97,6 +97,9 @@ const resumoProdutos = computed(() => resumoAbc(a.value?.abcProdutos ?? []));
         <p v-else-if="dados.params.regiao?.length" class="text-xs text-muted-foreground">
           Regiões: {{ dados.params.regiao.map((x) => REGIAO_ENUM_ROTULO[x]).join(', ') }}
         </p>
+        <p v-if="a.abcDivisao" class="text-xs text-muted-foreground">
+          Curvas ABC só da divisão {{ a.abcDivisao }}
+        </p>
       </div>
       <div class="text-right text-xs text-muted-foreground">
         <p>Gerado por {{ dados.geradoPor }}</p>

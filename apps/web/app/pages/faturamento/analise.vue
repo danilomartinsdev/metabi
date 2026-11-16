@@ -52,6 +52,9 @@ const linhasMapa = computed(() => (nivelMapa.value === 'uf' ? r.value?.porUf : r
 const selMapa = computed(() => (nivelMapa.value === 'uf' ? ufsSel.value : regioesSel.value));
 const alternarMapa = (c: string) => (nivelMapa.value === 'uf' ? alternarUf(c) : alternarRegiao(c));
 const limparMapa = () => void router.replace({ query: { ...route.query, regiao: undefined, uf: undefined } });
+// Clique numa fatia (ou na divisão da lista): o ranking mostra só os representantes daquela divisão
+// e as curvas ABC de clientes e produtos passam a ser só dela.
+const divisaoSel = ref<string | null>(null);
 const qs = computed(() =>
   new URLSearchParams(
     Object.entries({
@@ -59,6 +62,7 @@ const qs = computed(() =>
       ate: ate.value,
       regiao: nivelMapa.value === 'uf' ? '' : regioesSel.value.join(','),
       uf: nivelMapa.value === 'uf' ? ufsSel.value.join(',') : '',
+      divisao: divisaoSel.value ?? '',
     }).filter(([, v]) => v) as [string, string][],
   ).toString(),
 );
@@ -98,8 +102,6 @@ const opcoesMes = computed(() => {
   return lista;
 });
 
-// Clique numa fatia (ou na divisão da lista): o ranking mostra só os representantes daquela divisão.
-const divisaoSel = ref<string | null>(null);
 const rankingRef = ref<HTMLElement | null>(null);
 const rankingDivisao = computed(() =>
   divisaoSel.value
@@ -223,7 +225,7 @@ const cards = computed(() => [
         <div class="rounded-xl border bg-card p-5 xl:col-span-2">
           <h3 class="text-sm font-medium text-muted-foreground">Faturamento por divisão de venda</h3>
           <p v-if="r?.divisoes.length" class="text-xs text-muted-foreground">
-            Clique numa divisão para ver o ranking dos representantes nela
+            Clique numa divisão para ver os representantes, clientes e produtos dela
           </p>
           <div v-if="carregando" class="mt-4 h-80 animate-pulse rounded-lg bg-muted" />
           <p v-else-if="!r?.divisoes.length" class="py-24 text-center text-sm text-muted-foreground">
@@ -445,7 +447,11 @@ const cards = computed(() => [
           <h3 id="titulo-abc-cli" class="text-sm font-medium text-muted-foreground">
             Curva ABC de faturamento por cliente
           </h3>
-          <p class="text-xs text-muted-foreground">Clientes do maior para o menor faturamento no período</p>
+          <p class="text-xs text-muted-foreground">
+            Clientes do maior para o menor faturamento no período<template v-if="r?.abcDivisao">
+              · só a divisão <b class="text-foreground">{{ r.abcDivisao }}</b></template
+            >
+          </p>
         </div>
         <div v-if="carregando" class="space-y-2 px-5 pb-5">
           <div v-for="i in 6" :key="i" class="h-8 animate-pulse rounded bg-muted" />
@@ -460,7 +466,9 @@ const cards = computed(() => [
           </h3>
           <p class="text-xs text-muted-foreground">
             Pelo valor ou pela quantidade vendida · mesmo produto somado em uma linha (variantes como "MT169."
-            e "MT169" juntas)
+            e "MT169" juntas)<template v-if="r?.abcDivisao">
+              · só a divisão <b class="text-foreground">{{ r.abcDivisao }}</b></template
+            >
           </p>
         </div>
         <div v-if="carregando" class="space-y-2 px-5 pb-5">
