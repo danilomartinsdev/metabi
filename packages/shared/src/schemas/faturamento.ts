@@ -138,10 +138,12 @@ export interface FaturamentoResumo {
   periodo: { de: string; ate: string };
   temDados: boolean;
   kpis: Record<keyof TotaisFaturamento, { valor: string; anterior: string; pct: number | null }>;
-  /** Mês a mês do ano de `ate` (cada coluna + DRE do mesmo mês do ano anterior). */
+  /**
+   * Mês a mês do período (de..ate, "AAAA-MM"; pode cruzar anos): cada coluna + DRE do mesmo mês do ano
+   * anterior. Total = soma do período (igual aos KPIs).
+   */
   mensal: {
-    ano: number;
-    meses: (TotaisFaturamento & { mes: number; dreAnoAnterior: string })[];
+    meses: (TotaisFaturamento & { mes: string; dreAnoAnterior: string })[];
     total: TotaisFaturamento;
   };
   /** Dias do período, com a semana do relatório (SEMANA) para filtrar por semana. */
@@ -170,14 +172,13 @@ export type CampoTotalFaturamento = keyof TotaisFaturamento;
 export const CAMPOS_FATURAMENTO = ['dre', 'bruto', 'antecipado', 'remessa', 'devolucao'] as const;
 
 /**
- * PDF de faturamento: o que está na tela — período (de/ate), ano da tabela mês a mês e, se houver,
- * o comparativo (anos, meses escolhidos e indicador).
+ * PDF de faturamento: o que está na tela — período (de/ate; também define a tabela mês a mês) e, se
+ * houver, o comparativo (anos, meses escolhidos e indicador).
  */
 export const faturamentoPdfQuerySchema = z
   .object({
     de: mes.optional(),
     ate: mes.optional(),
-    ano: anoParam.optional(),
     anoA: anoParam.optional(),
     anoB: anoParam.optional(),
     meses: listaMeses.optional(),

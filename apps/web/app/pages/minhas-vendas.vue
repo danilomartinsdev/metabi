@@ -9,7 +9,7 @@ import {
 import { useAuthStore } from '~/stores/auth';
 import { barrasRankingOptions, evolucaoOptions } from '~/utils/charts/options';
 import { atingimentoDoMes } from '~/utils/minhas-vendas';
-import { periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
+import { mesCurto, periodoCurto, periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
 
 // Os dados já vêm filtrados pelo escopo no backend (só os representantes ligados ao usuário); aqui ele
 // escolhe o período e, se tiver mais de um representante, quais mostrar (a API intersecta com o escopo).
@@ -70,19 +70,16 @@ const serie = (k: 'total' | 'qtd' | 'ticket') => v.value?.kpis[k].serie.map((s) 
 const variacoes = (k: 'total' | 'qtd' | 'ticket') =>
   v.value ? variacoesKpi(v.value.kpis[k], v.value.periodo) : [];
 
-const NOMES_MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-const MES = (n: number) => NOMES_MES[n - 1]!;
 const metaMes = computed(() => (v.value ? atingimentoDoMes(v.value.evolucao, v.value.periodo) : null));
-const metaAno = computed(() => v.value?.evolucao.atingimento ?? null);
-/** Atingimento no mês final do período e acumulado no ano (só os que têm meta). */
+const metaPeriodo = computed(() => v.value?.evolucao.atingimento ?? null);
+/** Atingimento no mês final do período e acumulado nos meses do período (só os que têm meta). */
 const blocosMeta = computed(() => {
   const b: { r: string; meta: string; real: string; pct: number | null }[] = [];
-  if (metaMes.value) b.push({ ...metaMes.value, r: `Em ${MES(metaMes.value.mes)}` });
-  const a = metaAno.value;
-  if (a) {
-    const meses = a.mesInicial === a.mesFinal ? MES(a.mesFinal) : `${MES(a.mesInicial)}–${MES(a.mesFinal)}`;
-    b.push({ ...a, r: `Acumulado ${meses}` });
-  }
+  if (metaMes.value) b.push({ ...metaMes.value, r: `Em ${mesCurto(metaMes.value.mes)}` });
+  const a = metaPeriodo.value;
+  // Período de um mês só (ou meta só no mês final): o acumulado repetiria o bloco do mês.
+  const repete = a && a.mesInicial === a.mesFinal && a.mesFinal === metaMes.value?.mes;
+  if (a && !repete) b.push({ ...a, r: `Acumulado ${periodoCurto(a.mesInicial, a.mesFinal)}` });
   return b;
 });
 const barra = (pct: number | null | undefined) => `${Math.min(Math.max(pct ?? 0, 0), 1) * 100}%`;
@@ -193,7 +190,7 @@ const COR: Record<string, string> = {
 
       <section class="rounded-xl border bg-card p-5">
         <h3 class="text-sm font-medium text-muted-foreground">
-          Evolução mensal {{ v?.evolucao.ano }} — real × ano anterior{{
+          Evolução mensal {{ v ? periodoCurto(v.periodo.de, v.periodo.ate) : '' }} — real × ano anterior{{
             v?.evolucao.meses.some((m) => m.meta) ? ' × meta' : ''
           }}
         </h3>

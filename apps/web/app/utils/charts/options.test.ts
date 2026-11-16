@@ -13,9 +13,8 @@ const linha = (rotulo: string, total: string): LinhaRanking => ({
 });
 
 const ev = (comMeta: boolean): VisaoGeral['evolucao'] => ({
-  ano: 2026,
   meses: Array.from({ length: 12 }, (_, i) => ({
-    mes: i + 1,
+    mes: '2026-' + String(i + 1).padStart(2, '0'),
     real: String((i + 1) * 1000),
     anoAnterior: '500.00',
     meta: comMeta && i < 6 ? '2000.00' : null,
@@ -36,6 +35,29 @@ describe('evolucaoOptions', () => {
   it('omite a série de meta quando não há metas', () => {
     const series = evolucaoOptions(ev(false), TEMA_CLARO).series as unknown[];
     expect(series).toHaveLength(2);
+  });
+
+  it('mostra só os meses do período (mar–mai)', () => {
+    const e = ev(false);
+    const o = evolucaoOptions({ ...e, meses: e.meses.slice(2, 5) }, TEMA_CLARO);
+    expect((o.xAxis as { data: string[] }).data).toEqual(['Mar', 'Abr', 'Mai']);
+    expect((o.series as { data: number[] }[])[0]!.data).toEqual([3000, 4000, 5000]);
+  });
+
+  it('período cruzando o ano: rótulos com o ano e legenda Período × Ano anterior', () => {
+    const o = evolucaoOptions(
+      {
+        meses: [
+          { mes: '2025-11', real: '1', anoAnterior: '0', meta: null },
+          { mes: '2025-12', real: '2', anoAnterior: '0', meta: null },
+          { mes: '2026-01', real: '3', anoAnterior: '0', meta: null },
+        ],
+        atingimento: null,
+      },
+      TEMA_CLARO,
+    );
+    expect((o.xAxis as { data: string[] }).data).toEqual(['Nov/25', 'Dez/25', 'Jan/26']);
+    expect((o.series as { name: string }[]).map((s) => s.name)).toEqual(['Período', 'Ano anterior']);
   });
 });
 

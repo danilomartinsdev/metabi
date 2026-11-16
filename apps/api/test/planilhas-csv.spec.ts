@@ -21,7 +21,7 @@ describe('CSV e Visão geral em planilha', () => {
         ticket: { valor: '5', mesAnterior: { anterior: '5', pct: 0 }, anoAnterior: { anterior: '8', pct: -0.4 }, serie: [] },
         pctPublico: { valor: 0.5, anoAnterior: 0.4, serie: [] },
       },
-      evolucao: { ano: 2026, meses: [{ mes: 1, real: '1', anoAnterior: '2', meta: null }], atingimento: null },
+      evolucao: { meses: [{ mes: '2026-01', real: '1', anoAnterior: '2', meta: null }], atingimento: null },
       porRegiao: [],
       porUf: [],
       porSegmento: [],

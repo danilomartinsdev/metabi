@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { barrasFaturamentoOptions, evolucaoFaturamentoOptions } from './faturamento';
 import { TEMA_CLARO } from './palette';
 
-const mes = (m: number, dre: string, dreAnoAnterior = '0.00') => ({
+const mes = (m: string, dre: string, dreAnoAnterior = '0.00') => ({
   mes: m,
   bruto: dre,
   antecipado: '0.00',
@@ -17,8 +17,7 @@ const totais = { bruto: '0', antecipado: '0', remessa: '0', devolucao: '0', dre:
 describe('evolucaoFaturamentoOptions', () => {
   it('barras do ano atual e, sem dados do ano anterior, sem a linha de comparação', () => {
     const m: FaturamentoResumo['mensal'] = {
-      ano: 2026,
-      meses: [mes(1, '4400.25'), mes(2, '3400.00')],
+      meses: [mes('2026-01', '4400.25'), mes('2026-02', '3400.00')],
       total: totais,
     };
     const o = evolucaoFaturamentoOptions(m, TEMA_CLARO);
@@ -29,9 +28,18 @@ describe('evolucaoFaturamentoOptions', () => {
   });
 
   it('com o ano anterior importado, mostra a linha tracejada', () => {
-    const m = { ano: 2026, meses: [mes(1, '10.00', '8.00')], total: totais };
+    const m = { meses: [mes('2026-01', '10.00', '8.00')], total: totais };
     const series = evolucaoFaturamentoOptions(m, TEMA_CLARO).series as { name: string; data: number[] }[];
     expect(series[1]).toMatchObject({ name: '2025', data: [8] });
+  });
+
+  it('só os meses do período, rotulados com o ano quando ele cruza anos', () => {
+    const m = { meses: [mes('2025-12', '5.00', '1.00'), mes('2026-01', '6.00', '2.00')], total: totais };
+    const o = evolucaoFaturamentoOptions(m, TEMA_CLARO);
+    expect((o.xAxis as { data: string[] }).data).toEqual(['Dez/25', 'Jan/26']);
+    const series = o.series as { name: string; data: number[] }[];
+    expect(series.map((s) => s.name)).toEqual(['Período', 'Ano anterior']);
+    expect(series[0]!.data).toEqual([5, 6]);
   });
 });
 

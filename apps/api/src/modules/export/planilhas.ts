@@ -232,10 +232,10 @@ export function blocosVisaoGeral(
   if (ativa('evolucao')) {
     b.push({
       nome: 'Evolução mensal',
-      titulo: ['Mês', 'Real ' + v.evolucao.ano, 'Ano anterior', 'Meta'],
-      linhas: v.evolucao.meses.map((m) => [MES[m.mes - 1]!, num(m.real), num(m.anoAnterior), num(m.meta)]),
+      titulo: ['Mês', 'Real', 'Ano anterior', 'Meta'],
+      linhas: v.evolucao.meses.map((m) => [rotuloMes(m.mes), num(m.real), num(m.anoAnterior), num(m.meta)]),
       formatos: [undefined, BRL, BRL, BRL],
-      largura: [10, 18, 18, 18],
+      largura: [12, 18, 18, 18],
     });
   }
   if (ativa('participacao')) {

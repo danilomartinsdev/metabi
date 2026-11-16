@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMesesQuery, useVisaoGeralQuery } from '~/composables/api/useDashboard';
-import { periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
+import { periodoCurto, periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
 import { barrasRankingOptions, donutOptions, evolucaoOptions, fatiasDonut } from '~/utils/charts/options';
 import { coresFatias } from '~/utils/charts/palette';
 
@@ -46,7 +46,6 @@ const dadosAte = computed(() => {
   const m = meses.data.value?.at(-1);
   return m ? `${NOMES_MES[Number(m.slice(5)) - 1]} de ${m.slice(0, 4)}` : '';
 });
-const MES_CURTO = (n: number) => NOMES_MES[n - 1]!.slice(0, 3);
 const serie = (k: 'total' | 'qtd' | 'ticket') => v.value?.kpis[k].serie.map((s) => Number(s.valor)) ?? [];
 const variacoes = (k: 'total' | 'qtd' | 'ticket') =>
   v.value ? variacoesKpi(v.value.kpis[k], v.value.periodo) : [];
@@ -139,7 +138,7 @@ const ABAS_DONUT = [
       <section class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         <div class="rounded-xl border bg-card p-5 lg:col-span-2">
           <h3 class="text-sm font-medium text-muted-foreground">
-            Evolução mensal {{ v?.evolucao.ano }} — real × ano anterior{{
+            Evolução mensal {{ v ? periodoCurto(v.periodo.de, v.periodo.ate) : '' }} — real × ano anterior{{
               v?.evolucao.meses.some((m) => m.meta) ? ' × meta' : ''
             }}
           </h3>
@@ -155,11 +154,7 @@ const ABAS_DONUT = [
             <template v-if="v.evolucao.atingimento">
               <span>
                 Meta acumulada
-                {{
-                  v.evolucao.atingimento.mesInicial === v.evolucao.atingimento.mesFinal
-                    ? MES_CURTO(v.evolucao.atingimento.mesFinal)
-                    : `${MES_CURTO(v.evolucao.atingimento.mesInicial)}–${MES_CURTO(v.evolucao.atingimento.mesFinal)}`
-                }}:
+                {{ periodoCurto(v.evolucao.atingimento.mesInicial, v.evolucao.atingimento.mesFinal) }}:
                 <b class="num text-foreground">{{ formatBRL(v.evolucao.atingimento.meta) }}</b>
               </span>
               <span>

@@ -312,12 +312,11 @@ export class ExportService {
     exigirFaturamento(u);
     const p = solicitacao.params;
     const resumo = await this.faturamento.resumo({ de: p.de, ate: p.ate });
-    const [mensal, comparativo] = await Promise.all([
-      this.faturamento.mensal(p.ano ?? resumo.mensal.ano),
+    // A tabela mês a mês do PDF é a do período (resumo.mensal), como na tela.
+    const comparativo =
       p.anoA !== undefined && p.anoB !== undefined
-        ? this.faturamento.comparativo(p.anoA, p.anoB, p.meses)
-        : Promise.resolve(null),
-    ]);
+        ? await this.faturamento.comparativo(p.anoA, p.anoB, p.meses)
+        : null;
     return {
       geradoPor: u.nome,
       geradoEm: new Date().toISOString(),
@@ -326,7 +325,6 @@ export class ExportService {
       quebra: solicitacao.quebra,
       params: p,
       resumo,
-      mensal,
       comparativo,
     };
   }

@@ -132,6 +132,13 @@ describe('faturamento — importação', () => {
 });
 
 describe('faturamento — resumo', () => {
+  it('mês a mês mostra só os meses do período (não começa em janeiro)', async () => {
+    const b = (await req('GET', '/api/faturamento/resumo?de=2026-02&ate=2026-02', tokenGestor)).json();
+    expect(b.mensal.meses.map((m: { mes: string }) => m.mes)).toEqual(['2026-02']);
+    expect(b.mensal.total.dre).toBe('3400.00');
+    expect(b.mensal.total.dre).toBe(b.kpis.dre.valor);
+  });
+
   it('cards, mês a mês e séries do período', async () => {
     const r = await req('GET', '/api/faturamento/resumo?de=2026-01&ate=2026-02', tokenGestor);
     expect(r.statusCode).toBe(200);
@@ -139,9 +146,9 @@ describe('faturamento — resumo', () => {
     expect(b.periodo).toEqual({ de: '2026-01', ate: '2026-02' });
     expect(b.kpis.dre).toEqual({ valor: '7800.25', anterior: '0.00', pct: null });
     expect(b.kpis.devolucao.valor).toBe('-150.25');
-    expect(b.mensal.meses.map((m: { mes: number; dre: string }) => [m.mes, m.dre])).toEqual([
-      [1, '4400.25'],
-      [2, '3400.00'],
+    expect(b.mensal.meses.map((m: { mes: string; dre: string }) => [m.mes, m.dre])).toEqual([
+      ['2026-01', '4400.25'],
+      ['2026-02', '3400.00'],
     ]);
     expect(b.mensal.total.dre).toBe('7800.25');
     expect(b.diario).toHaveLength(6);
@@ -327,10 +334,10 @@ describe('faturamento — manual (Administração › Histórico)', () => {
     // 7.800,25 importados (jan + fev; o manual de fev é ignorado) + 1.000,00 manual de março.
     expect(b.kpis.dre.valor).toBe('8800.25');
     expect(b.kpis.bruto.valor).toBe('8000.60');
-    expect(b.mensal.meses.map((m: { mes: number; dre: string }) => [m.mes, m.dre])).toEqual([
-      [1, '4400.25'],
-      [2, '3400.00'],
-      [3, '1000.00'],
+    expect(b.mensal.meses.map((m: { mes: string; dre: string }) => [m.mes, m.dre])).toEqual([
+      ['2026-01', '4400.25'],
+      ['2026-02', '3400.00'],
+      ['2026-03', '1000.00'],
     ]);
     expect(b.mensal.total.dre).toBe('8800.25');
     // Sem período: vai até o último mês com faturamento, importado ou manual.

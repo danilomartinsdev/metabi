@@ -3,7 +3,6 @@ import type { CampoTotalFaturamento } from '@metabi/shared';
 import {
   useFaturamentoAnosQuery,
   useFaturamentoComparativoQuery,
-  useFaturamentoMensalQuery,
   useFaturamentoResumoQuery,
 } from '~/composables/api/useFaturamento';
 import {
@@ -173,20 +172,15 @@ const pontos = computed(() => {
 });
 /** Total do que está no gráfico (só para leitura; os totais oficiais vêm da API em Decimal). */
 const totalPontos = computed(() => pontos.value.reduce((t, p) => t + p.valor, 0));
-// Tabela mês a mês: qualquer ano importado (padrão: o ano do período escolhido).
+// Anos com faturamento (para o comparativo entre anos).
 const anosQ = useFaturamentoAnosQuery();
 const anos = computed(() => anosQ.data.value ?? []);
 const opcoesAno = computed(() => anos.value.map((a) => ({ label: String(a), value: a })));
-const anoTabela = ref<number>();
-watch(
-  () => r.value?.mensal.ano,
-  (a) => {
-    if (a) anoTabela.value = a;
-  },
-  { immediate: true },
+// Tabela mês a mês: os meses do período escolhido no topo (vem no resumo).
+const mensal = computed(() => r.value?.mensal);
+const mesesComFaturamento = computed(
+  () => mensal.value?.meses.filter((m) => Number(m.dre) !== 0 || Number(m.bruto) !== 0).length ?? 0,
 );
-const mensalQ = useFaturamentoMensalQuery(anoTabela);
-const mensal = computed(() => mensalQ.data.value);
 
 // Comparativo entre anos: padrão = os dois anos mais recentes (base = o mais antigo).
 const anoA = ref<number>();
@@ -284,14 +278,13 @@ const INDICADORES: { label: string; value: CampoTotalFaturamento }[] = [
 const indicador = ref<CampoTotalFaturamento>('dre');
 const nomeIndicador = computed(() => INDICADORES.find((i) => i.value === indicador.value)?.label ?? '');
 
-// Exportação: o que está na tela — período, ano da tabela e o comparativo (anos, meses e indicador).
+// Exportação: o que está na tela — período (que define também a tabela mês a mês) e o comparativo.
 const consultaExportar = computed(() => {
   const p = new URLSearchParams();
   if (periodo.value) {
     p.set('de', periodo.value.de);
     p.set('ate', periodo.value.ate);
   }
-  if (anoTabela.value) p.set('ano', String(anoTabela.value));
   if (anoA.value && anoB.value && anoA.value !== anoB.value) {
     p.set('anoA', String(anoA.value));
     p.set('anoB', String(anoB.value));
@@ -392,7 +385,9 @@ const atalho = (tipo: 'ano' | 'mes') => {
 
       <section class="space-y-4 lg:space-y-6">
         <div class="rounded-xl border bg-card p-5">
-          <h3 class="text-sm font-medium text-muted-foreground">Fatura DRE mês a mês {{ r?.mensal.ano }}</h3>
+          <h3 class="text-sm font-medium text-muted-foreground">
+            Fatura DRE mês a mês {{ periodo ? periodoCurto(periodo.de, periodo.ate) : '' }}
+          </h3>
           <div v-if="carregando" class="mt-4 h-72 animate-pulse rounded-lg bg-muted" />
           <ChartsBaseChart
             v-else-if="r"
@@ -449,30 +444,17 @@ const atalho = (tipo: 'ano' | 'mes') => {
             <h3 id="titulo-fat-mes" class="text-sm font-medium text-muted-foreground">
               Faturamento mês a mês
             </h3>
-            <p v-if="mensal" class="text-xs text-muted-foreground">
-              {{ mensal.meses.length }} {{ mensal.meses.length === 1 ? 'mês' : 'meses' }} com faturamento em
-              {{ mensal.ano }}
+            <p v-if="mensal && periodo" class="text-xs text-muted-foreground">
+              {{ mesesComFaturamento }} {{ mesesComFaturamento === 1 ? 'mês' : 'meses' }} com faturamento em
+              {{ periodoPorExtenso(periodo.de, periodo.ate) }}
             </p>
           </div>
-          <USelect
-            v-model="anoTabela"
-            :items="opcoesAno"
-            size="sm"
-            class="w-28"
-            aria-label="Ano da tabela"
-            :disabled="!opcoesAno.length"
-          />
         </div>
-        <UiExtraEstadoBloco
-          v-if="mensalQ.error.value"
-          :erro="mensalQ.error.value"
-          @tentar-de-novo="mensalQ.refetch()"
-        />
-        <div v-else-if="!mensal" class="space-y-2 px-5 pb-5">
+        <div v-if="!mensal" class="space-y-2 px-5 pb-5">
           <div v-for="i in 6" :key="i" class="h-8 animate-pulse rounded bg-muted" />
         </div>
-        <p v-else-if="!mensal.meses.length" class="px-5 pb-8 pt-4 text-center text-sm text-muted-foreground">
-          Sem faturamento importado em {{ mensal.ano }}.
+        <p v-else-if="!mesesComFaturamento" class="px-5 pb-8 pt-4 text-center text-sm text-muted-foreground">
+          Sem faturamento no período.
         </p>
         <FaturamentoTabelaMensal v-else :mensal="mensal" />
       </section>

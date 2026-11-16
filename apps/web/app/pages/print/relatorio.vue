@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type PaletaGrafico, REGIAO_ENUM_ROTULO, type RelatorioImpressao } from '@metabi/shared';
 import { barrasRankingOptions, donutOptions, evolucaoOptions } from '~/utils/charts/options';
-import { periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
+import { periodoCurto, periodoPorExtenso, variacoesKpi } from '~/utils/periodo';
 
 // Relatório executivo em A4, aberto pelo Chromium da API (ADR 0004). Sem sessão: o token de uso
 // único na URL é a credencial; a API aplica o escopo de quem pediu o PDF.
@@ -132,7 +132,7 @@ const TABELAS = computed(() =>
 
     <section v-if="mostra('evolucao')" class="break-inside-avoid rounded-xl border p-4">
       <h2 class="text-sm font-medium text-muted-foreground">
-        Evolução mensal {{ v.evolucao.ano }} — real × ano anterior{{
+        Evolução mensal {{ periodoCurto(v.periodo.de, v.periodo.ate) }} — real × ano anterior{{
           v.evolucao.meses.some((m) => m.meta) ? ' × meta' : ''
         }}
       </h2>

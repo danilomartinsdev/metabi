@@ -283,8 +283,8 @@ export class FaturamentoService {
     const de = de0 > ate ? ate : de0;
     const ano = Number(ate.slice(0, 4));
 
-    // Uma consulta cobre o período, o mesmo período do ano anterior e os dois anos da evolução mensal.
-    const inicio = [deslocarMes(de, -12), `${ano - 1}-01`].sort()[0]!;
+    // Uma consulta cobre o período e o mesmo período do ano anterior.
+    const inicio = deslocarMes(de, -12);
     const dias = await this.prisma.faturamentoDia.findMany({
       where: { data: { gte: dataMes(inicio), lte: fimMes(ate) } },
       orderBy: { data: 'asc' },
@@ -314,11 +314,11 @@ export class FaturamentoService {
       ]),
     ) as FaturamentoResumo['kpis'];
 
-    const mesesAno = mesesEntre(`${ano}-01`, ate);
-    const meses = mesesAno.map((m) => {
+    // Mês a mês: só os meses do período (podendo cruzar anos).
+    const meses = mesesEntre(de, ate).map((m) => {
       const s = somaDe(m, m);
       const ant = somaDe(deslocarMes(m, -12), deslocarMes(m, -12));
-      return { mes: Number(m.slice(5, 7)), ...texto(s), dreAnoAnterior: ant.dre.toFixed(2) };
+      return { mes: m, ...texto(s), dreAnoAnterior: ant.dre.toFixed(2) };
     });
 
     const doPeriodo = noPeriodo(de, ate);
@@ -334,7 +334,7 @@ export class FaturamentoService {
       periodo: { de, ate },
       temDados: !!ultimoMes,
       kpis,
-      mensal: { ano, meses, total: texto(somaDe(`${ano}-01`, ate)) },
+      mensal: { meses, total: texto(atual) },
       diario: doPeriodo.map((d) => ({
         data: isoDia(d.data),
         ano: d.ano,

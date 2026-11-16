@@ -121,21 +121,16 @@ export class DashboardService {
 
   async visaoGeral(u: UsuarioAutenticado, f: Filtros): Promise<VisaoGeral> {
     const { de, ate } = await this.periodo(u, f);
-    const n = mesesEntre(de, ate).length;
-    const ano = Number(ate.slice(0, 4));
-    const inicio = [
-      deslocarMes(de, -n),
-      deslocarMes(de, -12),
-      deslocarMes(ate, -11),
-      `${ano - 1}-01`,
-    ].sort()[0]!;
-    const todas = await this.linhas(u, f, inicio, `${ano}-12`);
+    // Gráficos e séries mostram só os meses do período (de..ate, podendo cruzar anos); as comparações usam o
+    // período imediatamente anterior e o mesmo período do ano anterior.
+    const mesesPeriodo = mesesEntre(de, ate);
+    const n = mesesPeriodo.length;
+    const inicio = [deslocarMes(de, -n), deslocarMes(de, -12)].sort()[0]!;
+    const todas = await this.linhas(u, f, inicio, ate);
 
     const atual = noPeriodo(todas, de, ate);
     const anterior = noPeriodo(todas, deslocarMes(de, -n), deslocarMes(ate, -n));
     const anoAnt = noPeriodo(todas, deslocarMes(de, -12), deslocarMes(ate, -12));
-    const mesesSerie = mesesEntre(deslocarMes(ate, -11), ate);
-    const ultimos12 = noPeriodo(todas, mesesSerie[0]!, ate);
 
     const kpi = (f2: (ls: LinhaVenda[]) => Prisma.Decimal): Kpi => {
       const v = f2(atual);
@@ -145,7 +140,7 @@ export class DashboardService {
         valor: v.toFixed(2),
         mesAnterior: { anterior: ma.toFixed(2), pct: variacao(v, ma) },
         anoAnterior: { anterior: aa.toFixed(2), pct: variacao(v, aa) },
-        serie: serieMensal(ultimos12, mesesSerie, f2).map((s) => ({ mes: s.mes, valor: s.valor.toFixed(2) })),
+        serie: serieMensal(atual, mesesPeriodo, f2).map((s) => ({ mes: s.mes, valor: s.valor.toFixed(2) })),
       };
     };
     const totalDe = (ls: LinhaVenda[]) => somar(ls).total;
@@ -169,27 +164,19 @@ export class DashboardService {
         valor: v.toFixed(2),
         mesAnterior: { anterior: ma.toFixed(2), pct: variacao(v, ma) },
         anoAnterior: { anterior: aa.toFixed(2), pct: variacao(v, aa) },
-        serie: mesesSerie.map((m) => ({ mes: m, valor: totalPeriodo(m, m).toFixed(2) })),
+        serie: mesesPeriodo.map((m) => ({ mes: m, valor: totalPeriodo(m, m).toFixed(2) })),
       };
     };
 
-    // Evolução mensal: ignora o filtro de mês (usa o ano de "até").
-    const metas = await this.metasMensais(u, f, ano);
-    const realMes = new Map(
-      Array.from({ length: 12 }, (_, i) => {
-        const m = `${ano}-${String(i + 1).padStart(2, '0')}`;
-        return [i + 1, totalPeriodo(m, m)] as const;
-      }),
-    );
-    const evolucao = Array.from({ length: 12 }, (_, i) => {
-      const m = String(i + 1).padStart(2, '0');
-      return {
-        mes: i + 1,
-        real: realMes.get(i + 1)!.toFixed(2),
-        anoAnterior: totalPeriodo(`${ano - 1}-${m}`, `${ano - 1}-${m}`).toFixed(2),
-        meta: metas?.get(i + 1)?.toFixed(2) ?? null,
-      };
-    });
+    // Evolução mensal: os meses do período × mesmo mês do ano anterior × meta.
+    const metas = await this.metasMensais(u, f, de, ate);
+    const realMes = new Map(mesesPeriodo.map((m) => [m, totalPeriodo(m, m)] as const));
+    const evolucao = mesesPeriodo.map((m) => ({
+      mes: m,
+      real: realMes.get(m)!.toFixed(2),
+      anoAnterior: totalPeriodo(deslocarMes(m, -12), deslocarMes(m, -12)).toFixed(2),
+      meta: metas?.get(m)?.toFixed(2) ?? null,
+    }));
 
     return {
       periodo: { de, ate },
@@ -200,7 +187,7 @@ export class DashboardService {
         pctPublico: {
           valor: pctPublico(atual),
           anoAnterior: pctPublico(anoAnt),
-          serie: mesesSerie.map((mes) => ({ mes, valor: pctPublico(noPeriodo(ultimos12, mes, mes)) })),
+          serie: mesesPeriodo.map((mes) => ({ mes, valor: pctPublico(noPeriodo(atual, mes, mes)) })),
         },
       },
       contagens: {
@@ -210,9 +197,8 @@ export class DashboardService {
         clientes: new Set(atual.map((l) => l.clienteId)).size,
       },
       evolucao: {
-        ano,
         meses: evolucao,
-        atingimento: atingimentoAcumulado(realMes, metas, Number(ate.slice(5, 7))),
+        atingimento: atingimentoAcumulado(realMes, metas, mesesPeriodo),
       },
       porRegiao: agrupar(
         atual,
@@ -283,8 +269,9 @@ export class DashboardService {
   private async metasMensais(
     u: UsuarioAutenticado,
     f: Filtros,
-    ano: number,
-  ): Promise<Map<number, Prisma.Decimal> | null> {
+    de: string,
+    ate: string,
+  ): Promise<Map<string, Prisma.Decimal> | null> {
     let reps: string[] | null = null;
     // Escopo por região não tem meta correspondente — e o filtro de gestor não pode abrir metas fora do escopo.
     if (u.escopo.tipo === 'regiao') return null;
@@ -298,13 +285,18 @@ export class DashboardService {
       return null;
     }
     const metas = await this.prisma.meta.findMany({
-      where: { ano, representanteId: reps === null ? null : { in: reps } },
-      select: { mes: true, valor: true },
+      where: {
+        ano: { gte: Number(de.slice(0, 4)), lte: Number(ate.slice(0, 4)) },
+        representanteId: reps === null ? null : { in: reps },
+      },
+      select: { ano: true, mes: true, valor: true },
     });
-    if (!metas.length) return null;
-    const m = new Map<number, Prisma.Decimal>();
-    for (const x of metas) m.set(x.mes, (m.get(x.mes) ?? zero()).plus(x.valor));
-    return m;
+    const m = new Map<string, Prisma.Decimal>();
+    for (const x of metas) {
+      const k = `${x.ano}-${String(x.mes).padStart(2, '0')}`;
+      if (k >= de && k <= ate) m.set(k, (m.get(k) ?? zero()).plus(x.valor));
+    }
+    return m.size ? m : null;
   }
 
   async ranking(u: UsuarioAutenticado, f: Filtros, dim: DimensaoRanking): Promise<Ranking> {
