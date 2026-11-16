@@ -229,6 +229,41 @@ describe('notas fiscais — análise', () => {
     ]);
   });
 
+  it('divisão escolhida: curvas ABC de clientes e produtos só dela; o resto continua completo', async () => {
+    const div = 'LICITACAO - LICITACAO ELETRONICA E PRESENCIAL';
+    const r = await req(
+      'GET',
+      `/api/faturamento/notas/analise?divisao=${encodeURIComponent(div)}`,
+      tokenGestor,
+    );
+    expect(r.statusCode).toBe(200);
+    const a = r.json();
+    expect(a.abcDivisao).toBe(div);
+    // Pizza, ranking e indicadores não mudam.
+    expect(a).toMatchObject({ total: '2000.00', notas: 4, clientes: 3 });
+    expect(a.divisoes).toHaveLength(2);
+    expect(a.representantes).toHaveLength(2);
+    // Na LICITACAO: só a PREFEITURA EXEMPLO B (R$ 350, 2 notas), 100% da divisão.
+    expect(a.abcClientes).toMatchObject([
+      { codigo: '200', total: '350.00', notas: 2, participacao: 1, acumulado: 1, classe: 'A' },
+    ]);
+    // Produtos: MT416 R$ 300 (A) · ND1150 R$ 50 (anterior 300/350 ≈ 85,7% → B); % sobre os R$ 350.
+    type P = { codigo: string; total: string; classe: string; participacao: number };
+    expect(a.abcProdutos.map((p: P) => [p.codigo, p.total, p.classe])).toEqual([
+      ['MT416', '300.00', 'A'],
+      ['ND1150', '50.00', 'B'],
+    ]);
+    expect(a.abcProdutos[0].participacao).toBeCloseTo(300 / 350, 10);
+    expect(a.abcProdutosQuantidade.map((u: { unidade: string }) => u.unidade)).toEqual(['UN', 'KG']);
+    expect(a.abcProdutosQuantidade[0].produtos).toMatchObject([{ codigo: 'MT416', quantidade: '3.00' }]);
+  });
+
+  it('sem divisão, abcDivisao = null (curvas da empresa toda)', async () => {
+    const a = (await req('GET', '/api/faturamento/notas/analise', tokenGestor)).json();
+    expect(a.abcDivisao).toBeNull();
+    expect(a.abcClientes).toHaveLength(3);
+  });
+
   it('respeita o período', async () => {
     const a = (await req('GET', '/api/faturamento/notas/analise?de=2026-02&ate=2026-02', tokenGestor)).json();
     expect(a).toMatchObject({ total: '200.00', notas: 2 });

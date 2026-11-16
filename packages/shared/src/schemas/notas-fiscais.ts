@@ -128,6 +128,16 @@ export const analiseNotasQuerySchema = z
           : (Array.isArray(v) ? v : v.split(',')).map((s) => s.trim().toUpperCase()).filter(Boolean),
       )
       .pipe(z.array(z.enum(UFS as [UF, ...UF[]])).max(28)),
+    /**
+     * Divisão de venda escolhida na tela (clique na fatia): só as curvas ABC de clientes e produtos
+     * passam a ser dessa divisão; divisões, ranking geral, mapa e indicadores continuam completos.
+     */
+    divisao: z
+      .string()
+      .trim()
+      .max(120)
+      .optional()
+      .transform((s) => s || undefined),
   })
   .refine((f) => !f.de || !f.ate || f.de <= f.ate, { error: 'Período inválido', path: ['ate'] });
 export type AnaliseNotasQuery = z.output<typeof analiseNotasQuerySchema>;
@@ -212,6 +222,8 @@ export interface AnaliseNotas {
   porUf: LinhaRanking[];
   /** Ranking de representantes dentro de cada divisão (clique na fatia); participacao = fração da divisão. */
   representantesPorDivisao: { divisao: string; total: string; representantes: LinhaRepresentanteNotas[] }[];
+  /** Divisão das curvas ABC (null = todas). % e classes são sobre o total dessa divisão. */
+  abcDivisao: string | null;
   abcClientes: {
     codigo: string;
     nomeFantasia: string | null;

@@ -242,6 +242,8 @@ export class NotasFiscaisService {
       ? q.uf
       : (q.regiao ?? []).flatMap((reg) => UFS.filter((u) => UF_REGIAO[u] === REGIAO_ENUM_ROTULO[reg]));
     const where = ufsFiltradas.length ? { ...periodoWhere, cliUf: { in: ufsFiltradas } } : periodoWhere;
+    // Divisão escolhida (clique na fatia): vale só para as curvas ABC de clientes e produtos.
+    const abcWhere = q.divisao ? { ...where, divisao: q.divisao } : where;
 
     const [
       porDivisao,
@@ -265,11 +267,11 @@ export class NotasFiscaisService {
       this.prisma.notaFiscalItem.groupBy({ by: ['repCodigo'], where, _sum: { valorTotal: true } }),
       this.prisma.notaFiscalItem.groupBy({ by: ['repCodigo', 'notaId'], where }),
       this.prisma.notaFiscalItem.groupBy({ by: ['repCodigo', 'cliCodigo'], where }),
-      this.prisma.notaFiscalItem.groupBy({ by: ['cliCodigo'], where, _sum: { valorTotal: true } }),
-      this.prisma.notaFiscalItem.groupBy({ by: ['cliCodigo', 'notaId'], where }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['cliCodigo'], where: abcWhere, _sum: { valorTotal: true } }),
+      this.prisma.notaFiscalItem.groupBy({ by: ['cliCodigo', 'notaId'], where: abcWhere }),
       this.prisma.notaFiscalItem.groupBy({
         by: ['produtoAgrupado', 'unidade'],
-        where,
+        where: abcWhere,
         _sum: { valorTotal: true, quantidade: true },
       }),
       this.prisma.notaFiscalItem.groupBy({ by: ['notaId'], where }),
@@ -300,13 +302,13 @@ export class NotasFiscaisService {
         select: { repCodigo: true, repNome: true },
       }),
       this.prisma.notaFiscalItem.findMany({
-        where,
+        where: abcWhere,
         distinct: ['cliCodigo'],
         orderBy: [{ cliCodigo: 'asc' }, { dataEmissao: 'desc' }],
         select: { cliCodigo: true, cliRazaoSocial: true, cliNomeFantasia: true, cliUf: true },
       }),
       this.prisma.notaFiscalItem.findMany({
-        where,
+        where: abcWhere,
         distinct: ['produtoAgrupado'],
         orderBy: [{ produtoAgrupado: 'asc' }, { dataEmissao: 'desc' }],
         select: { produtoAgrupado: true, produtoDescricao: true },
@@ -369,6 +371,10 @@ export class NotasFiscaisService {
     const cRep = contar(clientesRep, 'repCodigo');
     const nCli = contar(notasCliente, 'cliCodigo');
     const totalTxt = total.toFixed(2);
+    // Base das curvas ABC: o total da divisão escolhida (ou o total geral).
+    const totalAbcTxt = q.divisao
+      ? porCliente.reduce((t, c) => t.plus(valor(c._sum)), new D(0)).toFixed(2)
+      : totalTxt;
     // Divisão + representante numa chave só (separador que não aparece nos textos do Focco).
     const chave = (l: { divisao: string; repCodigo: string }) => `${l.divisao}\u0000${l.repCodigo}`;
     const nDivRep = contar(
@@ -468,6 +474,7 @@ export class NotasFiscaisService {
           ),
         };
       }),
+      abcDivisao: q.divisao ?? null,
       abcClientes: curvaAbc(
         decrescente(porCliente).map((c) => {
           const n = cli.get(c.cliCodigo);
@@ -480,9 +487,9 @@ export class NotasFiscaisService {
             notas: nCli.get(c.cliCodigo) ?? 0,
           };
         }),
-        totalTxt,
+        totalAbcTxt,
       ),
-      abcProdutos: curvaAbc(produtosPorValor, totalTxt),
+      abcProdutos: curvaAbc(produtosPorValor, totalAbcTxt),
       abcProdutosQuantidade,
     };
   }
