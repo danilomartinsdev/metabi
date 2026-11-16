@@ -152,7 +152,6 @@ export interface FaturamentoResumo {
 }
 
 const anoParam = z.coerce.number().int().min(2000).max(2100);
-export const faturamentoAnoQuerySchema = z.object({ ano: anoParam });
 /**
  * "8,9,10" (query string) ou [8, 9, 10] → [8, 9, 10], sem repetidos e em ordem. Aceitar a lista já
  * convertida deixa o schema idempotente (o PDF guarda os parâmetros validados no token e valida de novo).
@@ -194,13 +193,6 @@ export const faturamentoPdfQuerySchema = z
     path: ['anoB'],
   });
 export type FaturamentoPdfQuery = z.output<typeof faturamentoPdfQuerySchema>;
-
-/** Tabela mês a mês de um ano (só os meses com faturamento importado). */
-export interface FaturamentoMensal {
-  ano: number;
-  meses: (TotaisFaturamento & { mes: number; dias: number })[];
-  total: TotaisFaturamento;
-}
 
 /** Valores dos dois anos num recorte (mês, ano todo ou meses em comum): diferença = B − A; pct = (B − A) / A. */
 export interface ComparacaoFaturamento {

@@ -1,6 +1,5 @@
 import type {
   FaturamentoComparativo,
-  FaturamentoMensal,
   FaturamentoResumo,
   LoteFaturamento,
   PreviaFaturamento,
@@ -23,17 +22,6 @@ export function useFaturamentoResumoQuery(qs: MaybeRefOrGetter<string>) {
 export function useFaturamentoAnosQuery() {
   const { request } = useApi();
   return useQuery({ queryKey: ['faturamento-anos'], queryFn: () => request<number[]>('/faturamento/anos') });
-}
-
-/** Tabela mês a mês de um ano. */
-export function useFaturamentoMensalQuery(ano: MaybeRefOrGetter<number | undefined>) {
-  const { request } = useApi();
-  return useQuery({
-    queryKey: ['faturamento-mensal', ano],
-    queryFn: () => request<FaturamentoMensal>(`/faturamento/mensal?ano=${toValue(ano)}`),
-    enabled: () => !!toValue(ano),
-    placeholderData: keepPreviousData,
-  });
 }
 
 /** Comparativo entre dois anos (A = base, B = comparado). */

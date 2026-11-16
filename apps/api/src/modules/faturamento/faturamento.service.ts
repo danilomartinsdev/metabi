@@ -5,7 +5,6 @@ import {
   type ComparacaoFaturamento,
   type ErroLinha,
   type FaturamentoComparativo,
-  type FaturamentoMensal,
   type FaturamentoQuery,
   type FaturamentoResumo,
   type LinhaFaturamento,
@@ -387,18 +386,6 @@ export class FaturamentoService {
       porAno.get(Number(k.slice(0, 4)))!.set(Number(k.slice(5, 7)), { ...zeros(), dre: valor, dias: 0 });
     }
     return porAno;
-  }
-
-  /** Tabela mês a mês de um ano qualquer (seletor de ano da página de Faturamento). */
-  async mensal(ano: number): Promise<FaturamentoMensal> {
-    const meses = (await this.somasPorMes([ano])).get(ano)!;
-    const ordenados = [...meses].sort(([a], [b]) => a - b);
-    const total = ordenados.reduce((t, [, m]) => somar(t, m), zeros());
-    return {
-      ano,
-      meses: ordenados.map(([mes, m]) => ({ mes, dias: m.dias, ...texto(m) })),
-      total: texto(total),
-    };
   }
 
   /**
