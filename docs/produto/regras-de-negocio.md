@@ -47,6 +47,12 @@ UF fora da lista → erro de validação na linha da importação.
 - Meta total é cadastrada explicitamente (não é soma das metas por representante).
 - Só papéis com `metas.edit` alteram; alterações auditadas.
 
+## Previsão de descontos
+- Tabela de preços **por ano**: produto (código agrupado da curva ABC, "MT169." = "MT169") + unidade → preço de tabela (Decimal(14,4)).
+- Desconto = preço de tabela do ano × quantidade vendida no ano − valor vendido (ITNFS_VALOR_TOTAL dos itens de NF do ano). Negativo = vendido acima da tabela.
+- Cada ano usa só a sua tabela: alterar os preços de um ano não muda os números de outro. Produto sem preço no ano fica fora do desconto; a "cobertura" mostra quanto do faturamento do ano tem preço.
+- Ver: `descontos.view` + escopo "todos"; editar preços: `precos.edit` + escopo "todos"; alterações auditadas (`precos.alterados`).
+
 ## Histórico 2025
 - Vem do mesmo relatório Focco detalhado de 2025 → importação normal, mesmas regras.
 - Comparativos "ano anterior" usam os pedidos importados do ano anterior.

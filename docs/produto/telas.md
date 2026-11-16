@@ -24,6 +24,7 @@ segmento, status, busca (cliente, nº pedido, CPR, gestor).
 | /dashboard/regioes | Ranking por região | idem | dashboard.view |
 | /dashboard/clientes | Clientes | ranking, recorrência, clientes novos | dashboard.view |
 | /pedidos | Lista de pedidos | tabela paginada no servidor, colunas configuráveis, badge de status | pedidos.view |
+| /faturamento/descontos | Previsão de descontos (itens de NF × tabela de preços do ano) | seletor de ano; KPIs valor de tabela, vendido, desconto e cobertura; aba Tabela de preços (produtos vendidos no ano com preço editável, busca, "só sem preço", "preencher vazios com o ano anterior"); aba Por representante | descontos.view (+ precos.edit para editar) e escopo "todos" |
 
 Toda tabela tem botão "Exportar Excel" (export.xlsx); dashboards têm "Exportar PDF" (export.pdf).
 

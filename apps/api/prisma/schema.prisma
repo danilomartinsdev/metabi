@@ -415,6 +415,21 @@ model NotaFiscalItem {
   @@index([loteId])
 }
 
+// Preço de tabela de um produto num ano (previsão de descontos). Cada ano tem a sua tabela: mudar o preço
+// de um ano não altera os outros. Produto = código agrupado da curva ABC; unidade "" = sem unidade.
+model PrecoTabela {
+  id            String   @id @default(uuid()) @db.Uuid
+  ano           Int
+  produtoCodigo String
+  unidade       String   @default("")
+  preco         Decimal  @db.Decimal(14, 4)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([ano, produtoCodigo, unidade])
+  @@index([ano])
+}
+
 // Histórico das importações de notas fiscais (uma por arquivo confirmado).
 model NotaFiscalLote {
   id          String           @id @default(uuid()) @db.Uuid

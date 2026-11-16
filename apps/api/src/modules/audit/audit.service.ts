@@ -32,6 +32,7 @@ export type AcaoAuditada =
   | 'faturamento.importado'
   | 'notas.importadas'
   | 'limpeza.executada'
+  | 'precos.alterados'
   // Gravada só pela migration que encerra as sessões numa atualização (todos entram de novo).
   | 'sessoes.todas-encerradas';
 

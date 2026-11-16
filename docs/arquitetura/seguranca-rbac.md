@@ -29,6 +29,8 @@
 | faturamento.view         |   ✔   |        ✔         |               |              |
 | faturamento-analise.view |   ✔   |        ✔         |               |              |
 | faturamento.import       |   ✔   |        ✔         |               |              |
+| descontos.view           |   ✔   |        ✔         |               |              |
+| precos.edit              |   ✔   |                  |               |              |
 | cadastros.edit           |   ✔   |                  |               |              |
 | users.manage             |   ✔   |                  |               |              |
 | audit.view               |   ✔   |                  |               |              |

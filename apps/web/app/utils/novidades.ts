@@ -16,6 +16,16 @@ export interface Novidade {
 /** Novidades do sistema, a mais recente primeiro. Acrescente no topo a cada entrega. */
 export const NOVIDADES: Novidade[] = [
   {
+    id: '2026-11-16-1',
+    data: '2026-11-16',
+    titulo: 'Previsão de descontos',
+    texto:
+      'Nova tela em Análise › Previsão de descontos: cadastre o preço de tabela de cada produto por ano e veja o desconto dado (preço de tabela × quantidade − valor vendido nas notas fiscais), no total, por produto e por representante. Cada ano tem a sua tabela, então mudar os preços deste ano não altera os anos anteriores.',
+    para: '/faturamento/descontos',
+    permissao: 'descontos.view',
+    exigeEscopoTodos: true,
+  },
+  {
     id: '2026-10-20-1',
     data: '2026-10-20',
     titulo: 'Sino de novidades e guia de ajuda',

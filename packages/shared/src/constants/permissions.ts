@@ -14,6 +14,8 @@ export const PERMISSIONS = [
   'faturamento.view',
   'faturamento-analise.view',
   'faturamento.import',
+  'descontos.view',
+  'precos.edit',
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -33,6 +35,8 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   'faturamento.view': 'Ver faturamento',
   'faturamento-analise.view': 'Ver análise de faturamento',
   'faturamento.import': 'Importar faturamento',
+  'descontos.view': 'Ver previsão de descontos',
+  'precos.edit': 'Editar tabela de preços',
 };
 
 /**
@@ -62,6 +66,7 @@ export const DEFAULT_ROLES: Record<RoleKey, { nome: string; permissoes: readonly
       'faturamento.view',
       'faturamento-analise.view',
       'faturamento.import',
+      'descontos.view',
     ],
   },
   representante: {

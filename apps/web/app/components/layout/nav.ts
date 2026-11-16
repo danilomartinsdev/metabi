@@ -66,6 +66,12 @@ export const NAV: NavGroup[] = [
         icon: 'i-lucide-chart-pie',
         permissao: 'faturamento-analise.view',
       },
+      {
+        label: 'Previsão de descontos',
+        to: '/faturamento/descontos',
+        icon: 'i-lucide-badge-percent',
+        permissao: 'descontos.view',
+      },
     ],
   },
   {
