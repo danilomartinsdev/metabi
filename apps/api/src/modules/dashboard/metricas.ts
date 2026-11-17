@@ -17,6 +17,8 @@ export interface LinhaVenda {
   clienteNome: string;
   /** Segmento efetivo: override do cliente ?? padrão do representante. */
   segmento: 'PUBLICO' | 'PRIVADO' | null;
+  /** Divisão de venda do pedido (DIVISAO VENDA); null em pedidos importados antes da coluna. */
+  divisao: string | null;
 }
 
 export const zero = () => new D(0);

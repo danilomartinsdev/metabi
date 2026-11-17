@@ -25,6 +25,7 @@ describe('CSV e Visão geral em planilha', () => {
       porRegiao: [],
       porUf: [],
       porSegmento: [],
+      porDivisao: [],
       topGestores: [],
       detalhamentoMensal: { linhas: [], total: { atual: '0', anterior: '0', pct: null } },
       acumuladoSegmento: {

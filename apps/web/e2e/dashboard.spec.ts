@@ -30,9 +30,9 @@ test('visão geral: atalhos de período, busca ativa e comparativo com o ano ant
   await page.getByLabel('Buscar').fill('zzz-nada');
   await expect(page.getByText('Busca ativa: “zzz-nada”')).toBeVisible();
 
-  // Alternar a participação por segmento.
-  await page.getByRole('tab', { name: 'Público × Privado' }).click();
-  await expect(page.getByRole('tab', { name: 'Público × Privado' })).toHaveAttribute('aria-selected', 'true');
+  // Alternar a participação por divisão de venda.
+  await page.getByRole('tab', { name: 'Divisão' }).click();
+  await expect(page.getByRole('tab', { name: 'Divisão' })).toHaveAttribute('aria-selected', 'true');
   expect(erros).toEqual([]);
 });
 

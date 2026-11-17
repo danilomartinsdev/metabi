@@ -102,6 +102,7 @@ export class DashboardService {
         regiao: true,
         representanteId: true,
         clienteId: true,
+        divisao: true,
         representante: { select: { nomeExibicao: true, segmentoPadrao: true } },
         cliente: { select: { nomeOriginal: true, segmentoOverride: true } },
       },
@@ -116,6 +117,7 @@ export class DashboardService {
       clienteId: r.clienteId,
       clienteNome: r.cliente.nomeOriginal,
       segmento: r.cliente.segmentoOverride ?? r.representante.segmentoPadrao,
+      divisao: r.divisao,
     }));
   }
 
@@ -209,6 +211,11 @@ export class DashboardService {
         atual,
         (l) => l.segmento ?? 'SEM',
         (l) => rotuloSegmento(l.segmento),
+      ),
+      porDivisao: agrupar(
+        atual,
+        (l) => l.divisao ?? 'SEM',
+        (l) => l.divisao ?? 'Sem divisão',
       ),
       topGestores: agrupar(
         atual,

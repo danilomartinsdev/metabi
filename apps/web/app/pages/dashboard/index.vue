@@ -12,13 +12,15 @@ const meses = useMesesQuery();
 const q = useVisaoGeralQuery(qs);
 const v = computed(() => q.data.value);
 const carregando = computed(() => q.isPending.value);
-const donut = ref<'mapa' | 'regiao' | 'segmento'>('mapa');
+const donut = ref<'mapa' | 'regiao' | 'divisao'>('mapa');
 const can = useCan();
 // Legenda da rosca como lista (mesmas cores das fatias): não trunca nem pagina os nomes.
 const paleta = usePaletaGraficos();
-const fatias = computed(() =>
-  v.value ? fatiasDonut(donut.value === 'segmento' ? v.value.porSegmento : v.value.porRegiao) : [],
+// Linhas da rosca na aba escolhida (o mapa usa porRegiao direto).
+const linhasDonut = computed(() =>
+  v.value ? (donut.value === 'divisao' ? v.value.porDivisao : v.value.porRegiao) : [],
 );
+const fatias = computed(() => fatiasDonut(linhasDonut.value));
 const corFatia = (i: number) => {
   const c = coresFatias(paleta.value);
   return c[i % c.length]!;
@@ -52,7 +54,7 @@ const variacoes = (k: 'total' | 'qtd' | 'ticket') =>
 const ABAS_DONUT = [
   { label: 'Mapa', value: 'mapa' },
   { label: 'Região', value: 'regiao' },
-  { label: 'Público × Privado', value: 'segmento' },
+  { label: 'Divisão', value: 'divisao' },
 ];
 </script>
 
@@ -206,11 +208,8 @@ const ABAS_DONUT = [
             <ChartsBaseChart
               class="mx-auto mt-4 w-full max-w-60"
               altura="200px"
-              :rotulo="`Participação das vendas por ${donut === 'regiao' ? 'região' : 'segmento'}`"
-              :opcoes="
-                (t) =>
-                  donutOptions(donut === 'regiao' ? v!.porRegiao : v!.porSegmento, t, { semLegenda: true })
-              "
+              :rotulo="`Participação das vendas por ${donut === 'regiao' ? 'região' : 'divisão de venda'}`"
+              :opcoes="(t) => donutOptions(linhasDonut, t, { semLegenda: true })"
             />
             <ul class="mt-4 space-y-1.5 text-sm">
               <li v-for="(f, i) in fatias" :key="f.name" class="flex items-center justify-between gap-3">

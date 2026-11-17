@@ -15,6 +15,14 @@ export const COLUNAS_FOCCO = {
   valor: 'VALOR',
 } as const;
 
+/**
+ * Colunas que só os relatórios mais novos trazem. Ausentes no arquivo, o campo fica undefined e a
+ * importação mantém o valor que o pedido já tinha (relatório antigo não apaga a divisão).
+ */
+export const COLUNAS_FOCCO_OPCIONAIS = {
+  divisao: 'DIVISAO VENDA',
+} as const;
+
 /** Maiúsculas, sem acento, espaços colapsados. "  São  Camilo " → "SAO CAMILO". */
 export function normalizarNome(nome: string): string {
   return nome.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
@@ -99,6 +107,12 @@ export const linhaFoccoSchema = z
       .transform(
         (v, c) => decimalBR(v) ?? (c.addIssue({ code: 'custom', message: 'VALOR inválido' }), z.NEVER),
       ),
+    // undefined = coluna ausente no arquivo; null = célula vazia.
+    divisao: z
+      .string()
+      .max(120, { error: 'DIVISAO VENDA muito longa' })
+      .optional()
+      .transform((v) => (v === undefined ? undefined : v.replace(/\s+/g, ' ').trim().toUpperCase() || null)),
   })
   .transform((l) => ({
     ...l,

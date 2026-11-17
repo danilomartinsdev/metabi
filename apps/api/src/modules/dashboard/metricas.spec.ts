@@ -25,6 +25,7 @@ const p = (mes: string, segmento: LinhaVenda['segmento'], valor: string, gestor 
   clienteId: 'C1',
   clienteNome: 'Cliente 1',
   segmento,
+  divisao: null,
 });
 
 const BASE: LinhaVenda[] = [

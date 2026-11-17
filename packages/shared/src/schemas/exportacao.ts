@@ -25,7 +25,7 @@ export const SECOES_EXPORT = {
   vendas: [
     { id: 'kpis', rotulo: 'Indicadores (total, pedidos, ticket médio, % público)' },
     { id: 'evolucao', rotulo: 'Evolução mensal — real × ano anterior' },
-    { id: 'participacao', rotulo: 'Participação por região e Público × Privado' },
+    { id: 'participacao', rotulo: 'Participação por região e divisão de venda' },
     { id: 'topGestores', rotulo: 'Top 10 representantes' },
     { id: 'comparativo', rotulo: 'Comparativo com o ano anterior' },
     { id: 'detalhamento', rotulo: 'Detalhamento mês a mês' },

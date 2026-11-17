@@ -236,6 +236,7 @@ model Pedido {
   uf              String        @db.Char(2)
   regiao          Regiao
   valor           Decimal       @db.Decimal(14, 2)
+  divisao         String? // DIVISAO VENDA do relatório; null em pedidos importados antes da coluna existir
   ultimoLoteId    String?       @db.Uuid
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -251,6 +252,7 @@ model Pedido {
   @@index([representanteId])
   @@index([clienteId])
   @@index([statusId])
+  @@index([divisao])
 }
 
 model Meta {

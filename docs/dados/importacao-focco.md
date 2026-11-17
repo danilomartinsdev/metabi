@@ -37,6 +37,8 @@ numérico = fim/ignorar (contada como "ignorada", não "erro").
 | UF | `uf` | SP, EX | obrigatório; deve existir no mapa UF→região |
 | REPRESENTANTE | `representanteCodigo` | PPX, BL REPR | obrigatório; representante novo é criado e sinalizado |
 | VALOR | `valor` | 83575,74920002 | pt-BR → Decimal(14,2), half-up (conversão por string, sem float) |
+| COD DIVD | — | 1 | ignorada (o nome da divisão já identifica) |
+| DIVISAO VENDA | `divisao` | PRIVADO - MERCADO INTERNO PRIVADO | **opcional** (relatórios desde 13/11/2026); texto em maiúsculas, espaços colapsados; vazia → sem divisão. Relatório sem a coluna mantém a divisão já gravada. Alimenta a aba "Divisão" da Participação na Visão geral |
 | G TOTAL GERAL | — | (vazia) | ignorada; no relatório real é uma coluna separada e vazia |
 
 ### Conversões

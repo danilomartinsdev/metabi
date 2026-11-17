@@ -1,8 +1,9 @@
-import { COLUNAS_FOCCO, normalizarNome } from '@metabi/shared';
+import { COLUNAS_FOCCO, COLUNAS_FOCCO_OPCIONAIS, normalizarNome } from '@metabi/shared';
 import * as XLSX from 'xlsx';
 
 export type Formato = 'html' | 'xls' | 'xlsx' | 'csv';
-export type LinhaBruta = Record<keyof typeof COLUNAS_FOCCO, string> & { numeroLinha: number };
+export type LinhaBruta = Record<keyof typeof COLUNAS_FOCCO, string> &
+  Partial<Record<keyof typeof COLUNAS_FOCCO_OPCIONAIS, string>> & { numeroLinha: number };
 
 export class ArquivoInvalidoError extends Error {}
 
@@ -78,11 +79,16 @@ export function lerMatriz(buf: Buffer): { formato: Formato; matriz: unknown[][] 
 /**
  * Localiza o cabeçalho (1ª linha com todas as colunas) e devolve as linhas não vazias como strings,
  * indexadas pelos campos de `colunas`, com o número da linha no arquivo.
+ * `opcionais`: colunas que podem faltar; presentes, entram como string; ausentes, o campo fica undefined.
  */
-export function extrairLinhas<C extends Record<string, string>>(
+export function extrairLinhas<
+  C extends Record<string, string>,
+  O extends Record<string, string> = Record<never, string>,
+>(
   matriz: unknown[][],
   colunas: C,
-): (Record<keyof C, string> & { numeroLinha: number })[] {
+  opcionais?: O,
+): (Record<keyof C, string> & Partial<Record<keyof O, string>> & { numeroLinha: number })[] {
   const obrigatorias = Object.values(colunas);
   const iCab = matriz.findIndex((l) => {
     const nomes = l.map((c) => normalizarNome(String(c)));
@@ -95,14 +101,21 @@ export function extrairLinhas<C extends Record<string, string>>(
   }
   const cab = matriz[iCab]!.map((c) => normalizarNome(String(c)));
   const pos = Object.entries(colunas).map(([campo, nome]) => [campo, cab.indexOf(nome)] as const);
-  const linhas: (Record<keyof C, string> & { numeroLinha: number })[] = [];
+  const posOpc = Object.entries(opcionais ?? {})
+    .map(([campo, nome]) => [campo, cab.indexOf(nome)] as const)
+    .filter(([, p]) => p !== -1);
+  const linhas: (Record<keyof C, string> & Partial<Record<keyof O, string>> & { numeroLinha: number })[] = [];
+  const texto = (l: unknown[], p: number) => String(l[p] ?? '').trim();
   matriz.slice(iCab + 1).forEach((l, i) => {
-    const valores = Object.fromEntries(pos.map(([campo, p]) => [campo, String(l[p] ?? '').trim()])) as Record<
+    const valores = Object.fromEntries(pos.map(([campo, p]) => [campo, texto(l, p)])) as Record<
       keyof C,
       string
     >;
     if (Object.values(valores).every((v) => !v)) return;
-    linhas.push({ ...valores, numeroLinha: iCab + i + 2 });
+    const extras = Object.fromEntries(posOpc.map(([campo, p]) => [campo, texto(l, p)])) as Partial<
+      Record<keyof O, string>
+    >;
+    linhas.push({ ...valores, ...extras, numeroLinha: iCab + i + 2 });
   });
   return linhas;
 }
@@ -110,5 +123,5 @@ export function extrairLinhas<C extends Record<string, string>>(
 /** Lê o relatório de pedidos (Extrator PDV) e devolve as linhas como strings. */
 export function lerRelatorio(buf: Buffer): { formato: Formato; linhas: LinhaBruta[] } {
   const { formato, matriz } = lerMatriz(buf);
-  return { formato, linhas: extrairLinhas(matriz, COLUNAS_FOCCO) };
+  return { formato, linhas: extrairLinhas(matriz, COLUNAS_FOCCO, COLUNAS_FOCCO_OPCIONAIS) };
 }

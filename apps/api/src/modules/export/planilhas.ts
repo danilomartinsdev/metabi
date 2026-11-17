@@ -245,10 +245,10 @@ export function blocosVisaoGeral(
       titulo: ['Grupo', 'Item', 'Total', 'Pedidos', '% Part.'],
       linhas: [
         ...v.porRegiao.map((l): Celula[] => ['Região', l.rotulo, num(l.total), l.qtd, l.participacao]),
-        ...v.porSegmento.map((l): Celula[] => ['Segmento', l.rotulo, num(l.total), l.qtd, l.participacao]),
+        ...v.porDivisao.map((l): Celula[] => ['Divisão', l.rotulo, num(l.total), l.qtd, l.participacao]),
       ],
       formatos: [undefined, undefined, BRL, undefined, PCT],
-      largura: [12, 28, 18, 10, 10],
+      largura: [12, 48, 18, 10, 10],
     });
   }
   if (ativa('topGestores')) {

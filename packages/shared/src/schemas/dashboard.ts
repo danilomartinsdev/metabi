@@ -97,6 +97,8 @@ export interface VisaoGeral {
   };
   porRegiao: LinhaRanking[];
   porSegmento: LinhaRanking[];
+  /** Divisão de venda do relatório de pedidos; "SEM" = pedidos importados antes da coluna existir. */
+  porDivisao: LinhaRanking[];
   topGestores: LinhaRanking[];
   /** Mês a mês do período (de..ate) × mesmo mês do ano anterior, e o total; inclui o faturamento manual. */
   detalhamentoMensal: {

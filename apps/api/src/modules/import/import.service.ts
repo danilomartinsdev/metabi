@@ -148,7 +148,9 @@ export class ImportService {
       cli.get(p.clienteId) !== l.clienteNormalizado ||
       p.uf !== l.uf ||
       rep.get(p.representanteId) !== l.representante ||
-      !p.valor.equals(l.valor)
+      !p.valor.equals(l.valor) ||
+      // Relatório sem a coluna (undefined) não conta como mudança de divisão.
+      (l.divisao !== undefined && (p.divisao ?? null) !== l.divisao)
     );
   }
 
@@ -193,6 +195,8 @@ export class ImportService {
           uf: l.uf,
           regiao: REGIAO_ENUM[l.regiao],
           valor: new Prisma.Decimal(l.valor),
+          // Relatório sem a coluna mantém a divisão que o pedido já tinha.
+          ...(l.divisao !== undefined && { divisao: l.divisao }),
           ultimoLoteId: lote.id,
         });
 
@@ -264,6 +268,7 @@ export class ImportService {
       uf: p.uf,
       regiao: p.regiao,
       valor: p.valor.toFixed(2),
+      divisao: p.divisao,
       ultimoLoteId: p.ultimoLoteId,
     };
   }
@@ -376,6 +381,8 @@ export class ImportService {
             uf: s.uf!,
             regiao: s.regiao as PedidoExistente['regiao'],
             valor: new Prisma.Decimal(s.valor!),
+            // Snapshots anteriores à coluna não têm a chave: o pedido ainda não tinha divisão.
+            divisao: s.divisao ?? null,
             ultimoLoteId: s.ultimoLoteId && lotesExistentes.has(s.ultimoLoteId) ? s.ultimoLoteId : null,
           });
         }

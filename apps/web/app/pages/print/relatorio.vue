@@ -158,11 +158,11 @@ const TABELAS = computed(() =>
         />
       </div>
       <div class="rounded-xl border p-4">
-        <h2 class="text-sm font-medium text-muted-foreground">Público × Privado</h2>
+        <h2 class="text-sm font-medium text-muted-foreground">Participação por divisão de venda</h2>
         <ChartsBaseChart
           altura="210px"
-          rotulo="Participação por segmento"
-          :opcoes="(t) => donutOptions(v!.porSegmento, t, { impressao: true })"
+          rotulo="Participação por divisão de venda"
+          :opcoes="(t) => donutOptions(v!.porDivisao, t, { impressao: true })"
         />
       </div>
     </section>

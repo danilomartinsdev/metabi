@@ -1,7 +1,7 @@
-import { COLUNAS_FATURAMENTO, linhaFaturamentoSchema } from '@metabi/shared';
+import { COLUNAS_FATURAMENTO, linhaFaturamentoSchema, linhaFoccoSchema } from '@metabi/shared';
 import * as XLSX from 'xlsx';
 import { describe, expect, it } from 'vitest';
-import { extrairLinhas, lerMatriz } from './parser.js';
+import { extrairLinhas, lerMatriz, lerRelatorio } from './parser.js';
 
 /** Relatório de faturamento reaberto e salvo no Excel: DATA vira data real e valores viram números. */
 function planilhaSalvaPeloExcel(): Buffer {
@@ -48,5 +48,41 @@ describe('lerMatriz — CSV', () => {
       ['2026-10-01', '71639.14', '0.00', '71639.14'],
       ['2026-10-05', '1263399.94', '102600.00', '1365999.94'],
     ]);
+  });
+});
+
+describe('lerRelatorio — coluna opcional DIVISAO VENDA', () => {
+  const cab = [
+    'ID',
+    'NUM PEDIDO',
+    'ORDEM CPR',
+    'DT EMIS',
+    'DT ENTREGA',
+    'POS PDV',
+    'CLIENTE',
+    'UF',
+    'REPRESENTANTE',
+    ' VALOR ',
+  ];
+  const linha = ['49938', '105', '', '05/01/2026', '', 'A', 'SERGIO DAHER', 'GO', 'AMANDA CAMPOS', '2998,00'];
+  const csv = (linhas: string[][]) => Buffer.from(linhas.map((l) => l.join(';')).join('\r\n'), 'latin1');
+
+  it('lê a divisão quando o relatório traz a coluna', () => {
+    const { linhas } = lerRelatorio(
+      csv([
+        [...cab, 'COD DIVD', 'DIVISAO VENDA'],
+        [...linha, '1', 'PRIVADO -  MERCADO INTERNO PRIVADO'],
+        [...linha.with(0, '49939'), '', ''],
+      ]),
+    );
+    expect(linhas.map((l) => linhaFoccoSchema.parse(l).divisao)).toEqual([
+      'PRIVADO - MERCADO INTERNO PRIVADO',
+      null,
+    ]);
+  });
+
+  it('relatório antigo, sem a coluna, continua válido e deixa a divisão indefinida', () => {
+    const { linhas } = lerRelatorio(csv([cab, linha]));
+    expect(linhaFoccoSchema.parse(linhas[0]).divisao).toBeUndefined();
   });
 });
