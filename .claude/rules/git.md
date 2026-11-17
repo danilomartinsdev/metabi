@@ -1,5 +1,5 @@
 # Git
 - Conventional Commits em português: feat|fix|refactor|test|docs|chore(escopo): descrição
 - Commits pequenos e coesos; nunca commitar com testes quebrando.
-- Uma branch por fase: fase-0-contexto, fase-1-fundacao, fase-2-dados...
-- Push e PR só com autorização explícita do usuário.
+- Sem pull request: o trabalho é feito numa branch, mergeado direto na main e enviado com push (sem abrir PR).
+- Push só com autorização explícita do usuário.
