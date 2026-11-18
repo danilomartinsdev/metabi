@@ -30,9 +30,9 @@ test('visão geral: atalhos de período, busca ativa e comparativo com o ano ant
   await page.getByLabel('Buscar').fill('zzz-nada');
   await expect(page.getByText('Busca ativa: “zzz-nada”')).toBeVisible();
 
-  // Alternar a participação por divisão de venda.
-  await page.getByRole('tab', { name: 'Divisão' }).click();
-  await expect(page.getByRole('tab', { name: 'Divisão' })).toHaveAttribute('aria-selected', 'true');
+  // Divisões de venda em destaque, com o ranking de representantes ao lado.
+  await expect(page.getByRole('heading', { name: 'Vendas por divisão de venda' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ranking por representante' })).toBeVisible();
 
   // Divisão em tela cheia (ranking, ocultar divisões e pedidos).
   await page.getByRole('link', { name: /Ampliar/ }).click();
