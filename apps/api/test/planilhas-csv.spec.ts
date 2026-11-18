@@ -41,7 +41,7 @@ describe('CSV e Visão geral em planilha', () => {
     const info = {
       titulo: 'Visão geral',
       periodo: { de: '2026-01', ate: '2026-02' },
-      filtros: { regiao: [], uf: [], gestor: [], segmento: [], status: [] },
+      filtros: { regiao: [], uf: [], gestor: [], segmento: [], status: [], divisao: [] },
       geradoPor: 'T',
       geradoEm: new Date(),
       linhas: 5,

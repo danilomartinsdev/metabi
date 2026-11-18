@@ -25,7 +25,10 @@ interface Coluna<T> {
 }
 
 function aba<T>(linhas: T[], colunas: Coluna<T>[], rodape?: Celula[]): XLSX.WorkSheet {
-  const aoa: Celula[][] = [colunas.map((c) => c.titulo), ...linhas.map((l) => colunas.map((c) => c.valor(l)))];
+  const aoa: Celula[][] = [
+    colunas.map((c) => c.titulo),
+    ...linhas.map((l) => colunas.map((c) => c.valor(l))),
+  ];
   if (rodape) aoa.push(rodape);
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   colunas.forEach((c, j) => {
@@ -36,7 +39,9 @@ function aba<T>(linhas: T[], colunas: Coluna<T>[], rodape?: Celula[]): XLSX.Work
     }
   });
   ws['!cols'] = colunas.map((c) => ({ wch: c.largura ?? Math.max(10, c.titulo.length + 2) }));
-  ws['!autofilter'] = { ref: XLSX.utils.encode_range({ r: 0, c: 0 }, { r: linhas.length, c: colunas.length - 1 }) };
+  ws['!autofilter'] = {
+    ref: XLSX.utils.encode_range({ r: 0, c: 0 }, { r: linhas.length, c: colunas.length - 1 }),
+  };
   return ws;
 }
 
@@ -62,14 +67,22 @@ function abaFiltros(info: InfoExportacao, rotulosGestor: Map<string, string>): X
     ['Região', lista(f.regiao.map((r) => REGIAO_ENUM_ROTULO[r]))],
     ['UF', lista(f.uf)],
     ['Representante', lista(f.gestor.map((g) => rotulosGestor.get(g) ?? g))],
-    ['Segmento', lista(f.segmento.map((s) => ({ PUBLICO: 'Público', PRIVADO: 'Privado', SEM: 'Sem segmento' })[s]))],
+    [
+      'Segmento',
+      lista(f.segmento.map((s) => ({ PUBLICO: 'Público', PRIVADO: 'Privado', SEM: 'Sem segmento' })[s])),
+    ],
     ['Status', lista(f.status)],
+    [
+      'Divisão',
+      f.divisao.length ? f.divisao.map((d) => (d === 'SEM' ? 'Sem divisão' : d)).join(' | ') : 'Todas',
+    ],
     ['Busca', f.q ?? '—'],
     ['Linhas', info.linhas],
     ['Gerado por', info.geradoPor],
     ['Gerado em', info.geradoEm.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
   ];
-  if (info.truncado) aoa.push(['Atenção', 'Limite de linhas atingido: refine os filtros para exportar tudo.']);
+  if (info.truncado)
+    aoa.push(['Atenção', 'Limite de linhas atingido: refine os filtros para exportar tudo.']);
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols'] = [{ wch: 16 }, { wch: 60 }];
   return ws;
@@ -125,6 +138,7 @@ export function planilhaPedidos(
     { titulo: 'Região', valor: (l) => l.regiao, largura: 14 },
     { titulo: 'Representante', valor: (l) => l.gestor, largura: 24 },
     { titulo: 'Segmento', valor: (l) => l.segmento, largura: 14 },
+    { titulo: 'Divisão', valor: (l) => l.divisao, largura: 40 },
     { titulo: 'Ordem CPR', valor: (l) => l.ordemCpr, largura: 16 },
     { titulo: 'Valor', valor: (l) => num(l.valor), formato: BRL, largura: 16 },
   ]);
@@ -152,7 +166,11 @@ export function planilhaRanking(
   );
   // Rodapé com os mesmos formatos das colunas.
   const ultima = r.linhas.length + 1;
-  for (const [c, z] of [[2, BRL], [4, BRL], [5, PCT]] as const) {
+  for (const [c, z] of [
+    [2, BRL],
+    [4, BRL],
+    [5, PCT],
+  ] as const) {
     const cel = ws[XLSX.utils.encode_cell({ r: ultima, c })] as XLSX.CellObject | undefined;
     if (cel && cel.t === 'n') cel.z = z;
   }
@@ -381,7 +399,19 @@ export function planilhaDescontos(
         largura: 40,
       },
     ],
-    ['', 'Total', '', '', null, num(s.vendidoTotal), null, num(s.valorTabela), num(s.desconto), s.percentual, ''],
+    [
+      '',
+      'Total',
+      '',
+      '',
+      null,
+      num(s.vendidoTotal),
+      null,
+      num(s.valorTabela),
+      num(s.desconto),
+      s.percentual,
+      '',
+    ],
   );
   if (formato === 'csv') return Buffer.from('﻿' + csvDe(ws), 'utf8');
   const resumo = XLSX.utils.aoa_to_sheet([
@@ -398,7 +428,14 @@ export function planilhaDescontos(
     ['Gerado por', geradoPor],
     ['Gerado em', geradoEm.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })],
   ]);
-  for (const [linha, z] of [[3, BRL], [4, BRL], [5, BRL], [6, PCT], [7, BRL], [8, PCT]] as const) {
+  for (const [linha, z] of [
+    [3, BRL],
+    [4, BRL],
+    [5, BRL],
+    [6, PCT],
+    [7, BRL],
+    [8, PCT],
+  ] as const) {
     const cel = resumo[XLSX.utils.encode_cell({ r: linha, c: 1 })] as XLSX.CellObject | undefined;
     if (cel && cel.t === 'n') cel.z = z;
   }

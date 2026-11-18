@@ -11,6 +11,21 @@ const lista = <T extends z.ZodType<unknown, string>>(item: T) =>
       v === undefined ? [] : (Array.isArray(v) ? v : v.split(',')).map((s) => s.trim()).filter(Boolean),
     )
     .pipe(z.array(item).max(100));
+/**
+ * Lista sem separar por vírgula: os nomes das divisões de venda têm vírgula
+ * ("VENDA DIRETORIA, GERENCIA..."). Vários valores só repetindo o parâmetro (?divisao=a&divisao=b).
+ */
+const listaExata = <T extends z.ZodType<unknown, string>>(item: T) =>
+  z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((v) =>
+      (v === undefined ? [] : Array.isArray(v) ? v : [v]).map((s) => s.trim()).filter(Boolean),
+    )
+    .pipe(z.array(item).max(100));
+
+/** Chave das vendas sem divisão (pedidos importados antes da coluna DIVISAO VENDA). */
+export const SEM_DIVISAO = 'SEM';
 
 export const REGIOES_ENUM = ['NORTE', 'NORDESTE', 'CENTRO_OESTE', 'SUDESTE', 'SUL', 'EXTERIOR'] as const;
 export type RegiaoEnum = (typeof REGIOES_ENUM)[number];
@@ -33,6 +48,8 @@ export const filtrosSchema = z
     gestor: lista(z.uuid()),
     segmento: lista(z.enum([...SEGMENTOS, 'SEM'])),
     status: lista(z.string().max(10)),
+    /** Divisões de venda (nome como no relatório; SEM_DIVISAO = sem divisão). */
+    divisao: listaExata(z.string().max(120)),
     q: z.string().trim().max(100).optional(),
   })
   .refine((f) => !f.de || !f.ate || f.de <= f.ate, { error: 'Período inválido', path: ['ate'] });
@@ -49,7 +66,7 @@ export const pedidosQuerySchema = z.intersection(
 );
 export type PedidosQuery = z.output<typeof pedidosQuerySchema>;
 
-export const DIMENSOES_RANKING = ['gestores', 'estados', 'regioes'] as const;
+export const DIMENSOES_RANKING = ['gestores', 'estados', 'regioes', 'divisoes'] as const;
 export type DimensaoRanking = (typeof DIMENSOES_RANKING)[number];
 
 /** Dinheiro trafega como string decimal ("1234.56"); percentuais como número (fração) ou null. */
@@ -93,7 +110,13 @@ export interface VisaoGeral {
   evolucao: {
     meses: { mes: string; real: string; anoAnterior: string; meta: string | null }[];
     /** Σ real ÷ Σ meta nos meses do período que têm meta; null = sem meta. */
-    atingimento: { mesInicial: string; mesFinal: string; meta: string; real: string; pct: number | null } | null;
+    atingimento: {
+      mesInicial: string;
+      mesFinal: string;
+      meta: string;
+      real: string;
+      pct: number | null;
+    } | null;
   };
   porRegiao: LinhaRanking[];
   porSegmento: LinhaRanking[];
@@ -133,5 +156,6 @@ export interface PedidoLinha {
   regiao: string;
   gestor: string;
   segmento: string | null;
+  divisao: string | null;
   valor: string;
 }

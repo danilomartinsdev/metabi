@@ -49,6 +49,7 @@ const COLUNAS = [
   { k: 'uf', r: 'UF', ordem: 'uf' },
   { k: 'gestor', r: 'Representante', ordem: 'representante' },
   { k: 'segmento', r: 'Segmento' },
+  { k: 'divisao', r: 'Divisão' },
   { k: 'ordemCpr', r: 'Ordem CPR' },
   { k: 'valor', r: 'Valor', ordem: 'valor', num: true },
 ] as const;
@@ -180,6 +181,11 @@ const total = computed(() => q.data.value?.meta.total ?? 0);
                   <template v-else-if="c.k === 'dtEmissao' || c.k === 'dtEntrega'">
                     <span class="num whitespace-nowrap">{{ formatDate(p[c.k]) }}</span>
                   </template>
+                  <template v-else-if="c.k === 'divisao'"
+                    ><span class="block max-w-60 truncate" :title="p.divisao ?? 'Sem divisão'">{{
+                      p.divisao ?? 'Sem divisão'
+                    }}</span></template
+                  >
                   <template v-else-if="c.k === 'cliente'"
                     ><span class="block max-w-72 truncate" :title="p.cliente">{{ p.cliente }}</span></template
                   >

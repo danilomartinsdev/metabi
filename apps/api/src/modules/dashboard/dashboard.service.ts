@@ -9,6 +9,7 @@ import {
   type PedidosQuery,
   REGIAO_ENUM_ROTULO,
   type Ranking,
+  SEM_DIVISAO,
   type RegiaoEnum,
   type VisaoGeral,
 } from '@metabi/shared';
@@ -64,6 +65,15 @@ export class DashboardService {
                 ],
               },
         ),
+      });
+    }
+    if (f.divisao.length) {
+      const nomes = f.divisao.filter((d) => d !== SEM_DIVISAO);
+      e.push({
+        OR: [
+          ...(nomes.length ? [{ divisao: { in: nomes } }] : []),
+          ...(f.divisao.includes(SEM_DIVISAO) ? [{ divisao: null }] : []),
+        ],
       });
     }
     if (f.q) {
@@ -214,7 +224,7 @@ export class DashboardService {
       ),
       porDivisao: agrupar(
         atual,
-        (l) => l.divisao ?? 'SEM',
+        (l) => l.divisao ?? SEM_DIVISAO,
         (l) => l.divisao ?? 'Sem divisão',
       ),
       topGestores: agrupar(
@@ -240,7 +250,15 @@ export class DashboardService {
     f: Filtros,
   ): Promise<Map<string, Prisma.Decimal> | null> {
     if (u.escopo.tipo !== 'todos') return null;
-    if (f.regiao.length || f.uf.length || f.gestor.length || f.segmento.length || f.status.length || f.q) {
+    if (
+      f.regiao.length ||
+      f.uf.length ||
+      f.gestor.length ||
+      f.segmento.length ||
+      f.status.length ||
+      f.divisao.length ||
+      f.q
+    ) {
       return null;
     }
     const [linhas, meses] = await Promise.all([
@@ -288,7 +306,7 @@ export class DashboardService {
         : u.escopo.representanteIds;
     } else if (f.gestor.length) {
       reps = f.gestor;
-    } else if (f.regiao.length || f.uf.length || f.segmento.length) {
+    } else if (f.regiao.length || f.uf.length || f.segmento.length || f.divisao.length) {
       return null;
     }
     const metas = await this.prisma.meta.findMany({
@@ -316,17 +334,23 @@ export class DashboardService {
             (l) => l.gestorId,
             (l) => l.gestorNome,
           )
-        : dim === 'estados'
+        : dim === 'divisoes'
           ? agrupar(
               ls,
-              (l) => l.uf,
-              (l) => l.uf,
+              (l) => l.divisao ?? SEM_DIVISAO,
+              (l) => l.divisao ?? 'Sem divisão',
             )
-          : agrupar(
-              ls,
-              (l) => l.regiao,
-              (l) => REGIAO_ENUM_ROTULO[l.regiao as RegiaoEnum] ?? l.regiao,
-            );
+          : dim === 'estados'
+            ? agrupar(
+                ls,
+                (l) => l.uf,
+                (l) => l.uf,
+              )
+            : agrupar(
+                ls,
+                (l) => l.regiao,
+                (l) => REGIAO_ENUM_ROTULO[l.regiao as RegiaoEnum] ?? l.regiao,
+              );
     const s = somar(ls);
     return {
       periodo: { de, ate },
@@ -431,6 +455,7 @@ export class DashboardService {
       regiao: REGIAO_ENUM_ROTULO[p.regiao as RegiaoEnum],
       gestor: p.representante.nomeExibicao,
       segmento: rotuloSegmento(p.cliente.segmentoOverride ?? p.representante.segmentoPadrao),
+      divisao: p.divisao,
       valor: p.valor.toFixed(2),
     }));
     return { data, total, valorTotal: (soma ?? new Prisma.Decimal(0)).toFixed(2), periodo: { de, ate } };

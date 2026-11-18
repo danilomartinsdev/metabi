@@ -139,7 +139,11 @@ export class ExportService {
   }
 
   /** Visão geral em planilha/CSV: só as seções marcadas (sem "secoes" = todas), no escopo de quem pediu. */
-  async visaoGeral(u: UsuarioAutenticado, q: ExportVisaoGeralQuery, ctx: ContextoRequisicao): Promise<Arquivo> {
+  async visaoGeral(
+    u: UsuarioAutenticado,
+    q: ExportVisaoGeralQuery,
+    ctx: ContextoRequisicao,
+  ): Promise<Arquivo> {
     const ativa = (id: string) => !q.secoes || q.secoes.includes(id);
     const v = await this.dashboard.visaoGeral(u, q);
     const rank = (dim: 'gestores' | 'estados' | 'regioes', id: string) =>
@@ -150,7 +154,12 @@ export class ExportService {
       rank('regioes', 'rankRegioes'),
     ]);
     const blocos = blocosVisaoGeral(v, { gestores, estados, regioes }, ativa);
-    if (!blocos.length) throw new ApiException(HttpStatus.BAD_REQUEST, 'VALIDATION', 'Marque ao menos uma seção para exportar.');
+    if (!blocos.length)
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        'VALIDATION',
+        'Marque ao menos uma seção para exportar.',
+      );
     const info: InfoExportacao = {
       titulo: 'Visão geral',
       periodo: v.periodo,
@@ -178,7 +187,11 @@ export class ExportService {
    * Gera o PDF de uma página /print/* da SPA (ADR 0004): cria o token de uso único com o solicitacao,
    * abre a página no Chromium e descarta o token se ela não chegou a consumi-lo.
    */
-  private async gerarPdf(u: UsuarioAutenticado, solicitacao: SolicitacaoImpressao, pagina: string): Promise<Buffer> {
+  private async gerarPdf(
+    u: UsuarioAutenticado,
+    solicitacao: SolicitacaoImpressao,
+    pagina: string,
+  ): Promise<Buffer> {
     const token = await this.tokens.criar(u, solicitacao);
     const base = (this.env.PRINT_BASE_URL ?? this.env.WEB_ORIGIN).replace(/\/$/, '');
     const quando = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
@@ -232,7 +245,11 @@ export class ExportService {
   ): Promise<Arquivo> {
     exigirFaturamento(u);
     const { periodo } = await this.faturamento.resumo({ de: p.de, ate: p.ate });
-    const conteudo = await this.gerarPdf(u, { tipo: 'faturamento', params: p, secoes, quebra }, 'faturamento');
+    const conteudo = await this.gerarPdf(
+      u,
+      { tipo: 'faturamento', params: p, secoes, quebra },
+      'faturamento',
+    );
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
@@ -274,7 +291,14 @@ export class ExportService {
     await this.audit.registrar({
       acao: 'export.pdf',
       usuarioId: u.id,
-      detalhes: { relatorio: 'analise-faturamento', secoes: secoes ?? 'todas', abcProdutos, abcColunas, quebra, ...periodo },
+      detalhes: {
+        relatorio: 'analise-faturamento',
+        secoes: secoes ?? 'todas',
+        abcProdutos,
+        abcColunas,
+        quebra,
+        ...periodo,
+      },
       ctx,
     });
     return {
@@ -313,7 +337,11 @@ export class ExportService {
   }
 
   /** Excel/CSV da Análise de descontos (tabela por produto + resumo). */
-  async planilhaDescontos(u: UsuarioAutenticado, q: ExportDescontosQuery, ctx: ContextoRequisicao): Promise<Arquivo> {
+  async planilhaDescontos(
+    u: UsuarioAutenticado,
+    q: ExportDescontosQuery,
+    ctx: ContextoRequisicao,
+  ): Promise<Arquivo> {
     exigirDescontos(u);
     const { formato, ...p } = q;
     const a = await this.descontos.analise(p);
@@ -428,7 +456,7 @@ function arquivoPlanilha(base: string, formato: 'xlsx' | 'csv', conteudo: Buffer
 /** Só os filtros preenchidos (sem ordenação), para o log de auditoria. */
 function filtrosParaAuditoria(f: Filtros): Record<string, string | string[]> {
   const r: Record<string, string | string[]> = {};
-  for (const k of ['de', 'ate', 'regiao', 'uf', 'gestor', 'segmento', 'status', 'q'] as const) {
+  for (const k of ['de', 'ate', 'regiao', 'uf', 'gestor', 'segmento', 'status', 'divisao', 'q'] as const) {
     const v = f[k];
     if (Array.isArray(v) ? v.length : v) r[k] = v as string | string[];
   }
@@ -438,7 +466,11 @@ function filtrosParaAuditoria(f: Filtros): Record<string, string | string[]> {
 /** Análise de faturamento (notas fiscais): além do PDF, exige a permissão da tela e escopo "todos". */
 function exigirAnaliseFaturamento(u: UsuarioAutenticado): void {
   if (!u.permissoes.includes('faturamento-analise.view')) {
-    throw new ApiException(HttpStatus.FORBIDDEN, 'FORBIDDEN', 'Sem permissão para ver a análise de faturamento.');
+    throw new ApiException(
+      HttpStatus.FORBIDDEN,
+      'FORBIDDEN',
+      'Sem permissão para ver a análise de faturamento.',
+    );
   }
   exigirEscopoTodos(u);
 }
@@ -454,7 +486,11 @@ function exigirFaturamento(u: UsuarioAutenticado): void {
 /** Análise de descontos: além do arquivo, exige a permissão da tela e escopo "todos". */
 function exigirDescontos(u: UsuarioAutenticado): void {
   if (!u.permissoes.includes('descontos.view')) {
-    throw new ApiException(HttpStatus.FORBIDDEN, 'FORBIDDEN', 'Sem permissão para ver a análise de descontos.');
+    throw new ApiException(
+      HttpStatus.FORBIDDEN,
+      'FORBIDDEN',
+      'Sem permissão para ver a análise de descontos.',
+    );
   }
   exigirEscopoTodos(u);
 }

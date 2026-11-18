@@ -12,12 +12,17 @@ export function useVisaoGeralQuery(qs: MaybeRefOrGetter<string>) {
   });
 }
 
-export function useRankingQuery(dim: MaybeRefOrGetter<DimensaoRanking>, qs: MaybeRefOrGetter<string>) {
+export function useRankingQuery(
+  dim: MaybeRefOrGetter<DimensaoRanking>,
+  qs: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean> = true,
+) {
   const { request } = useApi();
   return useQuery({
     queryKey: ['ranking', dim, qs],
     queryFn: () => request<Ranking>(`/dashboard/ranking/${toValue(dim)}?${toValue(qs)}`),
     placeholderData: keepPreviousData,
+    enabled: () => toValue(enabled),
   });
 }
 
@@ -46,11 +51,12 @@ export interface PaginaPedidos {
   periodo: { de: string; ate: string };
 }
 
-export function usePedidosQuery(qs: MaybeRefOrGetter<string>) {
+export function usePedidosQuery(qs: MaybeRefOrGetter<string>, enabled: MaybeRefOrGetter<boolean> = true) {
   const { request } = useApi();
   return useQuery({
     queryKey: ['pedidos', qs],
     queryFn: () => request<PaginaPedidos>(`/pedidos?${toValue(qs)}`),
     placeholderData: keepPreviousData,
+    enabled: () => toValue(enabled),
   });
 }

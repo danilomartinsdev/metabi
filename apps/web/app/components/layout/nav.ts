@@ -53,6 +53,12 @@ export const NAV: NavGroup[] = [
         permissao: 'dashboard.view',
       },
       {
+        label: 'Divisões de venda',
+        to: '/dashboard/divisoes',
+        icon: 'i-lucide-chart-pie',
+        permissao: 'dashboard.view',
+      },
+      {
         label: 'Clientes',
         to: '/dashboard/clientes',
         icon: 'i-lucide-building-complex',

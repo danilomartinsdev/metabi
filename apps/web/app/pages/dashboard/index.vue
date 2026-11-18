@@ -185,7 +185,17 @@ const ABAS_DONUT = [
         </div>
         <div class="rounded-xl border bg-card p-5">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h3 class="text-sm font-medium text-muted-foreground">Participação</h3>
+            <h3 class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              Participação
+              <NuxtLink
+                v-if="donut === 'divisao'"
+                :to="{ path: '/dashboard/divisoes', query: $route.query }"
+                class="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                title="Abrir divisões de venda em tela cheia, com ranking e pedidos"
+              >
+                <UIcon name="i-lucide-maximize-2" class="size-3" /> Ampliar
+              </NuxtLink>
+            </h3>
             <UTabs
               v-model="donut"
               :items="ABAS_DONUT"

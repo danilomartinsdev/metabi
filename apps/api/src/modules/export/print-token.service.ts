@@ -24,7 +24,11 @@ export class PrintTokenService {
     private readonly loader: UsuarioLoader,
   ) {}
 
-  async criar(usuario: UsuarioAutenticado, solicitacao: SolicitacaoImpressao, agora = new Date()): Promise<string> {
+  async criar(
+    usuario: UsuarioAutenticado,
+    solicitacao: SolicitacaoImpressao,
+    agora = new Date(),
+  ): Promise<string> {
     await this.prisma.tokenImpressao.deleteMany({ where: { expiraEm: { lt: agora } } });
     const token = randomBytes(32).toString('base64url');
     await this.prisma.tokenImpressao.create({
@@ -47,7 +51,10 @@ export class PrintTokenService {
     token: string,
     tipo: T,
     agora = new Date(),
-  ): Promise<{ usuario: UsuarioAutenticado; solicitacao: Extract<SolicitacaoImpressao, { tipo: T }> } | null> {
+  ): Promise<{
+    usuario: UsuarioAutenticado;
+    solicitacao: Extract<SolicitacaoImpressao, { tipo: T }>;
+  } | null> {
     // updateMany com as condições no where: marca como usado de forma atômica (duas leituras simultâneas
     // do mesmo token não passam as duas).
     const tokenHash = hashDe(token);

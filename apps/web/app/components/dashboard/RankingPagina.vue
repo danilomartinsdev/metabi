@@ -3,8 +3,8 @@ import type { DimensaoRanking } from '@metabi/shared';
 import { useRankingQuery } from '~/composables/api/useDashboard';
 import { barrasRankingOptions } from '~/utils/charts/options';
 
-const props = defineProps<{ dim: DimensaoRanking }>();
-const ABAS: { dim: DimensaoRanking; rotulo: string; coluna: string }[] = [
+const props = defineProps<{ dim: Exclude<DimensaoRanking, 'divisoes'> }>();
+const ABAS: { dim: Exclude<DimensaoRanking, 'divisoes'>; rotulo: string; coluna: string }[] = [
   { dim: 'gestores', rotulo: 'Representantes', coluna: 'Representante' },
   { dim: 'estados', rotulo: 'Estados', coluna: 'UF' },
   { dim: 'regioes', rotulo: 'Regiões', coluna: 'Região' },
